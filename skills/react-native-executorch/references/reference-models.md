@@ -72,7 +72,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 - **PHI_4_MINI_4B** - Phi 4 Mini 4B original (bf16)
 - **PHI_4_MINI_4B_QUANTIZED** - Phi 4 Mini 4B quantized (8da4w)
 
-[HuggingFace PHI 4 Mini Collection](https://huggingface.co/software-mansion/react-native-executorch-phi-4-mini)
+[HuggingFace PHI 4 Mini Model](https://huggingface.co/software-mansion/react-native-executorch-phi-4-mini)
 
 ---
 
@@ -94,10 +94,10 @@ For a list of all available Object Detection models reference [this Hugging Face
 
 ### Style transfer
 
-- **STYLE_TRANSFER_CANDY** - [Candy style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-candy) (CoreML for iOS, XNNPACK for Android)
-- **STYLE_TRANSFER_MOSAIC** - [Mosaic style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-mosaic) (CoreML for iOS, XNNPACK for Android)
-- **STYLE_TRANSFER_RAIN_PRINCESS** - [Rain Princess style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-rain-princess) (CoreML for iOS, XNNPACK for Android)
-- **STYLE_TRANSFER_UDNIE** - [Udnie style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-udnie) (CoreML for iOS, XNNPACK for Android)
+- **STYLE_TRANSFER_CANDY** - [Candy style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-candy)
+- **STYLE_TRANSFER_MOSAIC** - [Mosaic style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-mosaic)
+- **STYLE_TRANSFER_RAIN_PRINCESS** - [Rain Princess style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-rain-princess)
+- **STYLE_TRANSFER_UDNIE** - [Udnie style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-udnie)
 
 For a list of all available Style Transfer models reference [this Hugging Face collection](https://huggingface.co/collections/software-mansion/style-transfer).
 
@@ -259,3 +259,6 @@ useExecutorchModule({
 - **HuggingFace Repository:** https://huggingface.co/software-mansion
 - **Model Constants:** https://github.com/software-mansion/react-native-executorch/blob/main/packages/react-native-executorch/src/constants/modelUrls.ts
 - **All Collections:** https://huggingface.co/software-mansion/collections
+- **Model sizes reference:** https://docs.swmansion.com/react-native-executorch/docs/benchmarks/model-size
+- **Model memory usage reference:**: https://docs.swmansion.com/react-native-executorch/docs/benchmarks/memory-usage
+- **Model inference time benchmarks:** https://docs.swmansion.com/react-native-executorch/docs/benchmarks/inference-time

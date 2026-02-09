@@ -1,18 +1,19 @@
-# Models
+---
+title: Available models and loading models.
+description: RN Executorch provides models for a variety of AI tasks - Image classification, Object detection, Style transfer, OCR, Image embeddings, Image segmentation, Text to image, LLMs, Text embeddings, Speech to text, Text to speech, and Voice activity detection. This reference lists all supported models and provides a quick reference on available ways of loading a model.
+---
 
-RN Executorch provides models for a variety of AI tasks: Image classification, Object detection, Style transfer, OCR, Image embeddings, Image segmentation, Text to image, LLMs, Text embeddings, Speech to text, Text to speech, and Voice activity detection.
-
-## Available models RN Executorch
+# Available models RN Executorch
 
 It is generally recommended to use models provided by the authors of the library, which are available at [HuggingFace repository](https://huggingface.co/software-mansion/collections).
 
 ---
 
-### LLMs (Large Language Models)
+## LLMs (Large Language Models)
 
 For a full list of available LLM models reference [HuggingFace LLMs collection](https://huggingface.co/collections/software-mansion/llm).
 
-#### LLAMA 3.2
+### LLAMA 3.2
 
 - **LLAMA3_2_3B** - Llama 3.2 3B original (bf16)
 - **LLAMA3_2_3B_QLORA** - Llama 3.2 3B with QLoRA quantization
@@ -23,7 +24,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 [HuggingFace Llama 3.2 Model](https://huggingface.co/software-mansion/react-native-executorch-llama-3.2)
 
-#### QWEN 3
+### QWEN 3
 
 - **QWEN3_0_6B** - Qwen 3 0.6B original (bf16)
 - **QWEN3_0_6B_QUANTIZED** - Qwen 3 0.6B quantized (8da4w)
@@ -34,7 +35,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 [HuggingFace Qwen 3 Model](https://huggingface.co/software-mansion/react-native-executorch-qwen-3)
 
-#### HAMMER 2.1
+### HAMMER 2.1
 
 - **HAMMER2_1_0_5B** - Hammer 2.1 0.5B original (bf16)
 - **HAMMER2_1_0_5B_QUANTIZED** - Hammer 2.1 0.5B quantized (8da4w)
@@ -45,7 +46,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 [HuggingFace Hammer 2.1 model](https://huggingface.co/software-mansion/react-native-executorch-hammer-2.1)
 
-#### SMOLLM2
+### SMOLLM2
 
 - **SMOLLM2_1_135M** - SmolLM2 135M original (bf16)
 - **SMOLLM2_1_135M_QUANTIZED** - SmolLM2 135M quantized (8da4w)
@@ -56,7 +57,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 [HuggingFace SmoLlm 2 model](https://huggingface.co/software-mansion/react-native-executorch-smolLm-2)
 
-#### QWEN 2.5
+### QWEN 2.5
 
 - **QWEN2_5_0_5B** - Qwen 2.5 0.5B original (bf16)
 - **QWEN2_5_0_5B_QUANTIZED** - Qwen 2.5 0.5B quantized (8da4w)
@@ -67,7 +68,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 [HuggingFace Qwen 2.5 Model](https://huggingface.co/software-mansion/react-native-executorch-qwen-2.5)
 
-#### PHI 4
+### PHI 4
 
 - **PHI_4_MINI_4B** - Phi 4 Mini 4B original (bf16)
 - **PHI_4_MINI_4B_QUANTIZED** - Phi 4 Mini 4B quantized (8da4w)
@@ -76,7 +77,7 @@ For a full list of available LLM models reference [HuggingFace LLMs collection](
 
 ---
 
-### Image classification
+## Image classification
 
 - **EFFICIENTNET_V2_S** - [EfficientNet V2 S](https://huggingface.co/software-mansion/react-native-executorch-efficientnet-v2-s) (CoreML for iOS, XNNPACK for Android)
 
@@ -84,7 +85,7 @@ For a list of all available Image Classification models reference [this Hugging 
 
 ---
 
-### Object detection
+## Object detection
 
 - **SSDLITE_320_MOBILENET_V3_LARGE** - [SSDLite 320 with MobileNet V3 Large](https://huggingface.co/software-mansion/react-native-executorch-ssdlite320-mobilenet-v3-large)
 
@@ -92,7 +93,7 @@ For a list of all available Object Detection models reference [this Hugging Face
 
 ---
 
-### Style transfer
+## Style transfer
 
 - **STYLE_TRANSFER_CANDY** - [Candy style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-candy)
 - **STYLE_TRANSFER_MOSAIC** - [Mosaic style](https://huggingface.co/software-mansion/react-native-executorch-style-transfer-mosaic)
@@ -103,7 +104,7 @@ For a list of all available Style Transfer models reference [this Hugging Face c
 
 ---
 
-### OCR
+## OCR
 
 - **DETECTOR_CRAFT** - [CRAFT text detector](https://huggingface.co/software-mansion/react-native-executorch-detector-craft) - detects text regions in images
 - **RECOGNIZER_CRNN_EN** - [CRNN text recognizer](https://huggingface.co/software-mansion/react-native-executorch-recognizer-crnn.en) - recognizes English text
@@ -112,7 +113,7 @@ For a list of all available OCR models reference [this Hugging Face collection](
 
 ---
 
-### Image embeddings
+## Image embeddings
 
 - **CLIP_VIT_BASE_PATCH32_IMAGE** - [CLIP ViT Base Patch32](https://huggingface.co/software-mansion/react-native-executorch-clip-vit-base-patch32) for image embeddings
 
@@ -120,7 +121,7 @@ For a list of all available Image embeddings models reference [this Hugging Face
 
 ---
 
-### Image segmentation
+## Image segmentation
 
 - **DEEPLAB_V3_RESNET50** - [DeepLab V3](https://huggingface.co/software-mansion/react-native-executorch-deeplab-v3) with ResNet50 backbone
 
@@ -128,7 +129,7 @@ For a list of all available Image Segmentation models reference [this Hugging Fa
 
 ---
 
-### Text to image
+## Text to image
 
 - **BK_SDM_TINY_VPRED_256** - BK-SDM Tiny V-Pred (256x256 resolution)
 
@@ -136,7 +137,7 @@ For a list of all available Text to Image models reference [this Hugging Face co
 
 ---
 
-### Text embeddings
+## Text embeddings
 
 - **ALL_MINILM_L6_V2** - [All-MiniLM-L6-v2](https://huggingface.co/software-mansion/react-native-executorch-all-MiniLM-L6-v2) text embeddings
 - **ALL_MPNET_BASE_V2** - [All-MPNet-Base-v2](https://huggingface.co/software-mansion/react-native-executorch-all-mpnet-base-v2) text embeddings
@@ -148,11 +149,11 @@ For a list of all available Text embeddings models reference [this Hugging Face 
 
 ---
 
-### Speech to text
+## Speech to text
 
 For a list of all available Speech to Text models reference [this Hugging Face collection](https://huggingface.co/collections/software-mansion/speech-to-text).
 
-#### Whisper Models (English only)
+### Whisper Models (English only)
 
 - **WHISPER_TINY_EN** - [Whisper Tiny](https://huggingface.co/software-mansion/react-native-executorch-whisper-tiny.en)
 - **WHISPER_TINY_EN_QUANTIZED** - [Whisper Tiny English-only (quantized)](https://huggingface.co/software-mansion/react-native-executorch-whisper-tiny-quantized.en)
@@ -160,20 +161,20 @@ For a list of all available Speech to Text models reference [this Hugging Face c
 - **WHISPER_SMALL_EN** - [Whisper Small](https://huggingface.co/software-mansion/react-native-executorch-whisper-small.en)
 - **WHISPER_MEDIUM_EN** - [Whisper Medium](https://huggingface.co/software-mansion/react-native-executorch-whisper-medium.en)
 
-#### Whisper Models (Multilingual)
+### Whisper Models (Multilingual)
 
 - **WHISPER_TINY** - [Whisper Tiny multilingual](https://huggingface.co/software-mansion/react-native-executorch-whisper-tiny)
 - **WHISPER_BASE** - [Whisper Base multilingual](https://huggingface.co/software-mansion/react-native-executorch-whisper-base)
 - **WHISPER_SMALL** - [Whisper Small multilingual](https://huggingface.co/software-mansion/react-native-executorch-whisper-small)
 - **WHISPER_MEDIUM** - [Whisper Medium multilingual](https://huggingface.co/software-mansion/react-native-executorch-whisper-medium)
 
-#### Other models
+### Other models
 
 - **MOONSHINE_TINY** - [Moonshine Tiny](https://huggingface.co/software-mansion/react-native-executorch-moonshine-tiny)
 
 ---
 
-### Text to speech
+## Text to speech
 
 - **KOKORO_SMALL** - [Kokoro TTS](https://huggingface.co/software-mansion/react-native-executorch-kokoro) - Text-to-Speech model
 - **KOKORO_MEDIUM** - [Kokoro TTS](https://huggingface.co/software-mansion/react-native-executorch-kokoro) - Text-to-Speech model
@@ -182,7 +183,7 @@ For a list of all available Text to Speech models reference [this Hugging Face c
 
 ---
 
-### Voice activity detection
+## Voice activity detection
 
 - **FSMN_VAD** - [FSMN Voice Activity Detection](https://huggingface.co/software-mansion/react-native-executorch-fsmn-vad)
 
@@ -190,9 +191,9 @@ For a list of all available VAD models reference [this Hugging Face collection](
 
 ---
 
-## Loading models
+# Loading models
 
-### Using predefined constants
+## Using predefined constants
 
 **When to use:** This is the recommended approach for all models that have [exported constants in the library](https://github.com/software-mansion/react-native-executorch/blob/main/packages/react-native-executorch/src/constants/modelUrls.ts). It provides type safety, automatic URL management, and ensures you're using the correct model configuration with all required files.
 
@@ -211,7 +212,7 @@ const qwen = useLLM(QWEN3_1_7B_QUANTIZED);
 
 ---
 
-### From React Native assets folder
+## From React Native assets folder
 
 **When to use:** Best for small models (< 512MB) that you want to bundle with your app for offline use from the first launch. This ensures the model is immediately available without any download, but increases your app's installation size.
 
@@ -225,7 +226,7 @@ useExecutorchModule({
 
 ---
 
-### From remote URL
+## From remote URL
 
 **When to use:** Ideal for large models (> 512MB) or when you want to keep your app's download size small. The model downloads on first use and is cached locally for subsequent uses. Perfect for production apps where initial app size matters.
 
@@ -239,7 +240,7 @@ useExecutorchModule({
 
 ---
 
-### From local file system
+## From local file system
 
 **When to use:** When you want to give users full control over model management, allow custom model imports, or enable advanced users to use their own fine-tuned models. Also useful for development and testing with local model files.
 
@@ -253,7 +254,7 @@ useExecutorchModule({
 
 ---
 
-## References
+# References
 
 - **Documentation:** https://docs.swmansion.com/react-native-executorch/docs/fundamentals/loading-models
 - **HuggingFace Repository:** https://huggingface.co/software-mansion

@@ -76,6 +76,7 @@ model.streamStop();
 - [HuggingFace STT collection](https://huggingface.co/collections/software-mansion/speech-to-text)
 - [Available models](https://docs.swmansion.com/react-native-executorch/docs/api-reference#models---speech-to-text)
 - [useSpeechToText API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference/functions/useSpeechToText)
+- [Typescript API implementation of useSpeechToText](https://docs.swmansion.com/react-native-executorch/docs/typescript-api/natural-language-processing/SpeechToTextModule)
 
 ---
 
@@ -167,6 +168,7 @@ For all available models check out [this exported HuggingFace models collection]
 - [Supported Voices](https://docs.swmansion.com/react-native-executorch/docs/api-reference#tts-supported-voices)
 - [useTextToSpeech API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference/functions/useTextToSpeech)
 - [HuggingFace TTS collection](https://huggingface.co/collections/software-mansion/text-to-speech)
+- [Typescript API implementation of useTextToSpeech hook](https://docs.swmansion.com/react-native-executorch/docs/typescript-api/natural-language-processing/TextToSpeechModule)
 
 ---
 

@@ -15,15 +15,15 @@ description: Reference for using Style Transfer, Text to Image, Image Embeddings
 import {
   useStyleTransfer,
   STYLE_TRANSFER_CANDY,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const model = useStyleTransfer({ model: STYLE_TRANSFER_CANDY });
 
-const imageUri = "file:///Users/.../photo.png";
+const imageUri = 'file:///Users/.../photo.png';
 
 try {
   const generatedImageUrl = await model.forward(imageUri);
-  console.log("Styled image:", generatedImageUrl);
+  console.log('Styled image:', generatedImageUrl);
 } catch (error) {
   console.error(error);
 }
@@ -63,11 +63,11 @@ For the latest available models reference exported models in [HuggingFace Style 
 ## Basic Usage
 
 ```typescript
-import { useTextToImage, BK_SDM_TINY_VPRED_256 } from "react-native-executorch";
+import { useTextToImage, BK_SDM_TINY_VPRED_256 } from 'react-native-executorch';
 
 const model = useTextToImage({ model: BK_SDM_TINY_VPRED_256 });
 
-const input = "a castle";
+const input = 'a castle';
 
 try {
   const image = await model.generate(input);
@@ -78,7 +78,7 @@ try {
 
 ## Example Usage with Parameters
 
-```typescript
+```tsx
 import { useTextToImage, BK_SDM_TINY_VPRED_256 } from 'react-native-executorch';
 
 function App() {
@@ -134,12 +134,12 @@ For the latest available models reference exported models in [HuggingFace Text t
 import {
   useImageEmbeddings,
   CLIP_VIT_BASE_PATCH32_IMAGE,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const model = useImageEmbeddings({ model: CLIP_VIT_BASE_PATCH32_IMAGE });
 
 try {
-  const imageEmbedding = await model.forward("https://url-to-image.jpg");
+  const imageEmbedding = await model.forward('https://url-to-image.jpg');
 } catch (error) {
   console.error(error);
 }

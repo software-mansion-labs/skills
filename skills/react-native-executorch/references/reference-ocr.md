@@ -12,16 +12,16 @@ description: Reference for using OCR and Vertical OCR.
 ## Basic Usage
 
 ```typescript
-import { useOCR, OCR_ENGLISH } from "react-native-executorch";
+import { useOCR, OCR_ENGLISH } from 'react-native-executorch';
 
 function App() {
   const model = useOCR({ model: OCR_ENGLISH });
 
   // ...
-  for (const ocrDetection of await model.forward("https://url-to-image.jpg")) {
-    console.log("Bounding box: ", ocrDetection.bbox);
-    console.log("Bounding label: ", ocrDetection.text);
-    console.log("Bounding score: ", ocrDetection.score);
+  for (const ocrDetection of await model.forward('https://url-to-image.jpg')) {
+    console.log('Bounding box: ', ocrDetection.bbox);
+    console.log('Bounding label: ', ocrDetection.text);
+    console.log('Bounding score: ', ocrDetection.score);
   }
   // ...
 }
@@ -55,7 +55,7 @@ import {
   RECOGNIZER_LATIN_CRNN,
   RECOGNIZER_CYRILLIC_CRNN,
   DETECTOR_CRAFT,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 // For English (uses Latin alphabet)
 const englishOCR = useOCR({ model: OCR_ENGLISH });
@@ -65,7 +65,7 @@ const customOCR = useOCR({
   model: {
     detectorSource: DETECTOR_CRAFT,
     recognizerSource: RECOGNIZER_CYRILLIC_CRNN,
-    language: "ru", // Russian
+    language: 'ru', // Russian
   },
 });
 ```
@@ -101,7 +101,7 @@ For all supported alphabets and languages, see [OCR Supported Alphabets](https:/
 ## Basic Usage
 
 ```typescript
-import { useVerticalOCR, OCR_ENGLISH } from "react-native-executorch";
+import { useVerticalOCR, OCR_ENGLISH } from 'react-native-executorch';
 
 function App() {
   const model = useVerticalOCR({
@@ -110,10 +110,10 @@ function App() {
   });
 
   // ...
-  for (const ocrDetection of await model.forward("https://url-to-image.jpg")) {
-    console.log("Bounding box: ", ocrDetection.bbox);
-    console.log("Bounding label: ", ocrDetection.text);
-    console.log("Bounding score: ", ocrDetection.score);
+  for (const ocrDetection of await model.forward('https://url-to-image.jpg')) {
+    console.log('Bounding box: ', ocrDetection.bbox);
+    console.log('Bounding label: ', ocrDetection.text);
+    console.log('Bounding score: ', ocrDetection.score);
   }
   // ...
 }

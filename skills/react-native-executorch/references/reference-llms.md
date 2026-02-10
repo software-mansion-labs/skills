@@ -7,19 +7,19 @@ description: Reference for using Large Language Models in React Native Executorc
 
 **Purpose:** Run Large Language Models (LLMs) on-device for text generation, chat, tool calling, and structured outputs.
 
-**Use cases:** Chatbots, AI assistants, text generation, function calling, structured data extraction.
+**Use cases:** AI assistants, text generation, function calling, structured data extraction.
 
 ## Basic Usage
 
 ```typescript
-import { useLLM, LLAMA3_2_1B } from "react-native-executorch";
+import { useLLM, LLAMA3_2_1B } from 'react-native-executorch';
 
 const llm = useLLM({ model: LLAMA3_2_1B });
 ```
 
 ## Functional Mode (Stateless)
 
-```typescript
+```tsx
 const llm = useLLM({ model: LLAMA3_2_1B });
 
 const handleGenerate = async () => {
@@ -45,12 +45,12 @@ return (
 
 ## Managed Mode (Stateful)
 
-```typescript
+```tsx
 // Configure the model
 useEffect(() => {
   llm.configure({
     chatConfig: {
-      systemPrompt: "You are a helpful assistant",
+      systemPrompt: 'You are a helpful assistant',
       contextWindowLength: 10,
     },
     generationConfig: {
@@ -61,7 +61,7 @@ useEffect(() => {
 }, []);
 
 // Send messages
-llm.sendMessage("Hello!");
+llm.sendMessage('Hello!');
 
 // Access conversation history
 console.log(llm.messageHistory);
@@ -69,7 +69,7 @@ console.log(llm.messageHistory);
 
 ## Tool Calling
 
-```typescript
+```tsx
 const TOOL_DEFINITIONS: LLMTool[] = [
   {
     name: 'get_weather',
@@ -111,8 +111,6 @@ export const executeTool: (call: ToolCall) => Promise<string | null> = async (
   switch (call.toolName) {
     case 'get_weather':
       return await get_weather(call);
-    case ...:
-      ...
     default:
       console.error(`Wrong function! We don't handle it!`);
       return null;
@@ -143,7 +141,7 @@ return (
 
 ## Structured Output
 
-```typescript
+```tsx
 import { Schema } from 'jsonschema';
 
 const responseSchema: Schema = {
@@ -237,12 +235,14 @@ return (
 
 ## Interrupting Generation
 
-```typescript
+```tsx
 // Stop generating
 llm.interrupt();
 
 // Check if generating
-{llm.isGenerating && <Button onPress={llm.interrupt} title="Stop" />}
+{
+  llm.isGenerating && <Button onPress={llm.interrupt} title="Stop" />;
+}
 ```
 
 ## Troubleshooting

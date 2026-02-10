@@ -204,7 +204,7 @@ import {
   useLLM,
   LLAMA3_2_1B,
   QWEN3_1_7B_QUANTIZED,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const llama = useLLM(LLAMA3_2_1B);
 const qwen = useLLM(QWEN3_1_7B_QUANTIZED);
@@ -220,7 +220,7 @@ const qwen = useLLM(QWEN3_1_7B_QUANTIZED);
 
 ```typescript
 useExecutorchModule({
-  modelSource: require("../assets/llama3_2.pte"),
+  modelSource: require('../assets/llama3_2.pte'),
 });
 ```
 
@@ -234,7 +234,7 @@ useExecutorchModule({
 
 ```typescript
 useExecutorchModule({
-  modelSource: "https://.../llama3_2.pte",
+  modelSource: 'https://.../llama3_2.pte',
 });
 ```
 
@@ -248,7 +248,7 @@ useExecutorchModule({
 
 ```typescript
 useExecutorchModule({
-  modelSource: "file:///var/mobile/.../llama3_2.pte",
+  modelSource: 'file:///var/mobile/.../llama3_2.pte',
 });
 ```
 

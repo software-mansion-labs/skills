@@ -14,10 +14,10 @@ description: Reference for using core RN Executorch utils - low-level ExecuTorch
 ## Basic Usage
 
 ```typescript
-import { useExecutorchModule } from "react-native-executorch";
+import { useExecutorchModule } from 'react-native-executorch';
 
 const executorchModule = useExecutorchModule({
-  modelSource: require("../assets/models/model.pte"),
+  modelSource: require('../assets/models/model.pte'),
 });
 ```
 
@@ -40,7 +40,7 @@ import {
   useExecutorchModule,
   ScalarType,
   STYLE_TRANSFER_CANDY,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const executorchModule = useExecutorchModule({
   modelSource: STYLE_TRANSFER_CANDY,
@@ -61,9 +61,8 @@ const runInference = async () => {
     // foo(output[0].dataPtr);
   } catch (error) {
     // Log any errors that occur during the forward pass.
-    console.error("Error during model execution:", error);
+    console.error('Error during model execution:', error);
   }
-...
 };
 ```
 
@@ -92,7 +91,7 @@ const runInference = async () => {
 ## Basic Usage
 
 ```typescript
-import { ResourceFetcher } from "react-native-executorch";
+import { ResourceFetcher } from 'react-native-executorch';
 
 // Download multiple resources with progress tracking
 const downloadModels = async () => {
@@ -100,17 +99,17 @@ const downloadModels = async () => {
     const uris = await ResourceFetcher.fetch(
       (progress) =>
         console.log(`Download progress: ${(progress * 100).toFixed(1)}%`),
-      "https://example.com/llama3_2.pte",
-      "https://example.com/qwen3.pte",
+      'https://example.com/llama3_2.pte',
+      'https://example.com/qwen3.pte'
     );
 
     if (uris) {
-      console.log("Downloaded files:", uris);
+      console.log('Downloaded files:', uris);
     } else {
-      console.log("Download was paused or cancelled");
+      console.log('Download was paused or cancelled');
     }
   } catch (error) {
-    console.error("Download failed:", error);
+    console.error('Download failed:', error);
   }
 };
 ```
@@ -118,66 +117,66 @@ const downloadModels = async () => {
 ## Pause and Resume Downloads
 
 ```typescript
-import { ResourceFetcher } from "react-native-executorch";
+import { ResourceFetcher } from 'react-native-executorch';
 
 const uris = ResourceFetcher.fetch(
-  (progress) => console.log("Total progress:", progress),
-  "https://.../llama3_2.pte",
-  "https://.../qwen3.pte",
+  (progress) => console.log('Total progress:', progress),
+  'https://.../llama3_2.pte',
+  'https://.../qwen3.pte'
 ).then((uris) => {
-  console.log("URI resolved as: ", uris); // since we pause the fetch, uris is resolved to null
+  console.log('URI resolved as: ', uris); // since we pause the fetch, uris is resolved to null
 });
 
 await ResourceFetcher.pauseFetching(
-  "https://.../llama3_2.pte",
-  "https://.../qwen3.pte",
+  'https://.../llama3_2.pte',
+  'https://.../qwen3.pte'
 );
 
 const resolvedUris = await ResourceFetcher.resumeFetching(
-  "https://.../llama3_2.pte",
-  "https://.../qwen3.pte",
+  'https://.../llama3_2.pte',
+  'https://.../qwen3.pte'
 );
 ```
 
 ## Cancel Downloads
 
 ```typescript
-import { ResourceFetcher } from "react-native-executorch";
+import { ResourceFetcher } from 'react-native-executorch';
 
 const uris = ResourceFetcher.fetch(
-  (progress) => console.log("Total progress:", progress),
-  "https://.../llama3_2.pte",
-  "https://.../qwen3.pte",
+  (progress) => console.log('Total progress:', progress),
+  'https://.../llama3_2.pte',
+  'https://.../qwen3.pte'
 ).then((uris) => {
-  console.log("URI resolved as: ", uris); // since we cancel the fetch, uris is resolved to null
+  console.log('URI resolved as: ', uris); // since we cancel the fetch, uris is resolved to null
 });
 
 await ResourceFetcher.cancelFetching(
-  "https://.../llama3_2.pte",
-  "https://.../qwen3.pte",
+  'https://.../llama3_2.pte',
+  'https://.../qwen3.pte'
 );
 ```
 
 ## Manage Downloaded Resources
 
 ```typescript
-import { ResourceFetcher } from "react-native-executorch";
+import { ResourceFetcher } from 'react-native-executorch';
 
 // List all downloaded files
 const listFiles = async () => {
   const files = await ResourceFetcher.listDownloadedFiles();
-  console.log("All downloaded files:", files);
+  console.log('All downloaded files:', files);
 
   const models = await ResourceFetcher.listDownloadedModels();
-  console.log("Model files:", models);
+  console.log('Model files:', models);
 };
 
 // Clean up old resources
 const cleanup = async () => {
-  const oldModelUrl = "https://example.com/old_model.pte";
+  const oldModelUrl = 'https://example.com/old_model.pte';
 
   await ResourceFetcher.deleteResources(oldModelUrl);
-  console.log("Old model deleted");
+  console.log('Old model deleted');
 };
 ```
 
@@ -219,7 +218,7 @@ import {
   LLAMA3_2_1B_QLORA,
   RnExecutorchError,
   RnExecutorchErrorCode,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const llm = new LLMModule({
   tokenCallback: (token) => console.log(token),
@@ -228,7 +227,7 @@ const llm = new LLMModule({
 
 try {
   await llm.load(LLAMA3_2_1B_QLORA, (progress) => console.log(progress));
-  await llm.sendMessage("Hello!");
+  await llm.sendMessage('Hello!');
 } catch (err) {
   if (err instanceof RnExecutorchError) {
     console.error(`Error code: ${err.code}`);
@@ -245,7 +244,7 @@ try {
 import {
   RnExecutorchError,
   RnExecutorchErrorCode,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const handleModelError = async (llm, message: string) => {
   try {
@@ -254,25 +253,25 @@ const handleModelError = async (llm, message: string) => {
     if (err instanceof RnExecutorchError) {
       switch (err.code) {
         case RnExecutorchErrorCode.ModuleNotLoaded:
-          console.error("Model not loaded. Loading now...");
+          console.error('Model not loaded. Loading now...');
           await llm.load(LLAMA3_2_1B_QLORA);
           // Retry the message
           await llm.sendMessage(message);
           break;
 
         case RnExecutorchErrorCode.ModelGenerating:
-          console.error("Model busy. Waiting...");
+          console.error('Model busy. Waiting...');
           // Wait and retry, or queue the message
           break;
 
         case RnExecutorchErrorCode.InvalidConfig:
-          console.error("Invalid configuration:", err.message);
+          console.error('Invalid configuration:', err.message);
           // Reset to default config
           await llm.configure({ topp: 0.9, temperature: 0.7 });
           break;
 
         default:
-          console.error("Unexpected error:", err.message);
+          console.error('Unexpected error:', err.message);
           throw err;
       }
     }

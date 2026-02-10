@@ -1,627 +1,660 @@
 ---
 name: react-native-executorch
-description: Run AI models and LLMs locally on-device in React Native apps using Meta's ExecuTorch. Provides declarative hooks for computer vision, natural language processing, and custom model inference without cloud dependencies.
+description: Build on-device AI into React Native apps using ExecuTorch. Provides hooks for LLMs, computer vision, OCR, audio processing, and embeddings without cloud dependencies. Use when building AI features into mobile apps - AI chatbots, image recognition, speech processing, or text search.
 ---
-
-## Overview
-
-This skill provides expertise in using React Native Executorch - a library that enables on-device AI model execution in React Native applications. The library supports various AI tasks including LLMs, computer vision, audio processing, and natural language processing.
 
 ## When to Use This Skill
 
-Use this skill when users ask about:
+Use this skill when you need to:
 
-- Running AI models on mobile devices with React Native
-- On-device LLMs, image processing, OCR, speech-to-text, text-to-speech
-- React Native Executorch library implementation
-- Mobile AI without backend/cloud dependencies
-- ExecuTorch integration in React Native apps
+- **Build AI features directly into mobile apps** without cloud infrastructure
+- **Deploy LLMs locally** for text generation, chat, or function calling
+- **Add computer vision** (image classification, object detection, OCR)
+- **Process audio** (speech-to-text, text-to-speech, voice activity detection)
+- **Implement semantic search** with text embeddings
+- **Ensure privacy** by keeping all AI processing on-device
+- **Reduce latency** by eliminating cloud API calls
+- **Work offline** once models are downloaded
 
-## Core Capabilities
+## Overview
 
-### 1. Large Language Models (LLMs)
+React Native Executorch is a library that enables on-device AI model execution in React Native applications. It provides hooks and utilities for running machine learning models directly on mobile devices without requiring cloud infrastructure or internet connectivity (after initial model download).
 
-- On-device text generation and chat
-- Tool/function calling
-- Structured output generation
+## Key Use Cases
+
+### Use Case 1: Mobile Chatbot/Assistant
+
+**Trigger:** User asks to build a chat interface, create a conversational AI, or add an AI assistant to their app
+
+**Steps:**
+
+1. Choose appropriate LLM based on device memory constraints
+2. Load model using ExecuTorch hooks
+3. Implement message handling and conversation history
+4. Optionally add system prompts, tool calling, or structured output
+
+**Result:** Functional chat interface with on-device AI responding without cloud dependency
+
+**Reference:** [./references/reference-llms.md](./references/reference-llms.md)
+
+---
+
+### Use Case 2: Image Recognition & Tagging
+
+**Trigger:** User needs to classify images, detect objects, or recognize content in photos
+
+**Steps:**
+
+1. Select vision model (classification, detection, or segmentation)
+2. Load model for image processing task
+3. Pass image URI and process results
+4. Display detections or classifications in app UI
+
+**Result:** App that understands image content without sending data to servers
+
+**Reference:** [./references/reference-cv.md](./references/reference-cv.md)
+
+---
+
+### Use Case 3: Document/Receipt Scanning
+
+**Trigger:** User wants to extract text from photos (receipts, documents, business cards)
+
+**Steps:**
+
+1. Choose OCR model matching target language
+2. Load appropriate recognizer for alphabet/language
+3. Capture or load image
+4. Extract text regions with bounding boxes
+5. Post-process results for application
+
+**Result:** OCR-enabled app that reads text directly from device camera
+
+**Reference:** [./references/reference-ocr.md](./references/reference-ocr.md)
+
+---
+
+### Use Case 4: Voice Interface
+
+**Trigger:** User wants to add voice commands, transcription, or voice output to app
+
+**Steps:**
+
+- **For voice input:** Capture audio at correct sample rate → transcribe with STT model
+- **For voice output:** Generate speech from text → play through audio context
+- Handle audio format/sample rate conversion
+
+**Result:** App with hands-free voice interaction
+
+**Reference:** [./references/reference-audio.md](./references/reference-audio.md)
+
+---
+
+### Use Case 5: Semantic Search
+
+**Trigger:** User needs intelligent search, similarity matching, or content recommendations
+
+**Steps:**
+
+1. Load text or image embeddings model
+2. Generate embeddings for searchable content
+3. Compute similarity scores between queries and content
+4. Rank and return results
+
+**Result:** Smart search that understands meaning, not just keywords
+
+**Reference:** [./references/reference-nlp.md](./references/reference-nlp.md)
+
+---
+
+## Core Capabilities by Category
+
+### Large Language Models (LLMs)
+
+Run text generation, chat, function calling, and structured output generation locally on-device.
+
+**Supported features:**
+
+- Text generation and chat completions
+- Function/tool calling
+- Structured output with JSON schema validation
 - Streaming responses
-- Multiple model families: Llama 3.2, Qwen 3, Hammer 2.1, SmolLM2, Phi 4
+- Multiple model families (Llama 3.2, Qwen 3, Hammer 2.1, SmolLM2, Phi 4)
 
-### 2. Computer Vision
+**Reference:** See [./references/reference-llms.md](./references/reference-llms.md)
 
-- **Image Classification** - Categorize images (EfficientNet V2)
-- **Object Detection** - Detect and locate objects (SSDLite 320)
-- **Image Segmentation** - Pixel-level classification (DeepLab V3)
-- **Style Transfer** - Apply artistic styles (Candy, Mosaic, Udnie, Rain Princess)
-- **Text to Image** - Generate images from text (BK-SDM Tiny)
-- **Image Embeddings** - Image similarity and search (CLIP)
-- **OCR** - Text detection and recognition (horizontal and vertical)
+---
 
-### 3. Audio Processing
+### Computer Vision
 
-- **Speech to Text** - Transcription (Whisper, Moonshine)
-- **Text to Speech** - Natural voice synthesis (Kokoro)
-- **Voice Activity Detection** - Detect speech segments (FSMN-VAD)
-
-### 4. Natural Language Processing
-
-- **Text Embeddings** - Semantic similarity and search
-- **Tokenization** - Text-to-token conversion
-
-## Best Practices
+Perform image understanding and manipulation tasks entirely on-device.
 
-**Quick Links to Detailed Guides:**
+**Supported tasks:**
 
-- LLMs: [LLM Usage Reference](./references/reference-llms.md)
-- Vision: [Computer Vision Part 1](./references/computer-vision-1.md), [Part 2](./computer-vision-2.md)
-- Audio: [Audio Models Reference](./audio-models.md)
-- Text: [OCR Reference](./ocr-usage.md), [Text Embeddings](./text-embeddings-tokenizer.md)
-- Core: [Core Utilities](./core-utils.md), [Models & Loading](./models-loading.md)
+- **Image Classification** - Categorize images into predefined classes
+- **Object Detection** - Locate and identify objects with bounding boxes
+- **Image Segmentation** - Pixel-level classification
+- **Style Transfer** - Apply artistic styles to images
+- **Text-to-Image** - Generate images from text descriptions
+- **Image Embeddings** - Convert images to numerical vectors for similarity/search
 
-### Model Selection
+**Reference:** See [./references/reference-cv.md](./references/reference-cv.md) and [./references/reference-cv-2.md](./references/reference-cv-2.md)
 
-**Consider Device Constraints:**
+---
 
-- Use quantized models for lower-end devices (e.g., `LLAMA3_2_1B_QLORA` instead of `LLAMA3_2_1B`)
-- Check memory requirements before recommending models
-- Smaller models (135M-1.7B params) for basic tasks
-- Larger models (3B-4B params) only for high-end devices
+### Optical Character Recognition (OCR)
 
-**Model Loading Strategy:**
+Extract and recognize text from images with support for multiple languages and text orientations.
 
-- Small models (<512MB): Bundle with app using `require()`
-- Large models (>512MB): Download from URL on first use
-- Always show download progress for remote models
-- Implement offline-first with cached models
+**Supported features:**
 
-### Error Handling
+- Text detection in images
+- Text recognition across different alphabets
+- Horizontal text (standard documents, receipts)
+- Vertical text support (experimental, for CJK languages)
+- Multi-language support with language-specific recognizers
 
-**See [Core Utilities Reference](./core-utils.md) for complete error handling guide**
+**Reference:** See [./references/reference-ocr.md](./references/reference-ocr.md)
 
-**Always wrap AI operations in try-catch:**
+---
 
-```typescript
-import {
-  RnExecutorchError,
-  RnExecutorchErrorCode,
-} from "react-native-executorch";
+### Audio Processing
 
-try {
-  await model.forward(input);
-} catch (err) {
-  if (err instanceof RnExecutorchError) {
-    switch (err.code) {
-      case RnExecutorchErrorCode.ModuleNotLoaded:
-        // Handle not loaded
-        break;
-      case RnExecutorchErrorCode.MemoryAllocationFailed:
-        // Suggest smaller model
-        break;
-      default:
-        console.error(err.message);
-    }
-  }
-}
-```
+Convert between speech and text, and detect speech activity in audio.
 
-### LLM Implementation Patterns
+**Supported tasks:**
 
-**See [LLM Usage Reference](./llm-usage.md) for complete details**
+- **Speech-to-Text** - Transcribe audio to text (supports English and multilingual)
+- **Text-to-Speech** - Generate natural-sounding speech from text
+- **Voice Activity Detection** - Detect speech segments in audio
 
-**Functional Mode (Stateless) - Best for:**
+**Reference:** See [./references/reference-audio.md](./references/reference-audio.md)
 
-- Single completions
-- Fine-grained control over conversation
-- Custom message management
+---
 
-```typescript
-const llm = useLLM({ model: LLAMA3_2_1B });
-const response = await llm.generate(messages);
-```
+### Natural Language Processing
 
-**Managed Mode (Stateful) - Best for:**
+Convert text to numerical representations for semantic understanding and search.
 
-- Chat interfaces
-- Automatic conversation history
-- Simplified state management
+**Supported tasks:**
 
-```typescript
-useEffect(() => {
-  llm.configure({
-    chatConfig: { systemPrompt: "...", contextWindowLength: 10 },
-    generationConfig: { temperature: 0.7, topp: 0.9 },
-  });
-}, []);
-llm.sendMessage("Hello!");
-```
-
-**Always interrupt before unmount:**
-
-```typescript
-useEffect(() => {
-  return () => {
-    if (llm.isGenerating) {
-      llm.interrupt();
-    }
-  };
-}, []);
-```
-
-### Audio Processing Requirements
-
-**📄 See [Audio Models Reference](./audio-models.md) for complete details**
-
-**Critical audio format requirements:**
-
-- Speech-to-text: 16kHz sample rate (use AudioContext with `sampleRate: 16000`)
-- Text-to-speech: 24kHz sample rate for output
-- Always decode audio with correct sample rate before processing
-
-```typescript
-const audioContext = new AudioContext({ sampleRate: 16000 });
-const decodedAudio = await audioContext.decodeAudioDataSource(audioUri);
-const waveform = decodedAudio.getChannelData(0);
-```
-
-### Resource Management
-
-**📄 See [Core Utilities Reference](./core-utils.md) for ResourceFetcher details**
-
-**Download management:**
-
-- Check file size before downloading (`ResourceFetcher.getFilesTotalSize()`)
-- Show progress during downloads
-- Implement pause/resume for large models
-- Clean up old models to save space
-
-```typescript
-const totalSize = await ResourceFetcher.getFilesTotalSize(modelUrl);
-const sizeMB = (totalSize / 1024 / 1024).toFixed(2);
-console.log(`Download size: ${sizeMB} MB`);
-
-const uris = await ResourceFetcher.fetch(
-  (progress) => console.log(`${(progress * 100).toFixed(1)}%`),
-  modelUrl,
-);
-```
-
-**Memory management:**
-
-- Unload unused models
-- Use quantized models when possible
-- Monitor device memory constraints
-- Suggest appropriate model sizes based on device capabilities
-
-## Common Patterns
-
-**Detailed examples available in:**
-
-- [LLM Usage Reference](./llm-usage.md) - Chat, tools, structured output
-- [Computer Vision References](./computer-vision-1.md) - Image tasks
-- [OCR Reference](./ocr-usage.md) - Text recognition
-- [Audio Models Reference](./audio-models.md) - Speech processing
-
-### LLM Chat Interface
-
-```typescript
-import { useLLM, QWEN3_1_7B_QUANTIZED } from 'react-native-executorch';
-
-function ChatApp() {
-  const llm = useLLM({ model: QWEN3_1_7B_QUANTIZED });
-
-  useEffect(() => {
-    llm.configure({
-      chatConfig: {
-        systemPrompt: "You are a helpful assistant",
-        contextWindowLength: 10
-      },
-      generationConfig: {
-        temperature: 0.7,
-        topp: 0.9
-      }
-    });
-  }, []);
-
-  return (
-    <View>
-      <ScrollView>
-        {llm.messageHistory.map((msg, i) => (
-          <Text key={i}>{msg.role}: {msg.content}</Text>
-        ))}
-      </ScrollView>
-      <TextInput onSubmitEditing={(e) => llm.sendMessage(e.nativeEvent.text)} />
-      {llm.isGenerating && <Button onPress={llm.interrupt} title="Stop" />}
-    </View>
-  );
-}
-```
-
-### Tool Calling with LLMs
-
-```typescript
-const TOOLS: LLMTool[] = [
-  {
-    name: "get_weather",
-    description: "Get weather in given location",
-    parameters: {
-      type: "dict",
-      properties: {
-        location: { type: "string", description: "Location name" },
-      },
-      required: ["location"],
-    },
-  },
-];
-
-const executeTool = async (call: ToolCall) => {
-  switch (call.toolName) {
-    case "get_weather":
-      const location = call.arguments.location;
-      return await fetchWeather(location);
-    default:
-      return null;
-  }
-};
-
-llm.configure({
-  toolsConfig: {
-    tools: TOOLS,
-    executeToolCallback: executeTool,
-    displayToolCalls: true,
-  },
-});
-```
-
-### Structured Output
-
-```typescript
-import {
-  getStructuredOutputPrompt,
-  fixAndValidateStructuredOutput,
-} from "react-native-executorch";
-import * as z from "zod/v4";
-
-const schema = z.object({
-  username: z.string(),
-  question: z.string().optional(),
-  bid: z.number(),
-  currency: z.string().optional(),
-});
-
-useEffect(() => {
-  const instructions = getStructuredOutputPrompt(schema);
-  llm.configure({
-    chatConfig: {
-      systemPrompt: `Parse user messages as JSON. ${instructions}`,
-    },
-  });
-}, []);
-
-// After generation completes
-const parsed = fixAndValidateStructuredOutput(
-  llm.messageHistory.at(-1).content,
-  schema,
-);
-```
-
-### Image Classification
-
-```typescript
-import { useClassification, EFFICIENTNET_V2_S } from "react-native-executorch";
-
-const model = useClassification({ model: EFFICIENTNET_V2_S });
-
-const classifyImage = async (imageUri: string) => {
-  const results = await model.forward(imageUri);
-
-  const topThree = Object.entries(results)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
-    .map(([label, score]) => ({ label, score }));
-
-  return topThree;
-};
-```
-
-### OCR (Text Recognition)
-
-```typescript
-import { useOCR, OCR_ENGLISH } from "react-native-executorch";
-
-const model = useOCR({ model: OCR_ENGLISH });
-
-const extractText = async (imageUrl: string) => {
-  const detections = await model.forward(imageUrl);
-
-  for (const detection of detections) {
-    console.log("Text:", detection.text);
-    console.log("Confidence:", detection.score);
-    console.log("Position:", detection.bbox);
-  }
-};
-```
-
-### Speech to Text with Streaming
-
-```typescript
-import { useSpeechToText, WHISPER_TINY_EN } from "react-native-executorch";
-import { AudioRecorder } from "react-native-audio-api";
-
-const stt = useSpeechToText({ model: WHISPER_TINY_EN });
-
-const recorder = new AudioRecorder({
-  sampleRate: 16000,
-  bufferLengthInSamples: 1600,
-});
-
-recorder.onAudioReady(({ buffer }) => {
-  stt.streamInsert(buffer.getChannelData(0));
-});
-
-recorder.start();
-await stt.stream();
-
-// Access transcription
-console.log(stt.committedTranscription);
-console.log(stt.nonCommittedTranscription);
-
-// Cleanup
-recorder.stop();
-stt.streamStop();
-```
-
-### Text to Speech
-
-```typescript
-import {
-  useTextToSpeech,
-  KOKORO_MEDIUM,
-  KOKORO_VOICE_AF_HEART,
-} from "react-native-executorch";
-import { AudioContext } from "react-native-audio-api";
-
-const tts = useTextToSpeech({
-  model: KOKORO_MEDIUM,
-  voice: KOKORO_VOICE_AF_HEART,
-});
-
-const audioContext = new AudioContext({ sampleRate: 24000 });
-
-const speak = async (text: string) => {
-  const waveform = await tts.forward(text, 1.0);
-
-  const buffer = audioContext.createBuffer(1, waveform.length, 24000);
-  buffer.getChannelData(0).set(waveform);
-
-  const source = audioContext.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioContext.destination);
-  source.start();
-};
-```
-
-## Model Recommendations by Use Case
-
-**📄 See [Available Models Reference](./models-loading.md) for complete model catalog**
-
-### Chatbots & Assistants
-
-- **Entry-level:** `SMOLLM2_1_360M_QUANTIZED` - Fast, minimal memory
-- **Mid-range:** `QWEN3_1_7B_QUANTIZED` - Good balance
-- **High-end:** `LLAMA3_2_3B_QLORA` - Best quality
-
-### Function Calling
-
-- **Recommended:** `HAMMER2_1_1_5B_QUANTIZED` - Optimized for tools
-- **Alternative:** `QWEN3_4B_QUANTIZED` - Strong reasoning
-
-### Structured Output
-
-- **Recommended:** `QWEN3_4B_QUANTIZED` - Excellent JSON generation
-- **Alternative:** `PHI_4_MINI_4B_QUANTIZED` - Good format adherence
-
-### Image Tasks
-
-- **Classification:** `EFFICIENTNET_V2_S`
-- **Object Detection:** `SSDLITE_320_MOBILENET_V3_LARGE`
-- **Segmentation:** `DEEPLAB_V3_RESNET50`
-- **OCR:** `OCR_ENGLISH` or language-specific variants
-
-### Speech Tasks
-
-- **Transcription (English):** `WHISPER_TINY_EN_QUANTIZED` - Fast
-- **Transcription (Multilingual):** `WHISPER_BASE` - Balanced
-- **Text-to-Speech:** `KOKORO_MEDIUM` - Natural voices
-
-## Important Constraints
-
-### Technical Limitations
-
-- **Audio formats:** Must be 16kHz for STT, 24kHz output for TTS
-- **Image sizes:** Vary by model (typically 224x224 or specific to model)
-- **Context windows:** Limited by model (check token limits)
-- **Token limits:** Text embeddings have max token counts (check model specs)
-
-### Platform Considerations
-
-- Models run on-device - no internet required after download
-- Memory constraints vary by device
-- Processing time varies by device capability
-- Some models iOS/Android optimized (check model details)
-
-### OCR Specifics
-
-**📄 See [OCR Usage Reference](./ocr-usage.md) for complete guide**
-
-- `useOCR`: For horizontal text only
-- `useVerticalOCR`: For vertical text (experimental)
-- Use `independentCharacters: true` for CJK languages
-- Recognizer must match target language alphabet
-
-### LLM Reasoning Mode
-
-- Some models (Qwen 3) have reasoning mode
-- Disable with `/no_think` suffix in prompt
-- Increases token usage if enabled
+- **Text Embeddings** - Convert text to vectors for similarity/search
+- **Tokenization** - Convert text to tokens and vice versa
+
+**Reference:** See [./references/reference-nlp.md](./references/reference-nlp.md)
+
+---
+
+## Getting Started by Use Case
+
+### I want to build a chatbot or AI assistant
+
+Use `useLLM` hook with one of the available language models.
+
+**What to do:**
+
+1. Choose a model from available LLM options (consider device memory constraints)
+2. Use the `useLLM` hook to load the model
+3. Send messages and receive responses
+4. Optionally configure system prompts, generation parameters, and tools
+
+**Reference:** [./references/reference-llms.md](./references/reference-llms.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - LLMs section
+
+---
+
+### I want to enable function/tool calling in my LLM
+
+Use `useLLM` with tool definitions to allow the model to call predefined functions.
+
+**What to do:**
+
+1. Define tools with name, description, and parameter schema
+2. Configure the LLM with tool definitions
+3. Implement callbacks to execute tools when the model requests them
+4. Parse tool results and pass them back to the model
+
+**Reference:** [./references/reference-llms.md](./references/reference-llms.md) - Tool Calling section
+
+---
+
+### I want structured data extraction from text
+
+Use `useLLM` with structured output generation using JSON schema validation.
+
+**What to do:**
+
+1. Define a schema (JSON Schema or Zod) for desired output format
+2. Configure the LLM with the schema
+3. Generate responses and validate against the schema
+4. Use the validated structured data in your app
+
+**Reference:** [./references/reference-llms.md](./references/reference-llms.md) - Structured Output section
+
+---
+
+### I want to classify or recognize objects in images
+
+Use `useClassification` for simple categorization or `useObjectDetection` for locating specific objects.
+
+**What to do:**
+
+1. Choose appropriate computer vision model based on task
+2. Load the model with the appropriate hook
+3. Pass image URI (local, remote, or base64)
+4. Process results (classifications, detections with bounding boxes)
+
+**Reference:** [./references/reference-cv.md](./references/reference-cv.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - Classification and Object Detection sections
+
+---
+
+### I want to extract text from images
+
+Use `useOCR` for horizontal text or `useVerticalOCR` for vertical text (experimental).
+
+**What to do:**
+
+1. Choose appropriate OCR model and recognizer matching your target language
+2. Load the model with `useOCR` or `useVerticalOCR` hook
+3. Pass image URI
+4. Extract detected text regions with bounding boxes and confidence scores
+5. Process results based on your application needs
+
+**Reference:** [./references/reference-ocr.md](./references/reference-ocr.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - OCR section
+
+---
+
+### I want to convert speech to text or text to speech
+
+Use `useSpeechToText` for transcription or `useTextToSpeech` for voice synthesis.
+
+**What to do:**
+
+- **For Speech-to-Text:** Capture or load audio, ensure 16kHz sample rate, transcribe
+- **For Text-to-Speech:** Prepare text, specify voice parameters, generate audio waveform, play using audio context
+
+**Reference:** [./references/reference-audio.md](./references/reference-audio.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - Speech to Text and Text to Speech sections
+
+---
+
+### I want to find similar images or texts
+
+Use `useImageEmbeddings` for images or `useTextEmbeddings` for text.
+
+**What to do:**
+
+1. Load appropriate embeddings model
+2. Generate embeddings for your content
+3. Compute similarity metrics (cosine similarity, dot product)
+4. Use similarity scores for search, clustering, or deduplication
+
+**Reference:**
+
+- Text: [./references/reference-nlp.md](./references/reference-nlp.md)
+- Images: [./references/reference-cv-2.md](./references/reference-cv-2.md)
+
+---
+
+### I want to apply artistic filters to photos
+
+Use `useStyleTransfer` to apply predefined artistic styles to images.
+
+**What to do:**
+
+1. Choose from available artistic styles (Candy, Mosaic, Udnie, Rain Princess)
+2. Load the style transfer model
+3. Pass image URI
+4. Retrieve and use the stylized image
+
+**Reference:** [./references/reference-cv-2.md](./references/reference-cv-2.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - Style Transfer section
+
+---
+
+### I want to generate images from text
+
+Use `useTextToImage` to create images based on text descriptions.
+
+**What to do:**
+
+1. Load the text-to-image model
+2. Provide text description (prompt)
+3. Optionally specify image size and number of generation steps
+4. Receive generated image (may take 20-60 seconds depending on device)
+
+**Reference:** [./references/reference-cv-2.md](./references/reference-cv-2.md)
+
+**Model options:** [./references/reference-models.md](./references/reference-models.md) - Text to Image section
+
+---
+
+## Understanding Model Loading
+
+Before using any AI model, you need to load it. Models can be loaded from three sources:
+
+**1. Bundled with app (assets folder)**
+
+- Best for small models (< 512MB)
+- Available immediately without download
+- Increases app installation size
+
+**2. Remote URL (downloaded on first use)**
+
+- Best for large models (> 512MB)
+- Downloaded once and cached locally
+- Keeps app size small
+- Requires internet on first use
+
+**3. Local file system**
+
+- Maximum flexibility for user-managed models
+- Requires custom download/file management UI
+
+**Model selection strategy:**
+
+1. Small models (< 512MB) → Bundle with app or download from URL
+2. Large models (> 512MB) → Download from URL on first use with progress tracking
+3. Quantized models → Preferred for lower-end devices to save memory
+
+**Reference:** [./references/reference-models.md](./references/reference-models.md) - Loading Models section
+
+---
+
+## Device Constraints and Model Selection
+
+Not all models work on all devices. Consider these constraints:
+
+**Memory limitations:**
+
+- Low-end devices: Use smaller models (135M-1.7B parameters) and quantized variants
+- High-end devices: Can run larger models (3B-4B parameters)
+
+**Processing power:**
+
+- Lower-end devices: Expect longer inference times
+- Audio processing requires specific sample rates (16kHz for STT, 24kHz for TTS output)
+
+**Storage:**
+
+- Large models require significant disk space
+- Implement cleanup mechanisms to remove unused models
+- Monitor total downloaded model size
+
+**Guidance:**
+
+- Always check model memory requirements before recommending models
+- Prefer quantized model variants on lower-end devices
+- Show download progress for models > 512MB
+- Test on target devices before release
+
+**Reference:** [./references/reference-models.md](./references/reference-models.md)
+
+---
+
+## Important Technical Requirements
+
+### Audio Processing
+
+Audio must be in correct sample rate for processing:
+
+- **Speech-to-Text input:** 16kHz sample rate
+- **Text-to-Speech output:** 24kHz sample rate
+- Always decode/resample audio to correct rate before processing
+
+**Reference:** [./references/reference-audio.md](./references/reference-audio.md)
+
+### Image Processing
+
+Images can be provided as:
+
+- Remote URLs (http/https) - automatically cached
+- Local file URIs (file://)
+- Base64-encoded strings
+
+Image preprocessing (resizing, normalization) is handled automatically by most hooks.
+
+**Reference:** [./references/reference-cv.md](./references/reference-cv.md) and [./references/reference-cv-2.md](./references/reference-cv-2.md)
+
+### Text Tokens
+
+Text embeddings and LLMs have maximum token limits. Text exceeding these limits will be truncated. Use `useTokenizer` to count tokens before processing.
+
+**Reference:** [./references/reference-nlp.md](./references/reference-nlp.md)
+
+---
+
+## Core Utilities and Error Handling
+
+The library provides core utilities for managing models and handling errors:
+
+**ResourceFetcher:** Manage model downloads with pause/resume capabilities, storage cleanup, and progress tracking.
+
+**Error Handling:** Use `RnExecutorchError` and error codes for robust error handling and user feedback.
+
+**useExecutorchModule:** Low-level API for custom models not covered by dedicated hooks.
+
+**Reference:** [./references/core-utilities.md](./references/core-utilities.md)
+
+---
+
+## Common Troubleshooting
+
+**Model not loading:** Check model source URL/path validity and sufficient device storage
+
+**Out of memory errors:** Switch to smaller model or quantized variant
+
+**Poor LLM quality:** Adjust temperature/top-p parameters or improve system prompt
+
+**Audio issues:** Verify correct sample rate (16kHz for STT, 24kHz output for TTS)
+
+**Download failures:** Implement retry logic and check network connectivity
+
+**Reference:** [./references/core-utilities.md](./references/core-utilities.md) for error handling details, or specific reference file for your use case
+
+---
+
+## Quick Reference by Hook
+
+| Hook                   | Purpose                                   | Reference                                             |
+| ---------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| `useLLM`               | Text generation, chat, function calling   | [reference-llms.md](./references/reference-llms.md)   |
+| `useClassification`    | Image categorization                      | [reference-cv.md](./references/reference-cv.md)       |
+| `useObjectDetection`   | Object localization                       | [reference-cv.md](./references/reference-cv.md)       |
+| `useImageSegmentation` | Pixel-level classification                | [reference-cv.md](./references/reference-cv.md)       |
+| `useStyleTransfer`     | Artistic image filters                    | [reference-cv-2.md](./references/reference-cv-2.md)   |
+| `useTextToImage`       | Image generation                          | [reference-cv-2.md](./references/reference-cv-2.md)   |
+| `useImageEmbeddings`   | Image similarity/search                   | [reference-cv-2.md](./references/reference-cv-2.md)   |
+| `useOCR`               | Text recognition (horizontal)             | [reference-ocr.md](./references/reference-ocr.md)     |
+| `useVerticalOCR`       | Text recognition (vertical, experimental) | [reference-ocr.md](./references/reference-ocr.md)     |
+| `useSpeechToText`      | Audio transcription                       | [reference-audio.md](./references/reference-audio.md) |
+| `useTextToSpeech`      | Voice synthesis                           | [reference-audio.md](./references/reference-audio.md) |
+| `useVAD`               | Voice activity detection                  | [reference-audio.md](./references/reference-audio.md) |
+| `useTextEmbeddings`    | Text similarity/search                    | [reference-nlp.md](./references/reference-nlp.md)     |
+| `useTokenizer`         | Text to tokens conversion                 | [reference-nlp.md](./references/reference-nlp.md)     |
+| `useExecutorchModule`  | Custom model inference (advanced)         | [core-utilities.md](./references/core-utilities.md)   |
+
+---
+
+## Quick Checklist for Implementation
+
+Use this when building AI features with ExecuTorch:
+
+**Planning Phase**
+
+- Identified what AI task you need (chat, vision, audio, search)
+- Considered device memory constraints and target devices
+- Chose appropriate model from available options
+- Determined if cloud backup fallback is needed
+
+**Development Phase**
+
+- Selected correct hook for your task
+- Configured model loading (bundled, remote URL, or local)
+- Implemented proper error handling
+- Added loading states for model operations
+- Tested audio sample rates (if audio task)
+- Set up resource management for large models
+
+**Testing Phase**
+
+- Tested on target minimum device
+- Verified offline functionality works
+- Checked memory usage doesn't exceed device limits
+- Tested error handling (network, memory, invalid inputs)
+- Measured inference time for acceptable UX
+
+**Deployment Phase**
+
+- Model bundling strategy decided (size/download tradeoff)
+- Download progress UI implemented (if remote models)
+- Version management plan for model updates
+- User feedback mechanism for quality issues
+
+---
+
+## Reference Files Overview
+
+**[reference-llms.md](./references/reference-llms.md)**
+
+- Complete LLM hook documentation
+- Functional vs Managed modes
+- Tool calling implementation
+- Structured output generation
+
+**[reference-cv.md](./references/reference-cv.md)**
+
+- Image classification, detection, and segmentation
+- Basic computer vision tasks
+
+**[reference-cv-2.md](./references/reference-cv-2.md)**
+
+- Advanced vision tasks: style transfer, text-to-image, embeddings
+- Image similarity and search
+
+**[reference-ocr.md](./references/reference-ocr.md)**
+
+- Horizontal and vertical text recognition
+- Multi-language support
+- OCR model selection
+
+**[reference-audio.md](./references/reference-audio.md)**
+
+- Speech-to-text transcription
+- Text-to-speech voice synthesis
+- Voice activity detection
+- Audio sample rate requirements
+
+**[reference-nlp.md](./references/reference-nlp.md)**
+
+- Text embeddings for semantic search
+- Tokenization utilities
+- Token limits and model compatibility
+
+**[reference-models.md](./references/reference-models.md)**
+
+- Complete list of available models
+- Model loading strategies
+- Model selection guidelines
+- Device memory/performance considerations
+
+**[core-utilities.md](./references/core-utilities.md)**
+
+- ResourceFetcher for download management
+- Error handling with RnExecutorchError
+- Low-level useExecutorchModule API
+- Error codes reference
+
+---
 
 ## Troubleshooting Guide
 
-### Model Not Loading
+**Model not loading or crashing**
 
-- Check model source is valid URL or file path
-- Verify sufficient device storage
-- Ensure network connectivity for remote models
-- Check error code for specific issue
+- Check model source (URL valid, file exists)
+- Verify device has sufficient free storage and memory
+- Try bundling smaller models first
+- Check error codes with `RnExecutorchError`
 
-### Out of Memory
+**Out of memory errors**
 
-- Switch to quantized model variant
-- Use smaller model size
-- Clear app cache
-- Restart app to free memory
+- Switch to quantized model variant (smaller file size)
+- Use smaller parameter model (135M instead of 1.7B)
+- Close other apps to free device memory
+- Implement model unloading when not in use
 
-### Poor LLM Quality
+**Poor quality results from LLM**
 
-- Adjust temperature (lower = more focused)
-- Modify top-p sampling
+- Adjust generation parameters (temperature, top-p)
 - Improve system prompt
 - Try larger model if device supports it
+- Check input preprocessing
 
-### Audio Processing Issues
+**Audio not processing**
 
-- Verify correct sample rate (16kHz for STT)
+- Verify sample rate is 16kHz for STT, 24kHz output for TTS
 - Check audio format compatibility
-- Ensure AudioContext configured correctly
-- Validate waveform data structure
+- Ensure audio buffer has data before processing
+- Validate microphone permissions
 
-### Download Failures
+**Slow inference speed**
 
-- Implement retry logic with exponential backoff
-- Check network connectivity
-- Verify URL accessibility
-- Use pause/resume for large files
+- Expected on lower-end devices (especially larger models)
+- Show loading indicator to user
+- Consider preprocessing optimization
+- Profile on actual target device
 
-## Code Generation Guidelines
+---
 
-When generating code for React Native Executorch:
+## Best Practices
 
-1. **Always import from 'react-native-executorch'**
-2. **Use TypeScript for type safety**
-3. **Include proper error handling with RnExecutorchError**
-4. **Show loading states during model operations**
-5. **Implement cleanup in useEffect returns**
-6. **Validate inputs before passing to models**
-7. **Use appropriate model constants, not hardcoded URLs**
-8. **Include progress tracking for downloads**
-9. **Handle async operations properly**
-10. **Add comments for complex preprocessing/postprocessing**
+**Model Selection**
 
-## Example: Complete LLM Chat App
+- Match model size to device capabilities
+- Use quantized variants for memory-constrained devices
+- Test on minimum target device before release
+- Keep models updated via download mechanism
 
-```typescript
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, ActivityIndicator } from 'react-native';
-import { useLLM, QWEN3_1_7B_QUANTIZED, RnExecutorchError } from 'react-native-executorch';
+**Error Handling**
 
-export default function ChatApp() {
-  const llm = useLLM({ model: QWEN3_1_7B_QUANTIZED });
-  const [input, setInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+- Always wrap AI operations in try-catch
+- Provide user-friendly error messages
+- Implement fallback behavior (cloud API, simplified UX)
+- Log errors for debugging
 
-  useEffect(() => {
-    try {
-      llm.configure({
-        chatConfig: {
-          systemPrompt: 'You are a helpful AI assistant.',
-          contextWindowLength: 10
-        },
-        generationConfig: {
-          temperature: 0.7,
-          topp: 0.9
-        }
-      });
-    } catch (err) {
-      if (err instanceof RnExecutorchError) {
-        setError(err.message);
-      }
-    }
-  }, []);
+**User Experience**
 
-  useEffect(() => {
-    return () => {
-      if (llm.isGenerating) {
-        llm.interrupt();
-      }
-    };
-  }, []);
+- Show loading states during model operations
+- Display download progress for large models
+- Ensure app remains responsive during inference
+- Consider offline-first design
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+**Resource Management**
 
-    try {
-      llm.sendMessage(input);
-      setInput('');
-      setError(null);
-    } catch (err) {
-      if (err instanceof RnExecutorchError) {
-        setError(err.message);
-      }
-    }
-  };
+- Unload unused models to free memory
+- Implement cleanup for old cached models
+- Show storage impact of AI features
+- Monitor battery usage of continuous processing
 
-  return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <ScrollView style={{ flex: 1 }}>
-        {llm.messageHistory.map((msg, i) => (
-          <View key={i} style={{ marginVertical: 5 }}>
-            <Text style={{ fontWeight: 'bold' }}>{msg.role}:</Text>
-            <Text>{msg.content}</Text>
-          </View>
-        ))}
-        {llm.isGenerating && <ActivityIndicator />}
-      </ScrollView>
+**Performance Optimization**
 
-      {error && <Text style={{ color: 'red' }}>{error}</Text>}
+- Batch requests when possible
+- Preload models during idle time
+- Profile actual device performance before launch
+- Use appropriate model size for each task
 
-      <View style={{ flexDirection: 'row' }}>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          placeholder="Type a message..."
-          style={{ flex: 1, borderWidth: 1, padding: 10 }}
-        />
-        <Button onPress={handleSend} title="Send" disabled={llm.isGenerating} />
-        {llm.isGenerating && (
-          <Button onPress={() => llm.interrupt()} title="Stop" />
-        )}
-      </View>
-    </View>
-  );
-}
-```
+---
 
-## Internal Reference Files
+## External Resources
 
-When working with React Native Executorch, consult these reference files for detailed implementation guidance:
-
-- **[OCR Usage](./ocr-usage.md)** - Complete guide for useOCR and useVerticalOCR with language support
-- **[Text Embeddings & Tokenizer](./text-embeddings-tokenizer.md)** - useTextEmbeddings and useTokenizer reference
-- **[Available Models & Loading](./models-loading.md)** - Complete model catalog and loading strategies
-- **[LLM Usage](./llm-usage.md)** - Comprehensive LLM guide with functional/managed modes, tool calling, structured output
-- **[Computer Vision (Part 1)](./computer-vision-1.md)** - Classification, Segmentation, Object Detection
-- **[Computer Vision (Part 2)](./computer-vision-2.md)** - Style Transfer, Text-to-Image, Image Embeddings
-- **[Audio Models](./audio-models.md)** - Speech-to-Text, Text-to-Speech, Voice Activity Detection
-- **[Core Utilities](./core-utils.md)** - useExecutorchModule, ResourceFetcher, Error Handling
-
-**Always check these references before implementing** to ensure you have the most accurate and detailed information for the specific feature you're working with.
-
-## External References
-
-- **Documentation:** https://docs.swmansion.com/react-native-executorch
+- **Official Documentation:** https://docs.swmansion.com/react-native-executorch
 - **HuggingFace Models:** https://huggingface.co/software-mansion/collections
-- **GitHub:** https://github.com/software-mansion/react-native-executorch
+- **GitHub Repository:** https://github.com/software-mansion/react-native-executorch
 - **API Reference:** https://docs.swmansion.com/react-native-executorch/docs/api-reference
-
-## Version Notes
-
-This skill is based on React Native Executorch library documentation. Always verify the latest API changes and model availability at the official documentation before implementation.

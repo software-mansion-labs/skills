@@ -12,11 +12,11 @@ description: Reference for using Image Classification, Image Segmentation, and O
 ## Basic Usage
 
 ```typescript
-import { useClassification, EFFICIENTNET_V2_S } from "react-native-executorch";
+import { useClassification, EFFICIENTNET_V2_S } from 'react-native-executorch';
 
 const model = useClassification({ model: EFFICIENTNET_V2_S });
 
-const imageUri = "file:///Users/.../cute_puppy.png";
+const imageUri = 'file:///Users/.../cute_puppy.png';
 
 try {
   const classesWithProbabilities = await model.forward(imageUri);
@@ -29,13 +29,13 @@ try {
 ## Processing Results
 
 ```typescript
-import { useClassification, EFFICIENTNET_V2_S } from "react-native-executorch";
+import { useClassification, EFFICIENTNET_V2_S } from 'react-native-executorch';
 
 function App() {
   const model = useClassification({ model: EFFICIENTNET_V2_S });
 
   // ...
-  const imageUri = "file:///Users/.../cute_puppy.png";
+  const imageUri = 'file:///Users/.../cute_puppy.png';
 
   try {
     const classesWithProbabilities = await model.forward(imageUri);
@@ -86,11 +86,11 @@ import {
   useImageSegmentation,
   DEEPLAB_V3_RESNET50,
   DeeplabLabel,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const model = useImageSegmentation({ model: DEEPLAB_V3_RESNET50 });
 
-const imageUri = "file:///Users/.../cute_cat.png";
+const imageUri = 'file:///Users/.../cute_cat.png';
 
 try {
   const outputDict = await model.forward(imageUri);
@@ -110,7 +110,7 @@ const handleSegmentation = async (imageUri: string) => {
     const outputDict = await model.forward(
       imageUri,
       [DeeplabLabel.CAT, DeeplabLabel.DOG, DeeplabLabel.PERSON],
-      true,
+      true
     );
 
     const argmaxArray = outputDict[DeeplabLabel.ARGMAX];
@@ -118,8 +118,7 @@ const handleSegmentation = async (imageUri: string) => {
     const catProbabilities = outputDict[DeeplabLabel.CAT];
     const dogProbabilities = outputDict[DeeplabLabel.DOG];
     const personProbabilities = outputDict[DeeplabLabel.PERSON];
-
-    ...
+    // ...
   } catch (error) {
     console.error(error);
   }
@@ -159,17 +158,17 @@ For the latest available models check out exported models in [this HuggingFace S
 import {
   useObjectDetection,
   SSDLITE_320_MOBILENET_V3_LARGE,
-} from "react-native-executorch";
+} from 'react-native-executorch';
 
 const model = useObjectDetection({ model: SSDLITE_320_MOBILENET_V3_LARGE });
 
 try {
-  const detections = await model.forward("https://url-to-image.jpg");
+  const detections = await model.forward('https://url-to-image.jpg');
 
   for (const detection of detections) {
-    console.log("Bounding box:", detection.bbox);
-    console.log("Label:", detection.label);
-    console.log("Confidence:", detection.score);
+    console.log('Bounding box:', detection.bbox);
+    console.log('Label:', detection.label);
+    console.log('Confidence:', detection.score);
   }
 } catch (error) {
   console.error(error);

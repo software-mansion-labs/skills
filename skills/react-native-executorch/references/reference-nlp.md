@@ -12,12 +12,12 @@ description: Reference for using Text Embeddings and Tokenizer in React Native E
 ## Basic Usage
 
 ```typescript
-import { useTextEmbeddings, ALL_MINILM_L6_V2 } from "react-native-executorch";
+import { useTextEmbeddings, ALL_MINILM_L6_V2 } from 'react-native-executorch';
 
 const model = useTextEmbeddings({ model: ALL_MINILM_L6_V2 });
 
 try {
-  const embedding = await model.forward("Hello World!");
+  const embedding = await model.forward('Hello World!');
   console.log(embedding);
 } catch (error) {
   console.error(error);
@@ -43,12 +43,12 @@ function App() {
   // ...
 
   try {
-    const helloWorldEmbedding = await model.forward("Hello World!");
-    const goodMorningEmbedding = await model.forward("Good Morning!");
+    const helloWorldEmbedding = await model.forward('Hello World!');
+    const goodMorningEmbedding = await model.forward('Good Morning!');
 
     const similarity = cosineSimilarity(
       helloWorldEmbedding,
-      goodMorningEmbedding,
+      goodMorningEmbedding
     );
 
     console.log(`Cosine similarity: ${similarity}`);
@@ -101,29 +101,29 @@ For the latest available models reference exported models in [HuggingFace Text E
 ## Basic Usage
 
 ```typescript
-import { useTokenizer, ALL_MINILM_L6_V2 } from "react-native-executorch";
+import { useTokenizer, ALL_MINILM_L6_V2 } from 'react-native-executorch';
 
 const tokenizer = useTokenizer({ tokenizer: ALL_MINILM_L6_V2 });
 
-const text = "Hello, world!";
+const text = 'Hello, world!';
 
 try {
   // Tokenize the text
   const tokens = await tokenizer.encode(text);
-  console.log("Tokens:", tokens);
+  console.log('Tokens:', tokens);
 
   // Decode the tokens back to text
   const decodedText = await tokenizer.decode(tokens);
-  console.log("Decoded text:", decodedText);
+  console.log('Decoded text:', decodedText);
 } catch (error) {
-  console.error("Error tokenizing text:", error);
+  console.error('Error tokenizing text:', error);
 }
 ```
 
 ## Example usage
 
 ```typescript
-import { useTokenizer, ALL_MINILM_L6_V2 } from "react-native-executorch";
+import { useTokenizer, ALL_MINILM_L6_V2 } from 'react-native-executorch';
 
 function App() {
   const tokenizer = useTokenizer({ tokenizer: ALL_MINILM_L6_V2 });
@@ -131,22 +131,22 @@ function App() {
   // ...
 
   try {
-    const text = "Hello, world!";
+    const text = 'Hello, world!';
 
     const vocabSize = await tokenizer.getVocabSize();
-    console.log("Vocabulary size:", vocabSize);
+    console.log('Vocabulary size:', vocabSize);
 
     const tokens = await tokenizer.encode(text);
-    console.log("Token IDs:", tokens);
+    console.log('Token IDs:', tokens);
 
     const decoded = await tokenizer.decode(tokens);
-    console.log("Decoded text:", decoded);
+    console.log('Decoded text:', decoded);
 
-    const tokenId = await tokenizer.tokenToId("hello");
+    const tokenId = await tokenizer.tokenToId('hello');
     console.log('Token ID for "Hello":', tokenId);
 
     const token = await tokenizer.idToToken(tokenId);
-    console.log("Token for ID:", token);
+    console.log('Token for ID:', token);
   } catch (error) {
     console.error(error);
   }

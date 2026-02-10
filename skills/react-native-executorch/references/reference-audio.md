@@ -11,8 +11,8 @@ description: Reference for using Speech to Text, Text to Speech and Voice Activi
 ## Basic Usage
 
 ```typescript
-import { useSpeechToText, WHISPER_TINY_EN } from "react-native-executorch";
-import { AudioContext } from "react-native-audio-api";
+import { useSpeechToText, WHISPER_TINY_EN } from 'react-native-executorch';
+import { AudioContext } from 'react-native-audio-api';
 
 const model = useSpeechToText({ model: WHISPER_TINY_EN });
 
@@ -28,20 +28,20 @@ console.log(transcription);
 ## Multilingual Transcription
 
 ```typescript
-import { WHISPER_TINY } from "react-native-executorch";
+import { WHISPER_TINY } from 'react-native-executorch';
 
 const model = useSpeechToText({ model: WHISPER_TINY });
 
 // Specify language
 const transcription = await model.transcribe(spanishAudio, {
-  language: "es",
+  language: 'es',
 });
 ```
 
 ## Streaming Transcription
 
 ```typescript
-import { AudioRecorder, AudioManager } from "react-native-audio-api";
+import { AudioRecorder, AudioManager } from 'react-native-audio-api';
 
 const recorder = new AudioRecorder({
   sampleRate: 16000,
@@ -92,8 +92,8 @@ import {
   useTextToSpeech,
   KOKORO_MEDIUM,
   KOKORO_VOICE_AF_HEART,
-} from "react-native-executorch";
-import { AudioContext } from "react-native-audio-api";
+} from 'react-native-executorch';
+import { AudioContext } from 'react-native-audio-api';
 
 const model = useTextToSpeech({
   model: KOKORO_MEDIUM,
@@ -121,7 +121,7 @@ const handleSpeech = async (text: string) => {
 ```typescript
 // Stream chunks for lower latency
 await tts.stream({
-  text: "Long text to be streamed chunk by chunk...",
+  text: 'Long text to be streamed chunk by chunk...',
   speed: 1.0,
   onNext: async (chunk) => {
     return new Promise((resolve) => {
@@ -181,17 +181,17 @@ For all available models check out [this exported HuggingFace models collection]
 ## Basic Usage
 
 ```typescript
-import { useVAD, FSMN_VAD } from "react-native-executorch";
-import { AudioContext } from "react-native-audio-api";
-import * as FileSystem from "expo-file-system";
+import { useVAD, FSMN_VAD } from 'react-native-executorch';
+import { AudioContext } from 'react-native-audio-api';
+import * as FileSystem from 'expo-file-system';
 
 const model = useVAD({
   model: FSMN_VAD,
 });
 
 const { uri } = await FileSystem.downloadAsync(
-  "https://some-audio-url.com/file.mp3",
-  FileSystem.cacheDirectory + "audio_file",
+  'https://some-audio-url.com/file.mp3',
+  FileSystem.cacheDirectory + 'audio_file'
 );
 
 const audioContext = new AudioContext({ sampleRate: 16000 });
@@ -205,13 +205,13 @@ try {
   const speechSegments = await model.forward(audioBuffer);
   console.log(speechSegments);
 } catch (error) {
-  console.error("Error during running VAD model", error);
+  console.error('Error during running VAD model', error);
 }
 ```
 
 ## Example usage
 
-```typescript
+```tsx
 import React from 'react';
 import { Button, Text, SafeAreaView } from 'react-native';
 import { useVAD, FSMN_VAD } from 'react-native-executorch';

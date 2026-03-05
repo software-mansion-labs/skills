@@ -23,6 +23,6 @@ Read the relevant sub-skill for the topic at hand. All sub-skills are in `refere
 | `references/haptics/SKILL.md` | Tactile feedback, vibration patterns, impact/notification haptics |
 | `references/on-device-ai/SKILL.md` | On-device AI: LLMs, computer vision, OCR, audio processing, text/image embeddings |
 | `references/multimedia/SKILL.md` | Video playback and streaming |
-| `references/rich-text/SKILL.md` | Formatted text, markdown, HTML rendering, text editors |
+| `references/rich-text/SKILL.md` | Rich text editor, formatted text input, WYSIWYG, mentions, react-native-enriched |
 | `references/multithreading/SKILL.md` | Background processing, Worklets, offloading computation from the JS thread |
 | `references/audio/SKILL.md` | Audio playback, recording, music players, audio sessions |

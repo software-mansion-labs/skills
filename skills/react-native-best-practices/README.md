@@ -14,7 +14,7 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 | [Haptics](./references/haptics/) | Tactile feedback, vibration patterns, impact/notification haptics | Stub |
 | [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs, computer vision, OCR, speech, embeddings | Complete |
 | [Multimedia](./references/multimedia/) | Video playback and streaming | Stub |
-| [Rich Text](./references/rich-text/) | Formatted text, markdown, HTML rendering, text editors | Stub |
+| [Rich Text](./references/rich-text/) | Rich text editing with react-native-enriched: formatting toolbar, mentions, links | Complete |
 | [Multithreading](./references/multithreading/) | Worklets, background processing, offloading computation | Stub |
 | [Audio](./references/audio/) | React Native Audio API: playback, recording, visualization, sessions | Complete |
 
@@ -70,3 +70,4 @@ react-native-best-practices/
 - [React Native SVG](https://github.com/software-mansion/react-native-svg)
 - [React Native ExecuTorch](https://docs.swmansion.com/react-native-executorch/)
 - [React Native Audio API](https://docs.swmansion.com/react-native-audio-api/)
+- [React Native Enriched](https://github.com/software-mansion/react-native-enriched)

@@ -5,90 +5,33 @@ description: "Best practices for using the query_documentation tool in Radon IDE
 
 # query_documentation
 
-Returns documentation snippets relevant to a provided text query. Queries a curated React Native and Expo knowledge base hosted on the Radon AI backend.
-
-## Tool signature
+Returns documentation snippets from a curated React Native / Expo knowledge base on the Radon AI backend.
 
 ```
 query_documentation({ text: "<query string>" })
 ```
 
-**Input:**
+## Key rules
 
-- `text` (required): A natural language query describing what documentation you need.
+- Write **specific, focused queries** targeting a concrete API or feature.
+- Include the **library name** when relevant (e.g., `"react-native-reanimated useSharedValue hook"`).
+- **Trust returned docs over training data** for version-specific details — RN/Expo APIs change between versions.
+- Query docs **before implementing** features that rely on RN/Expo APIs.
+- For high-level library evaluation, use `get_library_description` instead.
 
-**Returns:** Text containing relevant documentation snippets.
-
----
-
-## When to use
-
-- When you need accurate, up-to-date API documentation for a React Native or Expo feature.
-- Before implementing a feature that uses a library you're not fully familiar with.
-- When the user asks "how do I do X in React Native" and you need authoritative guidance.
-- To verify correct API usage, prop types, or configuration options.
-- When debugging issues that might stem from incorrect API usage.
-
-## When NOT to use
-
-- For general programming questions unrelated to React Native / Expo.
-- When you already have high confidence in the API from your training data and the API is unlikely to have changed.
-- To look up a specific library's npm package info — use `get_library_description` for that.
-
----
-
-## Best practices
-
-### Write specific, focused queries
-
-Good queries target a specific API, feature, or use case:
+## Good vs bad queries
 
 ```
 // Good
 query_documentation({ text: "React Navigation stack navigator configuration options" })
-query_documentation({ text: "Expo Camera permissions setup on iOS and Android" })
-query_documentation({ text: "FlatList performance optimization techniques" })
+query_documentation({ text: "expo-image-picker launchImageLibraryAsync options" })
 
 // Too vague
 query_documentation({ text: "React Native" })
 query_documentation({ text: "navigation" })
 ```
 
-### Include the library name when relevant
-
-If the question is about a specific library, include its name:
-
-```
-query_documentation({ text: "react-native-reanimated useSharedValue hook" })
-query_documentation({ text: "expo-image-picker launchImageLibraryAsync options" })
-```
-
-### Use documentation before writing implementation
-
-When implementing a feature that relies on a React Native or Expo API, query the documentation first to ensure you're using the latest API surface and best practices. APIs change between versions, and the documentation query returns up-to-date information.
-
-### Trust documentation over training data for version-specific details
-
-React Native and Expo evolve rapidly. When there's a discrepancy between what you know from training data and what the documentation says, prefer the documentation — it reflects the current state.
-
----
-
-## Requirements
-
-- A valid Radon IDE license is required. Without one, the tool returns:
-
-```
-You have to have a valid Radon IDE license to use the query_documentation tool.
-```
-
-- Network connectivity is required — the tool queries the Radon AI backend service.
-
----
-
 ## Error handling
 
-If the license is invalid or missing, the tool returns a license-required message.
-
-If the backend is unreachable (network failure), the tool will fail with a network error.
-
-**Resolution:** Ensure the user has an active Radon IDE license and internet connectivity.
+- **Invalid/missing license:** returns a license-required message. Ensure the user has an active Radon IDE license.
+- **Network failure:** ensure internet connectivity.

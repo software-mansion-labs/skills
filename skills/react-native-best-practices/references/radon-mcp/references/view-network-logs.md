@@ -5,121 +5,30 @@ description: "Best practices for using the view_network_logs tool in Radon IDE. 
 
 # view_network_logs
 
-Returns a paginated list of all network requests made by the running app, including method, URL, status code, duration, and size.
-
-## Tool signature
+Returns a paginated list of all network requests (method, URL, status, duration, size). 50 entries per page.
 
 ```
 view_network_logs({ pageIndex: "latest" | "<number>" })
 ```
 
-**Input:**
-
-- `pageIndex` (required): Either `"latest"` for the most recent page, or a 0-based page index string (e.g., `"0"`, `"1"`, `"2"`).
-
-**Returns:** Formatted text listing network requests for the requested page, with a page indicator header.
-
----
-
-## When to use
-
-- When debugging API call failures (wrong status codes, timeouts, missing responses).
-- To verify that the app is making the correct requests to the right endpoints.
-- When the user reports that data is not loading or is stale.
-- To check request timing and identify slow API calls.
-- As the first step before drilling into a specific request with `view_network_request_details`.
-
-## When NOT to use
-
-- To inspect request/response headers and bodies — use `view_network_request_details` after identifying the request.
-- When the issue is clearly a build or JS error — use `view_application_logs` instead.
-
----
-
-## Understanding the output
-
-### Page header
+## Output format
 
 ```
 === NETWORK LOGS (page 3/5) ===
-```
-
-Indicates current page and total page count. Each page contains up to 50 entries.
-
-### Entry format
-
-Each network request is formatted as:
-
-```
-{id: <requestId>} "METHOD URL" STATUS statusText TYPE SIZE DURATION
-```
-
-Example:
-
-```
 {id: abc123} "GET https://api.example.com/users" 200 OK json 1.2kB 150ms
 ```
 
-The `requestId` is used to drill into details with `view_network_request_details`.
+The `requestId` (e.g., `abc123`) is used to drill into details with `view_network_request_details`.
 
----
+## Key rules
 
-## Best practices
-
-### Start with `"latest"` for recent issues
-
-When the user reports a current problem, use `pageIndex: "latest"` to see the most recent network activity. This is almost always the right starting point.
-
-```
-view_network_logs({ pageIndex: "latest" })
-```
-
-### Use numeric page indexes for historical search
-
-If you need to find an older request, start from page `"0"` and work forward. The page header tells you the total page count.
-
-### Follow up with view_network_request_details
-
-Once you identify a suspicious request in the logs (wrong status code, unexpected URL, etc.), note its `requestId` and call `view_network_request_details` to see the full headers, body, and metadata.
-
-### Ensure the network inspector is enabled
-
-If no logs are returned, the tool will report:
-
-```
-No network traffic recorded. Make sure the network inspector is enabled before accessing these logs.
-```
-
-The network inspector must be active for requests to be captured. It is enabled by default when the Network panel is available in Radon IDE.
-
----
+- **Start with `"latest"`** for current issues — almost always the right starting point.
+- Use numeric page indexes (`"0"`, `"1"`, ...) to search older requests.
+- **Follow up with `view_network_request_details`** to inspect headers, body, and metadata of a specific request.
+- If no logs returned, the network inspector may not be enabled — it must be active for requests to be captured.
 
 ## Error handling
 
-If the device is off:
-
-```
-Could not retrieve network logs!
-The development device is likely turned off.
-Please turn on the Radon IDE emulator before proceeding.
-```
-
-If the network inspector plugin is unavailable:
-
-```
-Network inspector plugin is not available.
-```
-
-If the page index is invalid:
-
-```
-"abc" is not a valid page index value.
-```
-
-If the page index is out of range:
-
-```
-Page index out of range. Valid range: 0-4 (5 pages total).
-```
-
-**Resolution:** For device/plugin errors, ensure Radon IDE is running with a device and the Network panel is available. For pagination errors, use `"latest"` or a valid page number.
+- **Device off:** turn on the Radon IDE emulator.
+- **Network inspector unavailable:** ensure the Network panel is available in Radon IDE.
+- **Invalid/out-of-range page index:** use `"latest"` or check the page header for valid range.

@@ -36,7 +36,11 @@ react-native-skills/
             │   ├── SKILL.md                # Animation sub-skill
             │   ├── animations.md           # Core animation patterns
             │   └── animations-performance.md
-            ├── gestures/SKILL.md
+            ├── gestures
+            │   ├── SKILL.md                # Gestures sub-skill
+            │   ├── gestures-composition.md       
+            │   ├── reanimated-patterns.md  # Reanimated+Gestures integration
+            │   └── tap-handling.md
             ├── svg/SKILL.md
             │   ├── SKILL.md                # SVG sub-skill
             │   ├── svg.md                  # Setup, issues and performance

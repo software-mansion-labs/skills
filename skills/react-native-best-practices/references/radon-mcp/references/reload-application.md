@@ -13,11 +13,11 @@ reload_application({ reloadMethod: "reloadJs" | "restartProcess" | "rebuild" })
 
 ## Reload methods
 
-| Method | Speed | Use when |
-|--------|-------|----------|
-| `reloadJs` | Seconds | JS/TS changes, reset React state, HMR missed a change |
-| `restartProcess` | Seconds | Native module in bugged state, need cold start, `reloadJs` didn't fix it |
-| `rebuild` | Minutes | Changed native code, added/removed native dependency, changed build config |
+| Method           | Speed   | Use when                                                                   |
+| ---------------- | ------- | -------------------------------------------------------------------------- |
+| `reloadJs`       | Seconds | JS/TS changes, reset React state, HMR missed a change                      |
+| `restartProcess` | Seconds | Native module in bugged state, need cold start, `reloadJs` didn't fix it   |
+| `rebuild`        | Minutes | Changed native code, added/removed native dependency, changed build config |
 
 **Always start with the lightest method and escalate:** `reloadJs` -> `restartProcess` -> `rebuild`.
 

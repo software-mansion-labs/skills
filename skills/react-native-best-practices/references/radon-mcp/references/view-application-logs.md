@@ -13,13 +13,13 @@ view_application_logs()
 
 ## Log sections
 
-| Section | Look here for |
-|---------|--------------|
-| `BUILD PROCESS LOGS` | Compilation errors, linking failures, missing native deps, code signing (iOS) |
-| `JS PACKAGER LOGS` | Dependency installation issues, package resolution errors |
-| `METRO LOGS` | Bundle compilation errors, module resolution, syntax errors, transform errors |
-| `NATIVE-SIDE APP LOGS` | Native crash reports, native module init errors, memory warnings |
-| `JS-SIDE APP LOGS` | Application exceptions, React errors, state management issues, `console.log` output |
+| Section                | Look here for                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `BUILD PROCESS LOGS`   | Compilation errors, linking failures, missing native deps, code signing (iOS)       |
+| `JS PACKAGER LOGS`     | Dependency installation issues, package resolution errors                           |
+| `METRO LOGS`           | Bundle compilation errors, module resolution, syntax errors, transform errors       |
+| `NATIVE-SIDE APP LOGS` | Native crash reports, native module init errors, memory warnings                    |
+| `JS-SIDE APP LOGS`     | Application exceptions, React errors, state management issues, `console.log` output |
 
 Missing sections mean no output on that channel — this is normal.
 

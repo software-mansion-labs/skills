@@ -1,0 +1,4 @@
+---
+name: radon-mcp
+description: Best practices for using Radon IDE's MCP tools when developing, debugging, and inspecting React Native and Expo apps. Use when interacting with a running app through Radon IDE — viewing screenshots, reading logs, inspecting the component tree, debugging network requests, reloading the app, or querying React Native documentation and library info. Trigger on: 'Radon IDE', 'view screenshot', 'app logs', 'component tree', 'network inspector', 'reload app', 'React Native docs', 'library description', 'debug React Native', 'emulator', 'development viewport', 'view_screenshot', 'view_application_logs', 'view_component_tree', 'reload_application', 'view_network_logs', 'view_network_request_details', 'query_documentation', 'get_library_description', or any request involving live app inspection in a Radon IDE session.
+---

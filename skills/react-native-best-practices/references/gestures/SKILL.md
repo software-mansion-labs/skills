@@ -1,14 +1,6 @@
 ---
 name: gestures
 description: "Software Mansion's best practices for gestures in React Native apps using React Native Gesture Handler. Use when implementing tap, pan, pinch, rotation, swipe, long press, or any touch interaction. Trigger on: 'gesture handler', 'GestureDetector', 'tap gesture', 'pan gesture', 'swipe', 'pinch to zoom', 'drag', 'touch handling', or any request to handle user touch input in a React Native app."
-metadata:
-  author: Software Mansion
-  license: MIT
-  tags:
-    - react-native
-    - gestures
-    - gesture-handler
-    - reanimated
 ---
 
 # React Native Gesture Handler

@@ -1,25 +1,45 @@
 ---
 name: gestures
-description: "Software Mansion's best practices for gestures in React Native apps using React Native Gesture Handler. Use when implementing tap, pan, pinch, rotation, swipe, long press, or any touch interaction. Trigger on: 'gesture handler', 'GestureDetector', 'tap gesture', 'pan gesture', 'swipe', 'pinch to zoom', 'drag', 'touch handling', or any request to handle user touch input in a React Native app."
+description: "Software Mansion's best practices for gestures in React Native apps using React Native Gesture Handler. Use when implementing tap, pan, pinch, rotation, swipe, long press, fling, hover, drag, or any touch interaction. Trigger on: 'gesture handler', 'GestureDetector', 'tap gesture', 'pan gesture', 'pinch gesture', 'rotation gesture', 'long press', 'fling', 'hover gesture', 'swipe', 'pinch to zoom', 'drag', 'touch handling', 'Pressable', 'RectButton', 'Swipeable', 'DrawerLayout', 'VirtualGestureDetector', or any request to handle user touch input in a React Native app."
 ---
 
 # React Native Gesture Handler
 
-Software Mansion's production gesture patterns for React Native using Gesture Handler. Never suggest `PanResponder` when RNGH is available — it runs on the JS thread and is effectively deprecated.
+Software Mansion's production gesture patterns for React Native using Gesture Handler. Never suggest `PanResponder` when RNGH is available -- it runs on the JS thread and is effectively deprecated.
 
 ## Version Decision Tree
 
 ```
 Check package.json - "react-native-gesture-handler" version
    │
-   ├── user asks to migrate v2 -> v3 - install gesture-handler-3-migration skill
-   ├── starts with "2." - use builder API (default)
-   └── starts with "3." - use hook API (beta)
+   ├── user asks to migrate v2 -> v3
+   │   → webfetch https://docs.swmansion.com/react-native-gesture-handler/docs/guides/upgrading-to-3
+   ├── starts with "2." → use builder API (Gesture.Pan(), Gesture.Simultaneous(), useMemo)
+   └── starts with "3." → use hook API (usePanGesture(), useSimultaneousGestures())
 ```
+
+### Key API Differences (v2 vs v3)
+
+| Concept | v2 Builder API | v3 Hook API |
+|---------|---------------|-------------|
+| Create gesture | `Gesture.Pan().onUpdate(...)` | `usePanGesture({ onUpdate: ... })` |
+| Compose (simultaneous) | `Gesture.Simultaneous(a, b)` | `useSimultaneousGestures(a, b)` |
+| Compose (race/competing) | `Gesture.Race(a, b)` | `useCompetingGestures(a, b)` |
+| Compose (exclusive) | `Gesture.Exclusive(a, b)` | `useExclusiveGestures(a, b)` |
+| Activation callback | `.onStart(...)` | `onActivate: ...` |
+| Deactivation callback | `.onEnd(...)` | `onDeactivate: ...` |
+| Change data | `.onChange(...)` | merged into `onUpdate` (use `changeX`, `changeY`) |
+| Cross-component | `.simultaneousWithExternalGesture()` | `.simultaneousWith()` |
+| Cross-component | `.requireExternalGestureToFail()` | `.requireToFail()` |
+| Cross-component | `.blocksExternalGesture()` | `.block()` |
+| Memoization | wrap in `useMemo` (mandatory) | built into hooks (automatic) |
+| SVG / broken hierarchy | `GestureDetector` (may break hierarchy) | `InterceptingGestureDetector` + `VirtualGestureDetector` |
+| State manager | callback param `stateManager` | global `GestureStateManager` |
+| Buttons | `RectButton`, `BorderlessButton` | `LegacyRectButton`, `LegacyBorderlessButton` (originals renamed) |
 
 ## Critical Rules
 
-**`GestureHandlerRootView` is mandatory** — `GestureDetector` will crash at runtime without it as an ancestor. When writing any gesture code, always verify that the root layout wraps content in `<GestureHandlerRootView style={{ flex: 1 }}>`. With Expo Router, wrap `<Stack />` in the root `_layout.tsx`:
+**`GestureHandlerRootView` is mandatory** -- `GestureDetector` will crash at runtime without it as an ancestor. Place it as close to the app root as possible. With Expo Router, wrap `<Stack />` in the root `_layout.tsx`:
 
 ```tsx
 // app/_layout.tsx
@@ -35,26 +55,35 @@ export default function RootLayout() {
 }
 ```
 
-With React Navigation (no Expo Router), wrap the `<NavigationContainer>` children. With bare React Native, wrap the app root component.
+With React Navigation (no Expo Router), wrap the `<NavigationContainer>` children. With bare React Native, wrap the app root component. Nested `GestureHandlerRootView`s are ignored -- only the topmost instance is used. Default style is `{ flex: 1 }`.
 
-`useMemo` every gesture - without it, gesture objects recreate on every render, causing recognizers to re-attach and lose state:
+**v2: `useMemo` every gesture** -- without it, gesture objects recreate on every render, causing recognizers to re-attach and lose state:
 
 ```tsx
 const pan = useMemo(() => Gesture.Pan().onBegin(...).onUpdate(...).onEnd(...), []);
 ```
 
-Scroll containers — use `RectButton` (not `TouchableOpacity` or `Pressable`). Also import `ScrollView`/`FlatList` from `react-native-gesture-handler`, not `react-native`:
+v3 hook API handles memoization internally.
+
+**Scroll containers** -- import `ScrollView`/`FlatList` from `react-native-gesture-handler`, not `react-native`. Use `RectButton` for tappable items inside scroll containers:
 
 ```tsx
 import { ScrollView, FlatList, RectButton } from 'react-native-gesture-handler';
 ```
 
+**Never mix React Native touch handlers with RNGH** in the same component tree -- causes double-tap bugs and gesture conflicts. Pick one system per app.
+
+**Callbacks are auto-workletized** -- do not add `'worklet';` to callbacks passed directly (inline) to gesture hooks/builders. The Babel plugin handles this. Only add `'worklet';` to standalone functions assigned to variables before being passed as callbacks.
+
 ## References
 
-Load at most one - the most directly relevant. Stop after loading it.
+Load at most one reference file per question. For API signatures and config options, webfetch the documentation pages linked in each reference file.
 
-| File | Load when question is about |
-|------|------------------------------|
-| `tap-handling.md` | `RectButton`, tappable items in scroll containers, tap gestures |
-| `reanimated-patterns.md` | Drag, pan, pinch-to-zoom, fling, Reanimated integration |
-| `gesture-composition.md` | Combining gestures, `Simultaneous`/`Race`/`Exclusive`, cross-component |
+| File | When to read |
+|------|-------------|
+| `gestures.md` | Choosing which gesture type or component to use; callback lifecycle; threading model; `GestureStateManager` for manual activation; SharedValue in gesture config |
+| `tap-handling.md` | `RectButton`, `Pressable`, tappable items in scroll containers, tap gestures, double-tap, hit slop |
+| `continuous-gestures.md` | Pan (drag), Pinch (zoom), Rotation, Long press, Fling (swipe), Hover; Reanimated integration patterns; offset accumulation; velocity and decay |
+| `gesture-composition.md` | Combining gestures on one component (`Simultaneous`/`Race`/`Exclusive`); cross-component relations; `VirtualGestureDetector` for SVG and Text; Pan inside ScrollView |
+| `swipeable-and-drawer.md` | `ReanimatedSwipeable` for list item actions; `ReanimatedDrawerLayout` for side menus; custom swipeable with Pan gesture; web scroll compatibility |
+| `testing.md` | Jest setup and mocking; `fireGestureHandler` for testing gestures; common troubleshooting (multiple instances, gesture conflicts, `enabled` timing) |

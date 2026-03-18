@@ -4,6 +4,13 @@ GPU-accelerated animations using WebGPU shaders in React Native. Use when animat
 
 Requires React Native 0.81+ and the New Architecture.
 
+**Version requirements:** `react-native-wgpu` requires `react-native-reanimated >= 4.2.1` and `react-native-worklets >= 0.7.2`. Upgrade both before installing if the project uses older versions:
+
+```sh
+npm install react-native-reanimated@latest react-native-worklets@latest
+npm install react-native-wgpu
+```
+
 ---
 
 ## When to Use GPU Shaders
@@ -73,27 +80,30 @@ On the iOS simulator, disable Metal Validation in Edit Scheme to avoid crashes.
 
 ## Canvas and Device Setup
 
-The `Canvas` component provides the WebGPU surface. Use `useDevice` and `useGPUContext` hooks from `react-native-wgpu`:
+The `Canvas` component provides the WebGPU surface. Use `useDevice` and `useCanvasRef` hooks from `react-native-wgpu`:
 
 ```tsx
-import { Canvas, useDevice, useGPUContext } from 'react-native-wgpu';
+import { Canvas, useDevice, useCanvasRef } from 'react-native-wgpu';
 import tgpu, { d } from 'typegpu';
 
 function GPUScene() {
   const { device = null } = useDevice();
-  const { ref, context } = useGPUContext();
-  const root = device ? tgpu.initFromDevice({ device }) : null;
+  const ref = useCanvasRef();
 
   useEffect(() => {
-    if (!root || !device || !context) return;
+    if (!device) return;
 
+    const context = ref.current!.getContext('webgpu')!;
+    const root = tgpu.initFromDevice({ device });
     const format = navigator.gpu.getPreferredCanvasFormat();
     context.configure({ device, format, alphaMode: 'premultiplied' });
 
     // Create pipelines and render here
     // ...
     context.present(); // Required: manually present the frame
-  }, [root, device, context]);
+
+    return () => root.destroy();
+  }, [device]);
 
   return <Canvas ref={ref} style={{ flex: 1 }} />;
 }
@@ -112,7 +122,7 @@ function GPUScene() {
 WebGPU objects (`GPUDevice`, `GPUCanvasContext`) are automatically registered for worklet serialization. You can pass them directly to worklets and run GPU rendering on the UI thread:
 
 ```tsx
-import { runOnUI } from 'react-native-reanimated';
+import { scheduleOnUI } from 'react-native-worklets';
 
 const renderFrame = (device: GPUDevice, context: GPUCanvasContext) => {
   'worklet';
@@ -135,8 +145,8 @@ const renderFrame = (device: GPUDevice, context: GPUCanvasContext) => {
   context.present();
 };
 
-// Trigger from JS thread
-runOnUI(renderFrame)(device, context);
+// Trigger from RN thread
+scheduleOnUI(renderFrame, device, context);
 ```
 
 This requires `react-native-reanimated` and `react-native-worklets` as peer dependencies:
@@ -209,9 +219,10 @@ Use compute shaders when the animation state (positions, velocities, colors) is 
 ### Standard compute pipeline
 
 ```tsx
-const particleBuffer = root
-  .createBuffer(d.arrayOf(d.vec2f, 1000), initialPositions)
-  .$usage('storage');
+const particleBuffer = root.createMutable(
+  d.arrayOf(d.vec2f, 1000),
+  initialPositions,
+);
 
 const updateParticles = tgpu.computeFn({
   workgroupSize: [64],
@@ -256,9 +267,10 @@ const Particle = d.struct({
   life: d.f32,
 });
 
-const particles = root
-  .createBuffer(d.arrayOf(Particle, 10000), initialData)
-  .$usage('storage', 'vertex');
+const particles = root.createMutable(
+  d.arrayOf(Particle, 10000),
+  initialData,
+);
 
 const time = root.createUniform(d.f32);
 

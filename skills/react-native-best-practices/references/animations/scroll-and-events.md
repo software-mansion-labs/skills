@@ -68,7 +68,7 @@ const animatedRef = useAnimatedRef<Animated.ScrollView>();
 scrollTo(animatedRef, 0, targetY, true); // (ref, x, y, animated)
 ```
 
-Can only be called from the UI thread. Wrap with `runOnUI()` when calling from JS-thread event handlers.
+Can only be called from the UI thread. Wrap with `scheduleOnUI()` when calling from RN-thread event handlers.
 
 ---
 
@@ -169,7 +169,7 @@ Returns `{ x, y, width, height, pageX, pageY }` or `null` if the component is un
 **Rules:**
 - Always check for `null` before using measurements.
 - In `useAnimatedStyle`, guard with `if (!_WORKLET) return {}` because the first evaluation runs on the JS thread where `measure` is unavailable.
-- Wrap with `runOnUI()` when calling from JS-thread event handlers.
+- Wrap with `scheduleOnUI()` when calling from RN-thread event handlers.
 - Not available with Remote JS Debugger (use Chrome DevTools).
 
 ---

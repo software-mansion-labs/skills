@@ -81,9 +81,12 @@ react-native-skills/
         │   │   └── SKILL.md
         │   ├── gestures/
         │   │   ├── SKILL.md
+        │   │   ├── continuous-gestures.md
         │   │   ├── gesture-composition.md
-        │   │   ├── reanimated-patterns.md
-        │   │   └── tap-handling.md
+        │   │   ├── gestures.md
+        │   │   ├── swipeable-and-drawer.md
+        │   │   ├── tap-handling.md
+        │   │   └── testing.md
         │   ├── multimedia/
         │   │   └── SKILL.md
         │   ├── multithreading/

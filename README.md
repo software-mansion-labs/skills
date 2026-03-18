@@ -18,9 +18,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Gestures** | Tap, pan, pinch, swipe, long press, drag with Gesture Handler |
 | **SVG** | Vector graphics, icons, charts, illustrations with React Native SVG |
 | **On-device AI** | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch |
-| **Multimedia** | Video playback and streaming |
 | **Rich Text** | Rich text editing with react-native-enriched: formatting toolbar, mentions, links |
-| **Multithreading** | Background processing, Worklets, offloading computation from the JS thread |
 | **Audio** | Playback, recording, visualization, session management with React Native Audio API |
 
 ### [radon-mcp](./skills/radon-mcp/)
@@ -49,13 +47,10 @@ react-native-skills/
     │       │   ├── svg.md                  # Setup, issues and performance
     │       │   ├── animation-patterns.md   # SVG animation patterns
     │       │   └── when-to-use.md
-    │       ├── haptics/SKILL.md
     │       ├── on-device-ai/
     │       │   ├── SKILL.md                # On-device AI sub-skill
     │       │   └── references/             # Detailed API references
-    │       ├── multimedia/SKILL.md
     │       ├── rich-text/SKILL.md
-    │       ├── multithreading/SKILL.md
     │       └── audio/SKILL.md
     └── radon-mcp/
         ├── SKILL.md

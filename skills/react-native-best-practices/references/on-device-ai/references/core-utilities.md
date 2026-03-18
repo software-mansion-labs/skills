@@ -325,3 +325,42 @@ For complete error reference, see the [Error Handling documentation](https://doc
 
 - [Error Handling docs](https://docs.swmansion.com/react-native-executorch/docs/utilities/error-handling)
 - [Complete error code list](https://docs.swmansion.com/react-native-executorch/docs/utilities/error-handling#reference)
+
+---
+
+# Best Practices
+
+## Model Selection
+
+- Match model size to device capabilities
+- Use quantized variants for memory-constrained devices
+- Test on minimum target device before release
+- Keep models updated via download mechanism
+
+## Error Handling
+
+- Always wrap AI operations in try-catch
+- Provide user-friendly error messages
+- Implement fallback behavior (cloud API, simplified UX)
+- Log errors for debugging
+
+## User Experience
+
+- Show loading states during model operations
+- Display download progress for large models
+- Ensure app remains responsive during inference
+- Consider offline-first design
+
+## Resource Management
+
+- Unload unused models to free memory
+- Implement cleanup for old cached models
+- Show storage impact of AI features
+- Monitor battery usage of continuous processing
+
+## Performance Optimization
+
+- Batch requests when possible
+- Preload models during idle time
+- Profile actual device performance before launch
+- Use appropriate model size for each task

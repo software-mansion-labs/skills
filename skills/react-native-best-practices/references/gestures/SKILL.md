@@ -17,10 +17,25 @@ Check package.json - "react-native-gesture-handler" version
    └── starts with "3." - use hook API (beta)
 ```
 
-## Setup
-- Wrap app in `<GestureHandlerRootView>`. With navigation libraries (React Navigation, Expo Router, react-native-navigation), wrap each screen at registration time.
-
 ## Critical Rules
+
+**`GestureHandlerRootView` is mandatory** — `GestureDetector` will crash at runtime without it as an ancestor. When writing any gesture code, always verify that the root layout wraps content in `<GestureHandlerRootView style={{ flex: 1 }}>`. With Expo Router, wrap `<Stack />` in the root `_layout.tsx`:
+
+```tsx
+// app/_layout.tsx
+import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView>
+      <Stack />
+    </GestureHandlerRootView>
+  );
+}
+```
+
+With React Navigation (no Expo Router), wrap the `<NavigationContainer>` children. With bare React Native, wrap the app root component.
 
 `useMemo` every gesture - without it, gesture objects recreate on every render, causing recognizers to re-attach and lose state:
 

@@ -18,7 +18,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Gestures** | Tap, pan, pinch, swipe, long press, drag with Gesture Handler |
 | **SVG** | Vector graphics, icons, charts, illustrations with React Native SVG |
 | **On-device AI** | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch |
-| **Rich Text** | Rich text editing with react-native-enriched: formatting toolbar, mentions, links |
+| **Rich Text** | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math |
 | **Audio** | Playback, recording, visualization, session management with React Native Audio API |
 
 ### [radon-mcp](./skills/radon-mcp/)
@@ -30,39 +30,64 @@ Best practices for using Radon IDE's MCP tools when developing, debugging, and i
 ```
 react-native-skills/
 └── skills/
-    ├── react-native-best-practices/
-    │   ├── SKILL.md                        # Main skill entry point
-    │   └── references/
-    │       ├── animations/
-    │       │   ├── SKILL.md                # Animation sub-skill
-    │       │   ├── animations.md           # Core animation patterns
-    │       │   └── animations-performance.md
-    │       ├── gestures
-    │       │   ├── SKILL.md                # Gestures sub-skill
-    │       │   ├── gestures-composition.md
-    │       │   ├── reanimated-patterns.md  # Reanimated+Gestures integration
-    │       │   └── tap-handling.md
-    │       ├── svg/
-    │       │   ├── SKILL.md                # SVG sub-skill
-    │       │   ├── svg.md                  # Setup, issues and performance
-    │       │   ├── animation-patterns.md   # SVG animation patterns
-    │       │   └── when-to-use.md
-    │       ├── on-device-ai/
-    │       │   ├── SKILL.md                # On-device AI sub-skill
-    │       │   └── references/             # Detailed API references
-    │       ├── rich-text/SKILL.md
-    │       └── audio/SKILL.md
-    └── radon-mcp/
-        ├── SKILL.md
-        └── references/
-            ├── view-application-logs.md
-            ├── view-screenshot.md
-            ├── view-component-tree.md
-            ├── view-network-logs.md
-            ├── view-network-request-details.md
-            ├── reload-application.md
-            ├── query-documentation.md
-            └── get-library-description.md
+    ├── radon-mcp/
+    │   ├── references/
+    │   │   ├── get-library-description.md
+    │   │   ├── query-documentation.md
+    │   │   ├── reload-application.md
+    │   │   ├── view-application-logs.md
+    │   │   ├── view-component-tree.md
+    │   │   ├── view-network-logs.md
+    │   │   ├── view-network-request-details.md
+    │   │   └── view-screenshot.md
+    │   └── SKILL.md
+    └── react-native-best-practices/
+        ├── references/
+        │   ├── animations/
+        │   │   ├── SKILL.md
+        │   │   ├── animation-functions.md
+        │   │   ├── animations-performance.md
+        │   │   ├── animations.md
+        │   │   ├── gpu-animations.md
+        │   │   ├── layout-animations.md
+        │   │   └── scroll-and-events.md
+        │   ├── audio/
+        │   │   └── SKILL.md
+        │   ├── gestures/
+        │   │   ├── SKILL.md
+        │   │   ├── gesture-composition.md
+        │   │   ├── reanimated-patterns.md
+        │   │   └── tap-handling.md
+        │   ├── multimedia/
+        │   │   └── SKILL.md
+        │   ├── multithreading/
+        │   │   ├── SKILL.md
+        │   │   ├── setup-and-advanced.md
+        │   │   ├── shared-memory.md
+        │   │   └── threading-api.md
+        │   ├── on-device-ai/
+        │   │   ├── references/
+        │   │   │   ├── core-utilities.md
+        │   │   │   ├── reference-audio.md
+        │   │   │   ├── reference-cv-2.md
+        │   │   │   ├── reference-cv.md
+        │   │   │   ├── reference-llms.md
+        │   │   │   ├── reference-models.md
+        │   │   │   ├── reference-nlp.md
+        │   │   │   └── reference-ocr.md
+        │   │   └── SKILL.md
+        │   ├── rich-text/
+        │   │   ├── references/
+        │   │   │   ├── enriched-input-api.md
+        │   │   │   └── enriched-markdown-api.md
+        │   │   └── SKILL.md
+        │   └── svg/
+        │       ├── SKILL.md
+        │       ├── animation-patterns.md
+        │       ├── svg.md
+        │       └── when-to-use.md
+        ├── README.md
+        └── SKILL.md
 ```
 
 The top-level `SKILL.md` acts as a table of contents. Reference files load only when relevant to the current task, keeping the context window focused.

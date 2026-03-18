@@ -63,8 +63,8 @@ const tap = useMemo(() =>
 Double-tap with single-tap fallback - `Gesture.Exclusive` gives doubleTap priority:
 
 ```tsx
-const doubleTap = useMemo(() => Gesture.Tap().numberOfTaps(2).onEnd(() => { runOnJS(onDouble)(); }), []);
-const singleTap = useMemo(() => Gesture.Tap().numberOfTaps(1).onEnd(() => { runOnJS(onSingle)(); }), []);
+const doubleTap = useMemo(() => Gesture.Tap().numberOfTaps(2).onEnd(() => { scheduleOnRN(onDouble); }), []);
+const singleTap = useMemo(() => Gesture.Tap().numberOfTaps(1).onEnd(() => { scheduleOnRN(onSingle); }), []);
 const composed = useMemo(() => Gesture.Exclusive(doubleTap, singleTap), [doubleTap, singleTap]);
 ```
 

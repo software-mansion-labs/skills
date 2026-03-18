@@ -41,12 +41,14 @@ const pan = useMemo(() => Gesture.Pan().onBegin(...).onUpdate(...), []);
 const composed = useMemo(() => Gesture.Simultaneous(pan, pinch), [pan, pinch]);
 ```
 
-## runOnJS
+## scheduleOnRN
 
-Use `runOnJS` to call React state setters from gesture callbacks (which run on the UI thread):
+Use `scheduleOnRN` from `react-native-worklets` to call React state setters from gesture callbacks (which run on the UI thread). `runOnJS` is deprecated — do not use it:
 
 ```tsx
+import { scheduleOnRN } from 'react-native-worklets';
+
 const tap = useMemo(() =>
-  Gesture.Tap().onEnd(() => { runOnJS(setState)(value); }),
+  Gesture.Tap().onEnd(() => { scheduleOnRN(setState, value); }),
 []);
 ```

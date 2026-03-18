@@ -1,12 +1,14 @@
 # Scroll, Events, and Utilities
 
-Patterns for scroll-driven animations, event-based reactions, frame callbacks, measurement, and value mapping utilities in Reanimated 4.
+Patterns for scroll-driven animations, event-based reactions, frame callbacks, and measurement in Reanimated 4.
+
+For API signatures and parameter details, webfetch the linked documentation pages below.
 
 ---
 
 ## Scroll-Driven Animations
 
-### useAnimatedScrollHandler
+### [useAnimatedScrollHandler](https://docs.swmansion.com/react-native-reanimated/docs/scroll/useAnimatedScrollHandler)
 
 Respond to scroll events with multiple handlers:
 
@@ -40,7 +42,7 @@ Passing a single function instead of an object is treated as `onScroll`.
 - Must use `Animated.ScrollView`, not plain `ScrollView`.
 - On Web, only `onScroll` fires. Other events are iOS/Android only.
 
-### useScrollOffset
+### [useScrollOffset](https://docs.swmansion.com/react-native-reanimated/docs/scroll/useScrollOffset)
 
 Simpler alternative when you only need the scroll position as a shared value:
 
@@ -55,7 +57,7 @@ const headerStyle = useAnimatedStyle(() => ({
 
 Automatically detects horizontal or vertical scroll. Works with `ScrollView`, `FlatList`, and `FlashList`. The ref can be changed at runtime.
 
-### scrollTo
+### [scrollTo](https://docs.swmansion.com/react-native-reanimated/docs/scroll/scrollTo)
 
 Programmatic scrolling from the UI thread:
 
@@ -72,7 +74,7 @@ Can only be called from the UI thread. Wrap with `runOnUI()` when calling from J
 
 ## Value Mapping Utilities
 
-### interpolate
+### [interpolate](https://docs.swmansion.com/react-native-reanimated/docs/utilities/interpolate)
 
 Maps a numeric value from one range to another:
 
@@ -80,66 +82,23 @@ Maps a numeric value from one range to another:
 const opacity = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.5, 0]);
 ```
 
-```tsx
-function interpolate(
-  value: number,
-  input: number[],
-  output: number[],
-  extrapolation?: Extrapolation | { extrapolateLeft?, extrapolateRight? }
-): number;
-```
-
-**Extrapolation modes** (behavior for values outside the input range):
-- `Extrapolation.EXTEND` (default) — linear extrapolation beyond the range
-- `Extrapolation.CLAMP` — clamps to the nearest edge of the output range
-- `Extrapolation.IDENTITY` — returns the input value as-is
-
-You can set different modes per edge:
-
-```tsx
-interpolate(value, [0, 100], [0, 1], {
-  extrapolateLeft: Extrapolation.CLAMP,
-  extrapolateRight: Extrapolation.EXTEND,
-});
-```
-
 Input values must be in increasing order.
 
-### interpolateColor
+### [interpolateColor](https://docs.swmansion.com/react-native-reanimated/docs/utilities/interpolateColor)
 
 Maps a numeric value to a color, producing smooth color transitions:
 
 ```tsx
-const color = interpolateColor(
-  progress.value,
-  [0, 1],
-  ['#ff0000', '#0000ff'],
-  'RGB'
-);
+const color = interpolateColor(progress.value, [0, 1], ['#ff0000', '#0000ff'], 'RGB');
 ```
 
-**Color spaces:**
-- `'RGB'` (default) — linear RGB with gamma correction (default gamma: 2.2)
-- `'HSV'` — hue-saturation-value; smooth hue transitions
-- `'LAB'` — Oklab; perceptually uniform color differences
-
-Set `gamma: 1` to disable gamma correction. Use `useCorrectedHSVInterpolation: true` (default) to prevent long hue paths (e.g., red-to-blue going through green).
-
-Returns color in `rgba(r, g, b, a)` format.
-
-### clamp
-
-```tsx
-const clamped = clamp(value, min, max);
-```
-
-Constrains a number between `min` and `max`. Use with scroll offsets, touch positions, or derived animation values to prevent out-of-bounds behavior.
+Color spaces: `'RGB'` (default), `'HSV'`, `'LAB'` (Oklab, perceptually uniform).
 
 ---
 
 ## Event Reactions
 
-### useAnimatedReaction
+### [useAnimatedReaction](https://docs.swmansion.com/react-native-reanimated/docs/advanced/useAnimatedReaction)
 
 React to shared value changes with access to both current and previous values:
 
@@ -164,15 +123,12 @@ Use `prepare` to reduce callback frequency (e.g., `Math.floor()` to react only o
 
 ## Frame Callbacks
 
-### useFrameCallback
+### [useFrameCallback](https://docs.swmansion.com/react-native-reanimated/docs/advanced/useFrameCallback)
 
 Run logic on every frame (60Hz or 120Hz depending on the device):
 
 ```tsx
 const frameCallback = useFrameCallback((frameInfo) => {
-  // frameInfo.timestamp — system time in ms
-  // frameInfo.timeSincePreviousFrame — ms since last frame (null on first frame)
-  // frameInfo.timeSinceFirstFrame — ms since callback activated
   progress.value += (frameInfo.timeSincePreviousFrame ?? 0) * speed;
 });
 
@@ -189,7 +145,7 @@ frameCallback.setActive(true);
 
 ## Measurement
 
-### measure
+### [measure](https://docs.swmansion.com/react-native-reanimated/docs/advanced/measure)
 
 Synchronously get a view's dimensions and position on the UI thread:
 
@@ -216,66 +172,14 @@ Returns `{ x, y, width, height, pageX, pageY }` or `null` if the component is un
 - Wrap with `runOnUI()` when calling from JS-thread event handlers.
 - Not available with Remote JS Debugger (use Chrome DevTools).
 
-### setNativeProps
-
-Imperatively update a component's properties from the UI thread:
-
-```tsx
-setNativeProps(animatedRef, { backgroundColor: 'red' });
-```
-
-Runs on the UI thread only. Designed for gesture handlers where you need instant updates without going through `useAnimatedStyle`. Prefer `useAnimatedStyle` and `useAnimatedProps` for most cases.
-
-### dispatchCommand
-
-Call native component commands from the UI thread:
-
-```tsx
-dispatchCommand(animatedRef, 'focus');
-dispatchCommand(animatedRef, 'scrollToEnd', [true]);
-```
-
-Available commands vary by component (e.g., `focus`, `blur`, `clear` for TextInput; `scrollToEnd` for ScrollView). Android and iOS only.
-
 ---
 
 ## Device Sensors
 
-### useAnimatedSensor
-
-Track device motion for parallax, tilt, or orientation-based animations:
-
-```tsx
-import { useAnimatedSensor, SensorType } from 'react-native-reanimated';
-
-const sensor = useAnimatedSensor(SensorType.ROTATION, {
-  interval: 'auto', // match screen refresh rate
-});
-
-const style = useAnimatedStyle(() => ({
-  transform: [
-    { rotateX: `${sensor.sensor.value.pitch}rad` },
-    { rotateY: `${sensor.sensor.value.roll}rad` },
-  ],
-}));
-```
-
-**Sensor types:** `ACCELEROMETER`, `GYROSCOPE`, `GRAVITY`, `MAGNETIC_FIELD`, `ROTATION`.
-
-**Data formats:**
-- Accelerometer/Gyroscope/Gravity/Magnetic Field: `{ x, y, z, interfaceOrientation }`
-- Rotation: `{ pitch, roll, yaw, qw, qx, qy, qz, interfaceOrientation }`
-
-**Config:** `interval` (`'auto'` or ms), `adjustToInterfaceOrientation` (default `true`), `iosReferenceFrame`.
-
-**Gotchas:**
-- iOS requires location services enabled (Settings > Privacy > Location Services).
-- Web requires HTTPS.
-- Most sensors operate at up to 100Hz.
-- Use `sensor.unregister()` to stop listening.
+[`useAnimatedSensor`](https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedSensor) tracks device motion (accelerometer, gyroscope, rotation) for parallax and tilt animations. iOS requires location services enabled. Web requires HTTPS.
 
 ---
 
 ## Keyboard (Deprecated)
 
-`useAnimatedKeyboard` is deprecated in Reanimated 4. Use `react-native-keyboard-controller` for keyboard-aware animations.
+[`useAnimatedKeyboard`](https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedKeyboard) is deprecated in Reanimated 4. Use `react-native-keyboard-controller` for keyboard-aware animations.

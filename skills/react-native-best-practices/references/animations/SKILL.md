@@ -7,15 +7,15 @@ description: "Production animation patterns for React Native using Reanimated 4,
 
 Software Mansion's production animation patterns for React Native on Reanimated 4 and the New Architecture.
 
-Load at most one reference file per question.
+Load at most one reference file per question. For API signatures and config options, webfetch the documentation pages linked in each reference file.
 
 ## References
 
 | File | When to read |
 |------|-------------|
-| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS transition and CSS animation property details; animating text; infinite animation cleanup; `scheduleOnRN` |
-| `animation-functions.md` | Core hooks (`useSharedValue`, `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue`, `createAnimatedComponent`, `cancelAnimation`, `useAnimatedRef`); animation functions (`withTiming`, `withSpring`, `withDecay`); animation modifiers (`withDelay`, `withRepeat`, `withSequence`, `withClamp`); composing animations |
-| `layout-animations.md` | Entering/exiting animations (`FadeIn`, `SlideIn`, `BounceIn`, `ZoomIn`, etc.); layout transitions (`LinearTransition`, `FadingTransition`, `SequencedTransition`); keyframe animations; list item animations (`itemLayoutAnimation`); shared element transitions |
-| `scroll-and-events.md` | Scroll-driven animations; `useAnimatedScrollHandler`; `scrollTo`; `useScrollOffset`; `interpolate`; `interpolateColor`; `clamp`; `useAnimatedReaction`; `useFrameCallback`; `measure`; `setNativeProps`; device sensors (`useAnimatedSensor`) |
+| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS transition and CSS animation patterns and rules; animating text; infinite animation cleanup; `scheduleOnRN` |
+| `animation-functions.md` | Gotchas and rules for core hooks (`useSharedValue`, `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue`); `withSpring` config modes; `withRepeat` and `withClamp` caveats; composing animations |
+| `layout-animations.md` | Entering/exiting animation gotchas (`nativeID` conflict, view flattening); layout transitions; keyframe animation rules; list item animations (`itemLayoutAnimation`); shared element transitions |
+| `scroll-and-events.md` | Scroll-driven animation patterns (`useAnimatedScrollHandler`, `scrollTo`, `useScrollOffset`); `useAnimatedReaction` patterns; `useFrameCallback`; `measure` rules |
 | `gpu-animations.md` | GPU shader animations; `react-native-wgpu` Canvas and device setup; TypeGPU typed pipelines; Reanimated + WebGPU worklet integration; compute pipelines for particle systems, physics, and simulations; `@typegpu/noise` (Perlin noise, PRNG); `@typegpu/sdf` (signed distance shapes); Three.js / React Three Fiber for 3D |
 | `animations-performance.md` | Performance tuning; 120fps setup; feature flags; FPS drop fixes; simultaneous animation limits; accessibility (`useReducedMotion`, `ReducedMotionConfig`); worklet closure optimization; debug vs release builds |

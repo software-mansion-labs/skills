@@ -35,7 +35,7 @@ Default to CSS transitions and CSS animations. They are declarative, easier to r
 
 ## CSS Transitions
 
-Use when a component's style should animate smoothly whenever a state-driven prop changes.
+Use when a component's style should animate smoothly whenever a state-driven prop changes. For the full property list and timing functions, webfetch the [CSS Transitions docs](https://docs.swmansion.com/react-native-reanimated/docs/category/css-transitions).
 
 ```tsx
 <Animated.View
@@ -48,16 +48,6 @@ Use when a component's style should animate smoothly whenever a state-driven pro
 />
 ```
 
-### Properties
-
-| Property | Values | Default |
-|----------|--------|---------|
-| `transitionProperty` | Style property name, array of names, `'all'`, `'none'` | — |
-| `transitionDuration` | Number (ms), `'300ms'`, `'0.3s'`, or array | `0` |
-| `transitionDelay` | Number (ms), string, or array. Supports negative values | `0` |
-| `transitionTimingFunction` | `'linear'`, `'ease'`, `'ease-in'`, `'ease-out'`, `'ease-in-out'`, `cubicBezier(x1,y1,x2,y2)`, `steps(n, modifier)`, `linear(...points)`, or array | `'ease'` |
-| `transitionBehavior` | `'normal'`, `'allow-discrete'` | `'normal'` |
-
 When using arrays, the order must match the `transitionProperty` array:
 
 ```tsx
@@ -65,15 +55,6 @@ transitionProperty: ['width', 'opacity', 'backgroundColor'],
 transitionDuration: [300, 200, 150],
 transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 ```
-
-### Timing functions
-
-Predefined: `'linear'`, `'ease'`, `'ease-in'`, `'ease-out'`, `'ease-in-out'`, `'step-start'`, `'step-end'`.
-
-Parametrized:
-- `cubicBezier(0.25, 0.1, 0.5, 2)` — custom Bezier curve
-- `steps(4, 'jump-end')` — discrete steps; modifiers: `'jump-start'`, `'jump-end'` (default), `'jump-none'`, `'jump-both'`
-- `linear(0, [0.25, '75%'], 1)` — polygonal chain with control points
 
 ### Discrete properties
 
@@ -95,7 +76,7 @@ The `display` property flips at animation start (0%) instead of the midpoint. Fo
 
 ## CSS Animations
 
-Use when the animation follows a predefined keyframe sequence independent of external state — loaders, pulse effects, entrance choreography.
+Use when the animation follows a predefined keyframe sequence independent of external state — loaders, pulse effects, entrance choreography. For the full property list, webfetch the [CSS Animations docs](https://docs.swmansion.com/react-native-reanimated/docs/category/css-animations).
 
 ```tsx
 const pulse = {
@@ -115,25 +96,6 @@ const pulse = {
 ```
 
 Reanimated uses the current element state as the implicit `0%` keyframe, so you only need to define the frames that differ. At minimum, one keyframe is required.
-
-### Properties
-
-| Property | Values | Default |
-|----------|--------|---------|
-| `animationName` | Keyframes object, array of keyframes objects, `'none'` | — |
-| `animationDuration` | Number (ms), `'300ms'`, `'0.3s'`, or array | `0` |
-| `animationDelay` | Number (ms), string, or array. Supports negative values | `0` |
-| `animationTimingFunction` | Same as transition timing functions, or array | `'ease'` |
-| `animationIterationCount` | `'infinite'`, number (supports fractions like `0.5`), or array | `1` |
-| `animationDirection` | `'normal'`, `'reverse'`, `'alternate'`, `'alternate-reverse'`, or array | `'normal'` |
-| `animationFillMode` | `'none'`, `'forwards'`, `'backwards'`, `'both'`, or array | `'none'` |
-| `animationPlayState` | `'running'`, `'paused'`, or array | `'running'` |
-
-When using arrays, the order must match the `animationName` array.
-
-### Keyframe selectors
-
-Use percentage strings (`'0%'`, `'50%'`, `'100%'`), aliases (`'from'`/`'to'`), or floats between 0 and 1.
 
 ### Multiple animations
 

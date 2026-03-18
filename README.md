@@ -6,6 +6,32 @@ Production-ready patterns for React Native development, packaged as [Claude Code
 
 Add a skill to your project and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, and other React Native features. Works with Claude Code, Cursor, Windsurf, and other tools that support the skill format.
 
+## Installation
+
+Skills are discovered automatically from specific directories — no CLI command needed. Copy or symlink the skill directory into one of these locations:
+
+| Scope | Path | When to use |
+|-------|------|-------------|
+| Personal | `~/.claude/skills/<skill-name>/` | All your projects |
+| Project | `.claude/skills/<skill-name>/` | Current project only |
+
+**Install all skills globally (recommended):**
+
+```bash
+git clone https://github.com/software-mansion/react-native-skills.git
+ln -s "$(pwd)/react-native-skills/skills/react-native-best-practices" ~/.claude/skills/react-native-best-practices
+ln -s "$(pwd)/react-native-skills/skills/radon-mcp" ~/.claude/skills/radon-mcp
+```
+
+**Install a single skill for a specific project:**
+
+```bash
+mkdir -p .claude/skills
+cp -r /path/to/react-native-skills/skills/react-native-best-practices .claude/skills/
+```
+
+Once installed, the skills are automatically available in your next Claude Code session.
+
 ## Available Skills
 
 ### [react-native-best-practices](./skills/react-native-best-practices/)

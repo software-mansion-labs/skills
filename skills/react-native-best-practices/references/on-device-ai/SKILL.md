@@ -1,46 +1,74 @@
 ---
 name: on-device-ai
-description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Use when running machine learning models locally on mobile devices for LLMs, computer vision, OCR, speech processing, text/image embeddings, or any AI feature without cloud dependencies. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useImageSegmentation', 'useSemanticSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'image classification', 'object detection', 'style transfer', 'speech-to-text', 'text-to-speech', 'voice activity detection', 'text embeddings', 'image embeddings', 'mobile LLM', 'on-device chatbot', 'document scanning OCR', or any request to run AI/ML models locally in a React Native app."
+description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Covers LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, segmentation, style transfer, embeddings, text-to-image), speech processing (speech-to-text, text-to-speech, voice activity detection), VisionCamera real-time frame processing, model loading strategies, resource management, and custom model integration. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useImageSegmentation', 'useSemanticSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'image classification', 'object detection', 'style transfer', 'speech-to-text', 'text-to-speech', 'voice activity detection', 'text embeddings', 'image embeddings', 'mobile LLM', 'on-device chatbot', 'document scanning OCR', 'VisionCamera AI', 'real-time frame processing', 'runOnFrame', 'tool calling', 'function calling', 'structured output', 'vision-language model', 'VLM', or any request to run AI/ML models locally in a React Native app."
 ---
 
 # On-Device AI
 
 Software Mansion's production patterns for on-device AI in React Native using [React Native ExecuTorch](https://github.com/software-mansion/react-native-executorch).
 
-For hook APIs, model constants, configuration options, and TypeScript module classes, webfetch the relevant page from the official docs. The base URL is `https://docs.swmansion.com/react-native-executorch/docs/`. To find the correct page for a specific hook or module, webfetch the sitemap at `https://docs.swmansion.com/react-native-executorch/sitemap.xml` and look for the latest versioned URL matching your topic.
+Load at most one reference file per question. For hook API signatures, model constants, and configuration options, webfetch the relevant page from the official docs at `https://docs.swmansion.com/react-native-executorch/docs/`.
+
+## Decision Tree
+
+Pick the right hook based on the AI task.
+
+```
+What AI task does the feature need?
+│
+├── Text generation, chatbot, or reasoning?
+│   └── useLLM                                    → see llm.md
+│       ├── Text-only chat → standard useLLM
+│       ├── Image + text input → VLM with capabilities: ['vision']
+│       ├── Tool calling → configure with toolsConfig
+│       └── Structured JSON output → getStructuredOutputPrompt
+│
+├── Understanding images?
+│   ├── What's in this image? → useClassification  → see vision.md
+│   ├── Where are objects? → useObjectDetection    → see vision.md
+│   ├── Read text from image? → useOCR / useVerticalOCR → see vision.md
+│   ├── Segment regions? → useSemanticSegmentation → see vision.md
+│   ├── Apply artistic style? → useStyleTransfer   → see vision.md
+│   ├── Generate image from text? → useTextToImage  → see vision.md
+│   └── Embed image as vector? → useImageEmbeddings → see vision.md
+│
+├── Speech or audio processing?
+│   ├── Transcribe speech → useSpeechToText        → see speech.md
+│   ├── Synthesize speech → useTextToSpeech        → see speech.md
+│   └── Detect speech segments → useVAD            → see speech.md
+│
+├── Text utilities?
+│   ├── Convert text to vectors → useTextEmbeddings → see vision.md
+│   └── Count tokens → useTokenizer
+│
+├── Real-time camera processing?
+│   └── runOnFrame with VisionCamera v5            → see vision.md
+│
+└── Custom model (.pte)?
+    └── useExecutorchModule                        → see setup.md
+```
+
+## Critical Rules
+
+- **Initialize the resource fetcher before loading any model.** Call `initExecutorch({ resourceFetcher: ExpoResourceFetcher })` (or `BareResourceFetcher` for non-Expo projects) at app startup. Without this, model loading throws `ResourceFetcherAdapterNotInitialized`.
+
+- **Always check `isReady` before calling `forward` or `generate`.** Hooks load models asynchronously. Calling inference methods before the model is ready throws `ModuleNotLoaded`.
+
+- **Interrupt LLM generation before unmounting the component.** Unmounting while `isGenerating` is true causes a crash. Call `llm.interrupt()` and wait for `isGenerating` to become false before navigating away.
+
+- **Use quantized models on mobile.** Full-precision models consume too much memory for most devices. React Native ExecuTorch ships quantized variants for all supported models.
+
+- **Audio for speech-to-text must be 16kHz mono.** Mismatched sample rates produce garbled transcriptions silently.
+
+- **Audio from text-to-speech is 24kHz.** Create the `AudioContext` with `{ sampleRate: 24000 }` for playback.
+
+- **Set `pixelFormat: 'rgb'` for VisionCamera frame processing.** The default `yuv` format produces incorrect results with ExecuTorch vision models.
 
 ## References
 
 | File | When to read |
 |------|-------------|
-| `best-practices.md` | Model loading strategy, device constraints, error handling, audio/image processing tips, performance considerations |
-
-## Documentation Map
-
-When you need API details for a specific feature, webfetch the corresponding page from the latest version of the official docs:
-
-| Feature | What to webfetch |
-|---------|-----------------|
-| Getting started | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/fundamentals/getting-started` |
-| Loading models | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/fundamentals/loading-models` |
-| LLMs (chat, tool calling, structured output) | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useLLM` |
-| Speech-to-text | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useSpeechToText` |
-| Text-to-speech | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useTextToSpeech` (if 404, check next version) |
-| Voice activity detection | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useVAD` |
-| Text embeddings | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useTextEmbeddings` |
-| Tokenizer | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/natural-language-processing/useTokenizer` |
-| Image classification | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useClassification` |
-| Object detection | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useObjectDetection` |
-| Image segmentation | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useImageSegmentation` |
-| OCR (horizontal text) | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useOCR` |
-| OCR (vertical text) | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useVerticalOCR` |
-| Style transfer | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useStyleTransfer` |
-| Text-to-image | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useTextToImage` |
-| Image embeddings | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/computer-vision/useImageEmbeddings` |
-| Custom models | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/hooks/executorch-bindings/useExecutorchModule` |
-| Resource fetcher | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/utilities/resource-fetcher` |
-| Benchmarks | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/benchmarks/inference-time` |
-| FAQ | `https://docs.swmansion.com/react-native-executorch/docs/0.6.x/fundamentals/frequently-asked-questions` |
-| Full API reference | `https://docs.swmansion.com/react-native-executorch/docs/api-reference` |
-
-If a URL returns 404, the docs may have been restructured. Webfetch the sitemap at `https://docs.swmansion.com/react-native-executorch/sitemap.xml` to find the current URL.
+| `llm.md` | LLM chat (functional and managed), tool calling, structured output, vision-language models, token batching, context strategies, model selection, generation config |
+| `vision.md` | Image classification, object detection, OCR, semantic segmentation, style transfer, text-to-image, image/text embeddings, VisionCamera real-time frame processing with `runOnFrame` |
+| `speech.md` | Speech-to-text (batch and streaming transcription), text-to-speech (batch and streaming synthesis), voice activity detection, audio format requirements |
+| `setup.md` | Installation (Expo and bare RN), resource fetcher initialization, model loading strategies (bundled, remote, local), `ResourceFetcher` download management, error handling with `RnExecutorchError`, custom models with `useExecutorchModule`, Metro config for `.pte` files |

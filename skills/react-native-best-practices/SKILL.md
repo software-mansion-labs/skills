@@ -1,10 +1,7 @@
 ---
 name: react-native-best-practices
 description: "Software Mansion's best practices for production React Native and Expo apps on the New Architecture. MUST USE before writing, reviewing, or debugging ANY code in a React Native or Expo project, even when the request does not mention React Native keywords. If the working directory contains a package.json with react-native, expo, or expo-router as a dependency, this skill applies. Trigger on: any code task in a React Native/Expo project, 'React Native', 'Expo', 'New Architecture', 'React Native performance', 'Reanimated', 'Gesture Handler', 'react-native-svg', 'ExecuTorch', 'react-native-audio-api', 'react-native-enriched', 'Worklet', 'Fabric', 'TurboModule', 'WebGPU', 'react-native-wgpu', 'TypeGPU', 'GPU shader', 'WGSL', 'svg', 'animation', 'gesture', 'audio', 'rich text', 'AI model', 'multithreading', 'display', 'render', 'draw', 'show', 'icon', 'chart', 'vector', 'image filter', or any question involving UI, graphics, or native modules. Also use when a more specific sub-skill matches."
-version: 1.0.0
-metadata:
-  author: Software Mansion
-  license: MIT
+license: MIT
 ---
 
 # React Native Best Practices

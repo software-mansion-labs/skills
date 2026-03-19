@@ -8,16 +8,14 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 
 | Sub-skill | Covers | Status |
 |-----------|--------|--------|
-| [Animations](./references/animations/) | Reanimated 4, CSS transitions, CSS animations, shared values, layout animations, 120fps, performance flags | Complete |
-| [Gestures](./references/gestures/) | Gesture Handler: tap, pan, pinch, rotation, swipe, long press, drag | Stub |
-| [SVG](./references/svg/) | React Native SVG: vector graphics, icons, charts, illustrations | Stub |
-| [Haptics](./references/haptics/) | Tactile feedback, vibration patterns, impact/notification haptics | Stub |
-| [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs, computer vision, OCR, speech, embeddings | Complete |
+| [Animations](./references/animations/) | Reanimated 4, CSS transitions, CSS animations, shared values, GPU shader animations (WebGPU, TypeGPU), layout animations, scroll-driven animations, 120fps, performance flags | Complete |
+| [Gestures](./references/gestures/) | Gesture Handler: tap, pan, pinch, rotation, fling, hover, long press, Pressable, RectButton, Swipeable, DrawerLayout, gesture composition, testing | Complete |
+| [SVG](./references/svg/) | React Native SVG: when to use, installation, performance, animated SVG with Reanimated | Complete |
+| [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs, computer vision, OCR, speech, text/image embeddings, model management | Complete |
+| [Rich Text](./references/rich-text/) | Rich text editing with react-native-enriched, Markdown rendering with react-native-enriched-markdown | Complete |
+| [Multithreading](./references/multithreading/) | react-native-worklets: Worker Runtimes, scheduling APIs, shared memory, Serializable, Synchronizable | Complete |
+| [Audio](./references/audio/) | React Native Audio API: playback, recording, visualization, audio sessions | Complete |
 | [Multimedia](./references/multimedia/) | Video playback and streaming | Stub |
-| [Rich Text](./references/rich-text/) | Rich text editing with react-native-enriched: formatting toolbar, mentions, links | Complete |
-| [Multithreading](./references/multithreading/) | Worklets, background processing, offloading computation | Stub |
-| [Audio](./references/audio/) | React Native Audio API: playback, recording, visualization, sessions | Complete |
-| [Radon MCP](./references/radon-mcp/) | Radon IDE MCP tools: screenshots, logs, component tree, network inspector, reload, docs | Complete |
 
 **Complete** = full reference documentation with code examples. **Stub** = frontmatter and description only, reference content coming soon.
 
@@ -25,40 +23,54 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 
 ```
 react-native-best-practices/
-├── SKILL.md                          # Entry point: routing table for sub-skills
+├── SKILL.md                              # Entry point: routing table for sub-skills
 └── references/
     ├── animations/
-    │   ├── SKILL.md                  # When to use, what references to read
-    │   ├── animations.md             # Decision tree, CSS transitions/animations, shared values
-    │   └── animations-performance.md # 120fps, feature flags, simultaneous animation limits
-    ├── gestures/SKILL.md
-    ├── svg/SKILL.md
-    ├── haptics/SKILL.md
+    │   ├── SKILL.md                      # When to use, what references to read
+    │   ├── animations.md                 # Decision tree, CSS transitions/animations, shared values
+    │   ├── animation-functions.md        # Core hooks, withSpring, withTiming, withDecay, composition
+    │   ├── layout-animations.md          # Entering/exiting, transitions, keyframes
+    │   ├── scroll-and-events.md          # Scroll-driven animations, useAnimatedReaction, useFrameCallback
+    │   ├── gpu-animations.md             # Shader animations, react-native-wgpu, TypeGPU, particles
+    │   └── animations-performance.md     # 120fps, feature flags, simultaneous animation limits
+    ├── gestures/
+    │   ├── SKILL.md                      # Version decision tree (v2 Builder vs v3 Hook API)
+    │   ├── gestures.md                   # Decision tree, lifecycle, threading, SharedValue config
+    │   ├── tap-handling.md               # RectButton, Pressable, tap, double-tap, hit slop
+    │   ├── continuous-gestures.md        # Pan, Pinch, Rotation, LongPress, Fling, Hover
+    │   ├── gesture-composition.md        # Simultaneous, Race, Exclusive, VirtualGestureDetector
+    │   ├── swipeable-and-drawer.md       # ReanimatedSwipeable, ReanimatedDrawerLayout
+    │   └── testing.md                    # Jest setup, fireGestureHandler, troubleshooting
+    ├── svg/
+    │   ├── SKILL.md                      # When to use react-native-svg vs alternatives
+    │   ├── when-to-use.md               # Choosing between svg, expo-image, icons, Skia, Lottie
+    │   ├── svg.md                        # Installation, performance, known issues
+    │   └── animation-patterns.md         # Animating SVG with Reanimated
     ├── on-device-ai/
-    │   ├── SKILL.md                  # Use cases, capabilities overview, getting started
+    │   ├── SKILL.md                      # Use cases, capabilities overview, getting started
     │   └── references/
-    │       ├── reference-llms.md     # LLM hooks, tool calling, structured output
-    │       ├── reference-cv.md       # Classification, detection, segmentation
-    │       ├── reference-cv-2.md     # Style transfer, text-to-image, image embeddings
-    │       ├── reference-ocr.md      # Horizontal/vertical text recognition
-    │       ├── reference-audio.md    # Speech-to-text, text-to-speech, VAD
-    │       ├── reference-nlp.md      # Text embeddings, tokenization
-    │       ├── reference-models.md   # Model catalog, loading strategies, device constraints
-    │       └── core-utilities.md     # ResourceFetcher, error handling, custom models
-    ├── rich-text/SKILL.md
-    ├── multithreading/SKILL.md
-    ├── audio/SKILL.md                # AudioContext singletons, buffer state, visualizations
-    └── radon-mcp/
-        ├── SKILL.md                  # Routing table for Radon IDE MCP tools
-        └── references/
-            ├── view-application-logs.md        # Build, bundler, and runtime logs
-            ├── view-screenshot.md              # Capture current app screen
-            ├── view-component-tree.md          # Mounted React component hierarchy
-            ├── view-network-logs.md            # Inspecting HTTP traffic list
-            ├── view-network-request-details.md # Headers, body, metadata for a request
-            ├── reload-application.md           # JS reload, process restart, full rebuild
-            ├── query-documentation.md          # RN/Expo docs from curated knowledge base
-            └── get-library-description.md      # npm library evaluation
+    │       ├── reference-llms.md         # LLM hooks, tool calling, structured output
+    │       ├── reference-cv.md           # Classification, detection, segmentation
+    │       ├── reference-cv-2.md         # Style transfer, text-to-image, image embeddings
+    │       ├── reference-ocr.md          # Horizontal/vertical text recognition
+    │       ├── reference-audio.md        # Speech-to-text, text-to-speech, VAD
+    │       ├── reference-nlp.md          # Text embeddings, tokenization
+    │       ├── reference-models.md       # Model catalog, loading strategies, device constraints
+    │       └── core-utilities.md         # ResourceFetcher, error handling, custom models
+    ├── rich-text/
+    │   ├── SKILL.md                      # Editor and renderer patterns, style customization
+    │   └── references/
+    │       ├── enriched-input-api.md     # Complete EnrichedTextInput API
+    │       └── enriched-markdown-api.md  # Complete EnrichedMarkdownText API
+    ├── multithreading/
+    │   ├── SKILL.md                      # Runtime model, API decision tree, critical rules
+    │   ├── threading-api.md              # Scheduling APIs, Worker Runtimes, sync/async
+    │   ├── shared-memory.md              # Closures, Serializable, Synchronizable
+    │   └── setup-and-advanced.md         # Installation, Babel config, Bundle Mode, Jest
+    ├── audio/
+    │   └── SKILL.md                      # AudioContext singletons, buffer state, visualizations, sessions
+    └── multimedia/
+        └── SKILL.md                      # Stub: video playback and streaming (coming soon)
 ```
 
 ## Adding a Sub-skill
@@ -80,6 +92,8 @@ react-native-best-practices/
 - [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) (v4, New Architecture)
 - [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/)
 - [React Native SVG](https://github.com/software-mansion/react-native-svg)
+- [React Native Worklets](https://docs.swmansion.com/react-native-worklets/)
 - [React Native ExecuTorch](https://docs.swmansion.com/react-native-executorch/)
 - [React Native Audio API](https://docs.swmansion.com/react-native-audio-api/)
 - [React Native Enriched](https://github.com/software-mansion/react-native-enriched)
+- [React Native WGPU](https://github.com/software-mansion/react-native-wgpu) / [TypeGPU](https://docs.swmansion.com/TypeGPU/)

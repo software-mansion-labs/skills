@@ -28,23 +28,12 @@ const model = useSpeechToText({ model: WHISPER_TINY_EN });
 
 const transcribe = async (audioFileUri: string) => {
   const audioContext = new AudioContext({ sampleRate: 16000 });
-  const decoded = await audioContext.decodeAudioData(audioFileUri);
+  const decoded = await audioContext.decodeAudioDataSource(audioFileUri);
   const waveform = decoded.getChannelData(0);
 
   const result = await model.transcribe(waveform);
-  console.log(result.text);
+  console.log(result);
 };
-```
-
-### Timestamps and verbose output
-
-Pass `{ verbose: true }` to get word-level timestamps, segment boundaries, and confidence scores (matching OpenAI Whisper's `verbose_json` format):
-
-```tsx
-const result = await model.transcribe(waveform, { verbose: true });
-// result.segments[0].words[0] => { word: "Hello", start: 0, end: 0.5 }
-// result.duration => total audio length in seconds
-// result.language => detected language code
 ```
 
 ### Multilingual transcription
@@ -70,7 +59,13 @@ import { useSpeechToText, WHISPER_TINY_EN } from 'react-native-executorch';
 import { AudioManager, AudioRecorder } from 'react-native-audio-api';
 
 const model = useSpeechToText({ model: WHISPER_TINY_EN });
-const [recorder] = useState(() => new AudioRecorder());
+const [recorder] = useState(
+  () =>
+    new AudioRecorder({
+      sampleRate: 16000,
+      bufferLengthInSamples: 1600,
+    })
+);
 
 // Configure audio session for recording
 useEffect(() => {
@@ -83,26 +78,17 @@ useEffect(() => {
 }, []);
 
 const startStreaming = async () => {
-  const sampleRate = 16000;
-
   // Feed audio chunks to the model
-  recorder.onAudioReady(
-    { sampleRate, bufferLength: 0.1 * sampleRate, channelCount: 1 },
-    (chunk) => {
-      model.streamInsert(chunk.buffer.getChannelData(0));
-    }
-  );
+  recorder.onAudioReady(({ buffer }) => {
+    model.streamInsert(buffer.getChannelData(0));
+  });
 
-  await recorder.start();
+  recorder.start();
 
-  // Consume streaming results
-  let fullText = '';
-  const streamIter = model.stream({ verbose: false });
-
-  for await (const { committed, nonCommitted } of streamIter) {
-    if (committed.text) fullText += committed.text;
-    // Display: confirmed text + tentative text
-    setDisplayText(fullText + nonCommitted.text);
+  try {
+    await model.stream();
+  } catch (error) {
+    console.error('Error during streaming transcription:', error);
   }
 };
 
@@ -112,9 +98,31 @@ const stopStreaming = () => {
 };
 ```
 
+Display streaming results using the `committedTranscription` and `nonCommittedTranscription` properties:
+
+```tsx
+<Text>
+  {model.committedTranscription}
+  {model.nonCommittedTranscription}
+</Text>
+```
+
 The streaming API uses the [whisper-streaming](https://aclanthology.org/2023.ijcnlp-demo.3.pdf) algorithm to split audio at sentence boundaries rather than fixed 30-second chunks. This introduces slight overhead but produces accurate transcription for arbitrarily long audio.
 
-**`committed` vs `nonCommitted`:** Committed text is finalized and will not change. Non-committed text is tentative and may be revised as more audio arrives. Display both for responsive UI, but only persist committed text.
+**`committedTranscription` vs `nonCommittedTranscription`:** Committed text is finalized and will not change. Non-committed text is tentative and may be revised as more audio arrives. Display both for responsive UI, but only persist committed text.
+
+### Supported models
+
+| Model | Language |
+|---|---|
+| whisper-tiny.en | English |
+| whisper-tiny | Multilingual |
+| whisper-base.en | English |
+| whisper-base | Multilingual |
+| whisper-small.en | English |
+| whisper-small | Multilingual |
+
+A quantized variant is also available: `WHISPER_TINY_EN_QUANTIZED`.
 
 ### Gotchas
 
@@ -151,7 +159,7 @@ const tts = useTextToSpeech({
 });
 
 const speak = async (text: string) => {
-  const waveform = await tts.forward({ text, speed: 1.0 });
+  const waveform = await tts.forward({ text });
 
   const ctx = new AudioContext({ sampleRate: 24000 });
   const buffer = ctx.createBuffer(1, waveform.length, 24000);
@@ -190,21 +198,6 @@ await tts.stream({
 });
 ```
 
-You can dynamically insert more text during streaming with `tts.streamInsert(moreText)` and stop with `tts.streamStop(instant)`.
-
-### Synthesis from phonemes
-
-If you have pre-computed phonemes (from an external G2P model or dictionary), skip the internal phoneme generation:
-
-```tsx
-const waveform = await tts.forwardFromPhonemes({
-  phonemes: 'hˈɛloʊ wˈɜːld',
-  speed: 1.0,
-});
-```
-
-`streamFromPhonemes` is also available for streaming from phoneme input.
-
 ### Voice selection
 
 Kokoro supports multiple voices. Pass a voice constant when initializing:
@@ -218,13 +211,40 @@ const tts = useTextToSpeech({
 });
 ```
 
-For all available voices, webfetch the [supported voices list](https://docs.swmansion.com/react-native-executorch/docs/api-reference#tts-supported-voices).
+Available voices:
+
+| Voice | Gender | Accent |
+|---|---|---|
+| `KOKORO_VOICE_AF_HEART` | Female | American |
+| `KOKORO_VOICE_AF_RIVER` | Female | American |
+| `KOKORO_VOICE_AF_SARAH` | Female | American |
+| `KOKORO_VOICE_AM_ADAM` | Male | American |
+| `KOKORO_VOICE_AM_MICHAEL` | Male | American |
+| `KOKORO_VOICE_AM_SANTA` | Male | American |
+| `KOKORO_VOICE_BF_EMMA` | Female | British |
+| `KOKORO_VOICE_BM_DANIEL` | Male | British |
+
+Available models: `KOKORO_SMALL`, `KOKORO_MEDIUM`.
 
 ---
 
 ## Voice Activity Detection (useVAD)
 
-Detects speech segments in an audio stream. Useful for knowing when the user starts and stops speaking, trimming silence before transcription, or triggering recording. For the full API, webfetch [useVAD](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useVAD).
+Detects speech segments in an audio buffer. Useful for knowing when the user starts and stops speaking, trimming silence before transcription, or triggering recording. For the full API, webfetch [useVAD](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useVAD).
+
+```tsx
+import { useVAD, FSMN_VAD } from 'react-native-executorch';
+
+const vad = useVAD({ model: FSMN_VAD });
+
+const detectSpeech = async (audioBuffer: Float32Array) => {
+  const segments = await vad.forward(audioBuffer);
+  // segments: Segment[] with { start, end } indices at 16kHz sample rate
+  for (const seg of segments) {
+    console.log(`Speech from ${seg.start} to ${seg.end} samples`);
+  }
+};
+```
 
 ---
 
@@ -248,7 +268,7 @@ const handleVoiceQuery = async (audioWaveform: Float32Array) => {
   // 2. Generate LLM response
   const response = await llm.generate([
     { role: 'system', content: 'You are a helpful voice assistant. Keep responses brief.' },
-    { role: 'user', content: transcription.text },
+    { role: 'user', content: transcription },
   ]);
 
   // 3. Speak the response

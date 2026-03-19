@@ -12,15 +12,15 @@ All vision hooks share a common interface pattern:
 
 | Hook | Task | Input | Output |
 |---|---|---|---|
-| [useClassification](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useClassification) | Label an image | Image URI / PixelData | `{ label: probability }` object |
-| [useObjectDetection](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useObjectDetection) | Locate objects | Image URI / PixelData | `Detection[]` with bbox, label, score |
-| [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) | Read horizontal text | Image URI / PixelData | Recognized text with bounding boxes |
-| [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR) | Read vertical text | Image URI / PixelData | Recognized text with bounding boxes |
-| [useSemanticSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useSemanticSegmentation) | Pixel-level labels | Image URI / PixelData | Segmentation mask |
-| [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer) | Apply art style | Image URI / PixelData | Styled image URI |
-| [useTextToImage](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useTextToImage) | Generate image from text | Text prompt | Generated image URI |
-| [useImageEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageEmbeddings) | Image to vector | Image URI / PixelData | `number[]` embedding |
-| [useTextEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useTextEmbeddings) | Text to vector | String | `number[]` embedding |
+| [useClassification](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useClassification) | Label an image | Image URI | `{ label: probability }` object |
+| [useObjectDetection](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useObjectDetection) | Locate objects | Image URI | `Detection[]` with bbox, label, score |
+| [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) | Read horizontal text | Image URI | `OCRDetection[]` with bbox, text, score |
+| [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR) | Read vertical text | Image URI | `OCRDetection[]` with bbox, text, score |
+| [useImageSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageSegmentation) | Pixel-level labels | Image URI | Segmentation mask dictionary |
+| [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer) | Apply art style | Image URI | Base64-encoded image URL |
+| [useTextToImage](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useTextToImage) | Generate image from text | Text prompt | Base64 PNG |
+| [useImageEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageEmbeddings) | Image to vector | Image URI | `Float32Array` embedding |
+| [useTextEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useTextEmbeddings) | Text to vector | String | `Float32Array` embedding |
 
 ### Common interface
 
@@ -32,13 +32,13 @@ Every vision hook returns an object with:
 - `downloadProgress` -- 0 to 1 during model download
 - `forward(input)` -- run inference on a single image (returns a Promise)
 
-Image inputs accept: remote URLs (`https://...`), local file URIs (`file:///...`), base64-encoded strings, or `PixelData` objects (raw RGB buffer).
+Image inputs accept: remote URLs (`https://...`), local file URIs (`file:///...`), or base64-encoded strings.
 
 ---
 
 ## Image Classification
 
-Assigns a label to an image. Returns an object mapping class names to probabilities:
+Assigns a label to an image. Returns an object mapping ImageNet1k class names (1000 classes) to probabilities:
 
 ```tsx
 import { useClassification, EFFICIENTNET_V2_S } from 'react-native-executorch';
@@ -67,13 +67,12 @@ If multiple classes have similar probabilities, the model is not confident in it
 Returns a list of detected objects with bounding boxes, labels, and confidence scores:
 
 ```tsx
-import { useObjectDetection, RF_DETR_NANO } from 'react-native-executorch';
+import { useObjectDetection, SSDLITE_320_MOBILENET_V3_LARGE } from 'react-native-executorch';
 
-const model = useObjectDetection({ model: RF_DETR_NANO });
+const model = useObjectDetection({ model: SSDLITE_320_MOBILENET_V3_LARGE });
 
 const detect = async (imageUri: string) => {
-  // detectionThreshold defaults to 0.7; lower it to find more objects
-  const detections = await model.forward(imageUri, 0.5);
+  const detections = await model.forward(imageUri);
 
   for (const det of detections) {
     console.log(det.label, det.score, det.bbox); // bbox: { x1, y1, x2, y2 }
@@ -81,44 +80,97 @@ const detect = async (imageUri: string) => {
 };
 ```
 
-Bounding box coordinates are in the original image's pixel space. The `label` property is typed to the model's label map (e.g., COCO labels).
+Bounding box coordinates are bottom-left (`x1`, `y1`) and top-right (`x2`, `y2`) in the original image's pixel space. The `label` corresponds to one of 91 COCO class labels.
 
 ---
 
 ## OCR (Optical Character Recognition)
 
-`useOCR` reads horizontal text. `useVerticalOCR` reads vertical text (e.g., Japanese, Chinese). Both return recognized text with bounding boxes. For hook APIs, webfetch [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) and [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR).
+`useOCR` reads horizontal text. `useVerticalOCR` reads vertical text (e.g., Japanese, Chinese). Both return `OCRDetection[]` with bounding boxes, text, and confidence scores.
+
+For hook APIs, webfetch [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) and [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR).
 
 ```tsx
-import { useOCR, EASYOCR_DETECTION_MODEL } from 'react-native-executorch';
+import { useOCR, OCR_ENGLISH } from 'react-native-executorch';
 
-const model = useOCR({ model: EASYOCR_DETECTION_MODEL });
+const model = useOCR({ model: OCR_ENGLISH });
 
 const readText = async (imageUri: string) => {
   const results = await model.forward(imageUri);
-  // results contain recognized text and bounding boxes
+  for (const det of results) {
+    console.log(det.text, det.score, det.bbox); // bbox: Point[] (4 corners)
+  }
 };
 ```
 
-For multilingual OCR, pass a `language` option. Check the docs for supported languages per model.
+### Language support
+
+Each supported alphabet requires its own recognizer model. The simplified language constants (e.g., `OCR_ENGLISH`, `OCR_RUSSIAN`, `OCR_JAPANESE`) bundle the correct detector and recognizer automatically. For the full list of 84 supported languages, webfetch [OCR Supported Alphabets](https://docs.swmansion.com/react-native-executorch/docs/api-reference#ocr-supported-alphabets).
+
+When using custom recognizers, ensure the recognizer alphabet matches the language:
+- `RECOGNIZER_LATIN_CRNN` for Latin-alphabet languages (Polish, German, etc.)
+- `RECOGNIZER_CYRILLIC_CRNN` for Cyrillic-alphabet languages (Russian, Ukrainian, etc.)
+
+The detector model is CRAFT (text detection); recognizers are CRNN (text recognition).
 
 ---
 
-## Semantic Segmentation
+## Image Segmentation
 
-Assigns a class label to every pixel in an image. Useful for background removal, scene understanding, and portrait effects. For the full API, webfetch [useSemanticSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useSemanticSegmentation).
+Assigns a class label to every pixel in an image. Useful for background removal, scene understanding, and portrait effects. For the full API, webfetch [useImageSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageSegmentation).
+
+```tsx
+import { useImageSegmentation, DEEPLAB_V3_RESNET50, DeeplabLabel } from 'react-native-executorch';
+
+const model = useImageSegmentation({ model: DEEPLAB_V3_RESNET50 });
+
+const segment = async (imageUri: string) => {
+  // forward(imageUri, classesOfInterest?, resize?)
+  const outputDict = await model.forward(imageUri, [DeeplabLabel.CAT], true);
+
+  // outputDict[DeeplabLabel.ARGMAX]: per-pixel class index (always present)
+  // outputDict[DeeplabLabel.CAT]: per-pixel probability for CAT class
+};
+```
+
+- `classesOfInterest` (optional): `DeeplabLabel[]` specifying which classes to return full probability arrays for. Default is empty (only argmax returned).
+- `resize` (optional): if `true`, output is rescaled to original image dimensions. Default is `false` (224x224 internal resolution). Setting to `true` makes `forward` slower.
+
+The model supports 21 `DeeplabLabel` classes.
 
 ---
 
 ## Style Transfer
 
-Applies an artistic style to an image. Returns a URI to the styled output image. For the full API, webfetch [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer).
+Applies an artistic style to an image. Returns a base64-encoded image URL. For the full API, webfetch [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer).
+
+Available models: `STYLE_TRANSFER_CANDY`, `STYLE_TRANSFER_MOSAIC`, `STYLE_TRANSFER_UDNIE`, `STYLE_TRANSFER_RAIN_PRINCESS`.
 
 ---
 
 ## Text-to-Image
 
-Generates an image from a text prompt. For the full API, webfetch [useTextToImage](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useTextToImage).
+Generates an image from a text prompt using a compressed Stable Diffusion model. For the full API, webfetch [useTextToImage](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useTextToImage).
+
+```tsx
+import { useTextToImage, BK_SDM_TINY_VPRED_512 } from 'react-native-executorch';
+
+const model = useTextToImage({
+  ...BK_SDM_TINY_VPRED_512,
+  inferenceCallback: (progress) => console.log(`Step: ${progress}`),
+});
+
+const generate = async () => {
+  // generate(prompt, imageSize, numSteps, seed?)
+  const base64Png = await model.generate('a cat sitting on a couch', 512, 25);
+};
+```
+
+- `imageSize` must be a multiple of 32 (256 or 512 supported)
+- `numSteps`: number of denoising iterations
+- `seed` (optional): for reproducible results
+
+Available models: `BK_SDM_TINY_VPRED_256`, `BK_SDM_TINY_VPRED_512`.
 
 ---
 
@@ -127,15 +179,25 @@ Generates an image from a text prompt. For the full API, webfetch [useTextToImag
 Convert images or text into vector representations for similarity search, retrieval-augmented generation (RAG), or clustering.
 
 ```tsx
-import { useImageEmbeddings, CLIP_VIT_BASE_PATCH16 } from 'react-native-executorch';
+import { useImageEmbeddings, CLIP_VIT_BASE_PATCH32_IMAGE } from 'react-native-executorch';
 
-const model = useImageEmbeddings({ model: CLIP_VIT_BASE_PATCH16 });
+const model = useImageEmbeddings({ model: CLIP_VIT_BASE_PATCH32_IMAGE });
 
 const embedding = await model.forward(imageUri);
-// embedding is a number[] vector
+// embedding is a Float32Array (512 dimensions, normalized)
 ```
 
-Text embeddings follow the same pattern with `useTextEmbeddings`. Combine image and text embeddings (using the same model family like CLIP) for cross-modal search.
+Text embeddings follow the same pattern with `useTextEmbeddings`. Available text embedding models:
+
+| Model | Dimensions | Max tokens | Best for |
+|---|---|---|---|
+| `ALL_MINILM_L6_V2` | 384 | 254 | General purpose |
+| `ALL_MPNET_BASE_V2` | 768 | 382 | General purpose (higher quality) |
+| `MULTI_QA_MINILM_L6_COS_V1` | 384 | 509 | Search / QA |
+| `MULTI_QA_MPNET_BASE_DOT_V1` | 768 | 510 | Search / QA (higher quality) |
+| `CLIP_VIT_BASE_PATCH32_TEXT` | 512 | 74 | Cross-modal search with CLIP images |
+
+Combine image and text embeddings from the same model family (CLIP) for cross-modal search. Embeddings are normalized, so cosine similarity equals dot product.
 
 Use `useTokenizer` to count tokens before processing variable-length input. Text exceeding the model's token limit is truncated silently.
 
@@ -147,14 +209,14 @@ Vision hooks that support `runOnFrame` can process camera frames in real time us
 
 ### Supported hooks
 
-`useClassification`, `useObjectDetection`, `useOCR`, `useVerticalOCR`, `useImageEmbeddings`, `useSemanticSegmentation`, `useStyleTransfer`.
+`useClassification`, `useObjectDetection`, `useOCR`, `useVerticalOCR`, `useImageEmbeddings`, `useImageSegmentation`, `useStyleTransfer`.
 
 ### runOnFrame vs forward
 
 | | `runOnFrame` | `forward` |
 |---|---|---|
 | Thread | JS worklet thread (synchronous) | Background thread (async) |
-| Input | VisionCamera `Frame` | Image URI / PixelData |
+| Input | VisionCamera `Frame` | Image URI |
 | Use case | Real-time camera | Single image |
 
 ### Setup

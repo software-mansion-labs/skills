@@ -1,6 +1,6 @@
 ---
 name: on-device-ai
-description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Covers LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, segmentation, style transfer, embeddings, text-to-image), speech processing (speech-to-text, text-to-speech, voice activity detection), VisionCamera real-time frame processing, model loading strategies, resource management, and custom model integration. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useImageSegmentation', 'useSemanticSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'image classification', 'object detection', 'style transfer', 'speech-to-text', 'text-to-speech', 'voice activity detection', 'text embeddings', 'image embeddings', 'mobile LLM', 'on-device chatbot', 'document scanning OCR', 'VisionCamera AI', 'real-time frame processing', 'runOnFrame', 'tool calling', 'function calling', 'structured output', 'vision-language model', 'VLM', or any request to run AI/ML models locally in a React Native app."
+description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Covers LLMs (chat, tool calling, structured output), computer vision (classification, object detection, OCR, segmentation, style transfer, embeddings, text-to-image), speech processing (speech-to-text, text-to-speech, voice activity detection), VisionCamera real-time frame processing, model loading strategies, resource management, and custom model integration. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useImageSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'image classification', 'object detection', 'style transfer', 'speech-to-text', 'text-to-speech', 'voice activity detection', 'text embeddings', 'image embeddings', 'mobile LLM', 'on-device chatbot', 'document scanning OCR', 'VisionCamera AI', 'real-time frame processing', 'runOnFrame', 'tool calling', 'function calling', 'structured output', or any request to run AI/ML models locally in a React Native app."
 ---
 
 # On-Device AI
@@ -19,7 +19,6 @@ What AI task does the feature need?
 ├── Text generation, chatbot, or reasoning?
 │   └── useLLM                                    → see llm.md
 │       ├── Text-only chat → standard useLLM
-│       ├── Image + text input → VLM with capabilities: ['vision']
 │       ├── Tool calling → configure with toolsConfig
 │       └── Structured JSON output → getStructuredOutputPrompt
 │
@@ -27,7 +26,7 @@ What AI task does the feature need?
 │   ├── What's in this image? → useClassification  → see vision.md
 │   ├── Where are objects? → useObjectDetection    → see vision.md
 │   ├── Read text from image? → useOCR / useVerticalOCR → see vision.md
-│   ├── Segment regions? → useSemanticSegmentation → see vision.md
+│   ├── Segment regions? → useImageSegmentation    → see vision.md
 │   ├── Apply artistic style? → useStyleTransfer   → see vision.md
 │   ├── Generate image from text? → useTextToImage  → see vision.md
 │   └── Embed image as vector? → useImageEmbeddings → see vision.md
@@ -50,8 +49,6 @@ What AI task does the feature need?
 
 ## Critical Rules
 
-- **Initialize the resource fetcher before loading any model.** Call `initExecutorch({ resourceFetcher: ExpoResourceFetcher })` (or `BareResourceFetcher` for non-Expo projects) at app startup. Without this, model loading throws `ResourceFetcherAdapterNotInitialized`.
-
 - **Always check `isReady` before calling `forward` or `generate`.** Hooks load models asynchronously. Calling inference methods before the model is ready throws `ModuleNotLoaded`.
 
 - **Interrupt LLM generation before unmounting the component.** Unmounting while `isGenerating` is true causes a crash. Call `llm.interrupt()` and wait for `isGenerating` to become false before navigating away.
@@ -68,7 +65,7 @@ What AI task does the feature need?
 
 | File | When to read |
 |------|-------------|
-| `llm.md` | LLM chat (functional and managed), tool calling, structured output, vision-language models, token batching, context strategies, model selection, generation config |
-| `vision.md` | Image classification, object detection, OCR, semantic segmentation, style transfer, text-to-image, image/text embeddings, VisionCamera real-time frame processing with `runOnFrame` |
+| `llm.md` | LLM chat (functional and managed), tool calling, structured output, token batching, context window configuration, model selection, generation config |
+| `vision.md` | Image classification, object detection, OCR, image segmentation, style transfer, text-to-image, image/text embeddings, VisionCamera real-time frame processing with `runOnFrame` |
 | `speech.md` | Speech-to-text (batch and streaming transcription), text-to-speech (batch and streaming synthesis), voice activity detection, audio format requirements |
-| `setup.md` | Installation (Expo and bare RN), resource fetcher initialization, model loading strategies (bundled, remote, local), `ResourceFetcher` download management, error handling with `RnExecutorchError`, custom models with `useExecutorchModule`, Metro config for `.pte` files |
+| `setup.md` | Installation, model loading strategies (bundled, remote, local), `ResourceFetcher` download management, error handling with `RnExecutorchError`, custom models with `useExecutorchModule`, Metro config for `.pte` files |

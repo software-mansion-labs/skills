@@ -1,6 +1,6 @@
 # Setup, Model Loading, and Error Handling
 
-Installation, resource fetcher initialization, model loading strategies, download management, error handling, and custom model integration for React Native ExecuTorch.
+Installation, model loading strategies, download management, error handling, and custom model integration for React Native ExecuTorch.
 
 For the full getting started guide, webfetch [Getting Started](https://docs.swmansion.com/react-native-executorch/docs/fundamentals/getting-started). For version compatibility, webfetch the [Compatibility table](https://docs.swmansion.com/react-native-executorch/docs/other/compatibility).
 
@@ -8,51 +8,17 @@ For the full getting started guide, webfetch [Getting Started](https://docs.swma
 
 ## Installation
 
-### Expo
-
-```bash
-npx expo install react-native-executorch
-npx expo install react-native-executorch-expo-resource-fetcher expo-file-system expo-asset
-```
-
-Expo Go is not supported. Use a custom development build (`npx expo prebuild`).
-
-### Bare React Native
-
 ```bash
 npm install react-native-executorch
-npm install react-native-executorch-bare-resource-fetcher @dr.pogodin/react-native-fs @kesha-antonov/react-native-background-downloader
-cd ios && pod install
 ```
+
+For bare React Native (non-Expo), install [Expo Modules](https://docs.expo.dev/bare/installing-expo-modules/) as the library depends on `expo-file-system` internally.
 
 ### Prerequisites
 
 - **New Architecture (Fabric) required.** The old architecture is not supported.
+- **Expo Go is not supported.** Use a custom development build (`npx expo prebuild`).
 - **iOS release builds require a real device.** Simulator release builds are not supported because ExecuTorch uses Metal APIs unavailable in the simulator.
-
----
-
-## Resource Fetcher Initialization
-
-Call `initExecutorch` once at app startup, before loading any model:
-
-```tsx
-// Expo
-import { initExecutorch } from 'react-native-executorch';
-import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
-
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
-```
-
-```tsx
-// Bare React Native
-import { initExecutorch } from 'react-native-executorch';
-import { BareResourceFetcher } from '@react-native-executorch/bare-adapter';
-
-initExecutorch({ resourceFetcher: BareResourceFetcher });
-```
-
-Skipping this step causes all model loads to throw `ResourceFetcherAdapterNotInitialized`.
 
 ---
 
@@ -148,7 +114,7 @@ const uris = await ResourceFetcher.fetch(
   'https://huggingface.co/.../model.pte',
   'https://huggingface.co/.../tokenizer.bin'
 );
-// uris: string[] of local file paths (without file:// prefix)
+// uris: string[] of local file paths (without file:// prefix), or null if interrupted
 ```
 
 ### Pause, resume, cancel
@@ -167,6 +133,9 @@ await ResourceFetcher.cancelFetching('https://...model.pte');
 ### Storage management
 
 ```tsx
+// List all downloaded files
+const files = await ResourceFetcher.listDownloadedFiles();
+
 // List all downloaded models
 const models = await ResourceFetcher.listDownloadedModels();
 
@@ -192,10 +161,11 @@ All errors inherit from `RnExecutorchError` with a `code` property from `RnExecu
 | `ModuleNotLoaded` | Calling `forward`/`generate` before model is ready | Check `isReady` before calling inference methods |
 | `ModelGenerating` | Calling inference while another is running | Wait for completion or call `interrupt()` |
 | `InvalidConfig` | Invalid config values (e.g., `topp` > 1) | Validate config parameters |
-| `ResourceFetcherAdapterNotInitialized` | Forgot to call `initExecutorch()` | Call `initExecutorch({ resourceFetcher })` at app startup |
 | `ResourceFetcherDownloadFailed` | Network error during model download | Retry with exponential backoff |
 | `MemoryAllocationFailed` | Model too large for device | Use a smaller or more aggressively quantized model variant |
 | `DownloadInterrupted` | Download did not complete | Retry the download |
+| `StreamingNotStarted` | Calling `streamInsert` before `stream()` is active | Start streaming first |
+| `StreamingInProgress` | Calling `stream()` while another stream is active | Wait for current stream to finish |
 
 ### Error handling pattern
 
@@ -240,7 +210,7 @@ For models not covered by the built-in hooks, use `useExecutorchModule` to run a
 ### Running a custom model
 
 ```tsx
-import { useExecutorchModule } from 'react-native-executorch';
+import { useExecutorchModule, ScalarType } from 'react-native-executorch';
 
 const model = useExecutorchModule({
   modelSource: require('../assets/custom_model.pte'),
@@ -249,17 +219,18 @@ const model = useExecutorchModule({
 const runInference = async () => {
   // Create input tensor matching your model's expected shape
   const input = {
-    data: new Float32Array([1.0, 2.0, 3.0]),
-    shape: [1, 3],
-    dtype: 'float32',
+    dataPtr: new Float32Array([1.0, 2.0, 3.0]),
+    sizes: [1, 3],
+    scalarType: ScalarType.FLOAT,
   };
 
   const output = await model.forward([input]);
   // output is a TensorPtr[] matching your model's output shape
+  // output[0].dataPtr is an ArrayBuffer; interpret based on scalarType
 };
 ```
 
-Input and output use the `TensorPtr` representation: `{ data: TypedArray, shape: number[], dtype: string }`.
+Input and output use the `TensorPtr` representation: `{ dataPtr: ArrayBuffer | TypedArray, sizes: number[], scalarType: ScalarType }`.
 
 ### TypeScript Module API
 

@@ -17,7 +17,6 @@ Choose based on device constraints and task complexity. All models ship as quant
 | LLaMA 3.2 | 1B, 3B | General chat |
 | Hammer 2.1 | 0.5B-3B | Tool calling |
 | Phi 4 Mini | 4B | Complex reasoning (high-end devices only) |
-| LFM2.5-VL | 1.6B | Vision-language (image + text input) |
 
 **Device limits:** Low-end devices handle 135M-1.7B parameters. High-end devices (iPhone 15 Pro, Pixel 8 Pro) can run 3B-4B parameter models. Always test on the lowest-spec device you plan to support.
 
@@ -114,20 +113,16 @@ Use Hammer 2.1 models for tool calling. Their chat template supports the tool ca
 Call `configure` once to set up the system prompt, conversation history, tool callbacks, and generation parameters. Then use `sendMessage` for each user message:
 
 ```tsx
-import {
-  useLLM,
-  LLAMA3_2_1B_SPINQUANT,
-  MessageCountContextStrategy,
-} from 'react-native-executorch';
+import { useLLM, LLAMA3_2_1B } from 'react-native-executorch';
 
-const llm = useLLM({ model: LLAMA3_2_1B_SPINQUANT });
+const llm = useLLM({ model: LLAMA3_2_1B });
 
 const { configure } = llm;
 useEffect(() => {
   configure({
     chatConfig: {
       systemPrompt: 'You are a helpful translator.',
-      contextStrategy: new MessageCountContextStrategy(6),
+      contextWindowLength: 6,
     },
     generationConfig: {
       temperature: 0.7,
@@ -141,17 +136,9 @@ useEffect(() => {
 const send = (text: string) => llm.sendMessage(text);
 ```
 
-### Context strategies
+### Context window
 
-The managed mode automatically trims conversation history using a context strategy:
-
-| Strategy | Behavior |
-|---|---|
-| `SlidingWindowContextStrategy` (default) | Keeps the most recent messages within the token limit |
-| `MessageCountContextStrategy(n)` | Keeps the last `n` messages |
-| `NoopContextStrategy` | Never trims (risk of exceeding context window) |
-
-Implement the `ContextStrategy` interface for custom trimming logic.
+The `contextWindowLength` field in `chatConfig` controls the number of messages from the current conversation that the model uses to generate a response. Larger values increase inference time and memory usage. Set it to a reasonable limit for your use case.
 
 ### Tool calling (managed)
 
@@ -244,33 +231,25 @@ useEffect(() => {
 }, [llm.messageHistory, llm.isGenerating]);
 ```
 
-Zod schemas are also supported. Pass a Zod schema to both `getStructuredOutputPrompt` and `fixAndValidateStructuredOutput` for typed output.
+### Zod schemas
 
-The `/no_think` suffix disables Qwen 3's reasoning mode, producing cleaner JSON output.
-
----
-
-## Vision-Language Models (VLM)
-
-Some models accept both text and images. Load with a model constant that has `capabilities: ['vision']`:
+Zod schemas are also supported via `zod/v4`. Use `z.meta()` for field descriptions:
 
 ```tsx
-import { useLLM, LFM2_VL_1_6B_QUANTIZED } from 'react-native-executorch';
+import * as z from 'zod/v4';
 
-const llm = useLLM({ model: LFM2_VL_1_6B_QUANTIZED });
-
-// Managed mode: pass image with sendMessage
-llm.sendMessage('What is in this image?', {
-  imagePath: '/path/to/image.jpg',
+const responseSchema = z.object({
+  username: z.string().meta({ description: 'Name of user' }),
+  question: z.optional(z.string().meta({ description: 'Question that user asks' })),
+  bid: z.number().meta({ description: 'Amount of money offered' }),
 });
 
-// Functional mode: set mediaPath on the user message
-const response = await llm.generate([
-  { role: 'user', content: 'Describe this image.', mediaPath: '/path/to/image.jpg' },
-]);
+const formatting = getStructuredOutputPrompt(responseSchema);
+// fixAndValidateStructuredOutput with Zod returns typed output
+const parsed = fixAndValidateStructuredOutput(lastMessage.content, responseSchema);
 ```
 
-The `imagePath` / `mediaPath` must be a local file path on the device.
+The `/no_think` suffix disables Qwen 3's reasoning mode, producing cleaner JSON output.
 
 ---
 
@@ -288,6 +267,18 @@ llm.configure({
 ```
 
 Defaults: 10 tokens, 80ms interval (~12 batches per second). Increase `batchTimeInterval` on slower devices for smoother UI. Decrease `outputTokenBatchSize` for faster perceived response on high-end devices.
+
+---
+
+## Token Counting
+
+Track token usage with the counting methods:
+
+```tsx
+const generatedTokens = llm.getGeneratedTokenCount();
+const promptTokens = llm.getPromptTokenCount();
+const totalTokens = llm.getTotalTokenCount();
+```
 
 ---
 

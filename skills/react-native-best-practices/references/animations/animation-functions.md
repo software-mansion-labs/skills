@@ -23,8 +23,41 @@ Do **not** add `'worklet';` to callbacks passed to Reanimated and Worklets APIs 
 - For objects, reassign the entire value: `sv.value = { ...sv.value, x: 50 }`. Direct mutation (`sv.value.x = 50`) loses reactivity.
 - For large arrays/objects, use `.modify()` to mutate in place: `sv.modify(arr => { arr.push(item); return arr; })`.
 - Reading `.value` on the JS thread blocks until the UI thread syncs. Minimize cross-thread reads.
-- Never read/modify during component render. Access only in callbacks (`useAnimatedStyle`, event handlers, `useEffect`).
+- Never read/modify during component render. Access only in callbacks (`useAnimatedStyle`, event handlers, `useEffect`). Reanimated will warn: _"Reading from `value` during component render"_ / _"Writing to `value` during component render"_.
 - Use `.get()`/`.set()` methods instead of `.value` for React Compiler compatibility.
+- **Avoid using a shared value exclusively on the JS thread.** If you only need the value on the JS thread, use `useState` instead. Reading a shared value on the JS thread is slow (requires thread synchronization) and may return a stale value. A common mistake is reading or updating a shared value in the component body (during render):
+
+```tsx
+// BAD: reading/writing shared values during render
+function Counter() {
+  const count = useSharedValue(0);
+
+  // Triggers "Reading from value during component render" warning
+  const doubled = count.value * 2;
+
+  return (
+    <Animated.View>
+      {/* Triggers "Writing to value during component render" warning */}
+      <Button onPress={() => { count.value += 1; }} title={`Count: ${count.value}`} />
+    </Animated.View>
+  );
+}
+
+// GOOD: shared value used for UI-thread animations
+function AnimatedCounter() {
+  const offset = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: offset.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Button onPress={() => { offset.value = withSpring(offset.value + 50); }} title="Move" />
+    </Animated.View>
+  );
+}
+```
 
 ### [useAnimatedStyle](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedStyle)
 

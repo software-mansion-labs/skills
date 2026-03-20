@@ -10,18 +10,18 @@ Install the plugin and your AI coding agent gets up-to-date guidance for animati
 
 ### As a plugin (recommended)
 
-Clone the repository and point Claude Code at it:
+Add the Software Mansion marketplace and install the plugin:
 
-```bash
-git clone https://github.com/software-mansion-labs/skills.git
-claude --plugin-dir ./skills
+```
+/plugin marketplace add software-mansion-labs/skills
+/plugin install skills@swmansion
 ```
 
-To load the plugin automatically in every session, add the `--plugin-dir` flag to your shell alias or configure a [plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) for your team.
+The skills are available immediately. Run `/plugin marketplace update swmansion` to get the latest version.
 
 ### As standalone skills
 
-If you prefer manual installation without the plugin system, copy or symlink skill directories into one of these locations:
+Alternatively, copy or symlink skill directories into one of these locations:
 
 | Scope | Path | When to use |
 |-------|------|-------------|
@@ -61,7 +61,7 @@ Best practices for using Radon IDE's MCP tools when developing, debugging, and i
 ```
 skills/
 ├── .claude-plugin/
-│   └── plugin.json
+│   └── marketplace.json
 └── skills/
     ├── radon-mcp/
     │   ├── references/

@@ -1,0 +1,40 @@
+{
+  "name": "swmansion",
+  "owner": {
+    "name": "Software Mansion",
+    "email": "kacper.kapusciak@swmansion.com"
+  },
+  "metadata": {
+    "description": "React Native skills and tools by Software Mansion"
+  },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": {
+        "source": "github",
+        "repo": "software-mansion-labs/skills"
+      },
+      "description": "Production-ready patterns for React Native development by Software Mansion. Covers animations, gestures, SVG, on-device AI, audio, multithreading, rich text, and Radon IDE debugging.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Software Mansion",
+        "url": "https://swmansion.com"
+      },
+      "repository": "https://github.com/software-mansion-labs/skills",
+      "license": "MIT",
+      "keywords": [
+        "react-native",
+        "expo",
+        "reanimated",
+        "gesture-handler",
+        "svg",
+        "executorch",
+        "audio-api",
+        "worklets",
+        "radon-ide"
+      ],
+      "category": "react-native",
+      "strict": false
+    }
+  ]
+}

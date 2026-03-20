@@ -26,10 +26,13 @@ Does the effect require GPU-level computation?
     │       ├── YES → Use CSS Animation (animationName + keyframes)
     │       └── NO  → Use CSS Transition with multiple properties
     └── NO  → Is it gesture-driven, or does it need math / trig / layout reads?
-        └── YES → Use Shared Value Animation (useSharedValue + useAnimatedStyle)
+        ├── Simple feedback (press/release, toggle)?
+        │   └── YES → Use CSS Transition + Pressable + React state
+        └── Continuous tracking, math, or layout reads?
+            └── YES → Use Shared Value Animation (useSharedValue + useAnimatedStyle)
 ```
 
-Default to CSS transitions and CSS animations. They are declarative, easier to read, and remove the overhead of worklet execution. Reach for shared values only when the animation requires programmatic control that CSS cannot express. Reach for GPU shaders when the animation involves per-pixel computation, hundreds/thousands of independently animated elements, physics simulations, or 3D rendering that operates outside the React Native view hierarchy.
+Default to CSS transitions and CSS animations. They are declarative, easier to read, and remove the overhead of worklet execution. This includes simple gesture feedback like button presses: use CSS transitions with `Pressable` + React state instead of shared values to avoid worklets and thread bridging. Reach for shared values when the animation requires continuous tracking (pan, pinch, scroll), per-frame math, or layout reads. Reach for GPU shaders when the animation involves per-pixel computation, hundreds/thousands of independently animated elements, physics simulations, or 3D rendering that operates outside the React Native view hierarchy.
 
 ---
 
@@ -55,6 +58,43 @@ transitionProperty: ['width', 'opacity', 'backgroundColor'],
 transitionDuration: [300, 200, 150],
 transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 ```
+
+### CSS Transitions for simple gesture feedback
+
+For simple press/release or toggle animations, CSS transitions paired with `Pressable` and React state avoid the need for shared values, worklets, and `scheduleOnRN` thread bridging. The animation stays declarative and runs entirely through Reanimated's CSS transition engine.
+
+```tsx
+import { useState } from 'react';
+import { Pressable } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+
+function PressableButton({ label, onPress }) {
+  const [pressed, setPressed] = useState(false);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}>
+      <Animated.View
+        style={{
+          transform: pressed
+            ? [{ scale: 0.96 }, { translateY: 4 }]
+            : [{ scale: 1 }, { translateY: 0 }],
+          boxShadow: pressed
+            ? '0px 1px 2px rgba(0, 0, 0, 0.3)'
+            : '0px 6px 10px rgba(0, 0, 0, 0.3)',
+          transitionProperty: ['transform', 'boxShadow'],
+          transitionDuration: '80ms',
+        }}>
+        <Text>{label}</Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+```
+
+Reserve shared value animations for continuous gesture tracking (pan, pinch, scroll-driven) where the animation must follow finger position on every frame without a JS thread round-trip.
 
 ### Discrete properties
 

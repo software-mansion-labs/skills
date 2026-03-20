@@ -109,7 +109,7 @@ const handleUpdate = (e: GestureEvent) => {
 const gesture = usePanGesture({ onUpdate: handleUpdate });
 ```
 
-**Calling JS-thread functions from gesture callbacks**: Use `scheduleOnRN` from `react-native-worklets` to call React state setters or navigation from a UI-thread gesture callback. `runOnJS` is deprecated in Reanimated 4:
+**Calling JS-thread functions from gesture callbacks**: Any function that is not a worklet will crash if called directly from a gesture callback when Reanimated is installed. This includes React state setters, navigation calls, native module methods (AudioContext, camera, etc.), `useCallback` handlers, and any function without a `'worklet'` directive. Use `scheduleOnRN` from `react-native-worklets` to dispatch these calls to the JS/RN thread. `runOnJS` from Reanimated is deprecated in Reanimated 4:
 
 ```tsx
 import { scheduleOnRN } from 'react-native-worklets';
@@ -123,7 +123,24 @@ const pan = usePanGesture({
 const pan = useMemo(() =>
   Gesture.Pan().onEnd(() => { scheduleOnRN(setPosition, offset.value); }),
 []);
+
+// v2 touch callbacks -- same rule applies
+const manual = useMemo(() =>
+  Gesture.Manual()
+    .onTouchesDown((e) => {
+      for (const touch of e.changedTouches) {
+        scheduleOnRN(handleTouch, touch.id, touch.absoluteX, touch.absoluteY);
+      }
+    })
+    .onTouchesUp((e) => {
+      for (const touch of e.changedTouches) {
+        scheduleOnRN(handleTouchEnd, touch.id);
+      }
+    }),
+[]);
 ```
+
+The **only** code safe to call directly inside gesture callbacks is: shared value mutations (`offset.value = ...`), other worklet functions (with `'worklet'` directive), and `scheduleOnRN` itself.
 
 **Disabling Reanimated**: Set `disableReanimated: true` (v3) to run all callbacks on the JS thread without Reanimated overhead. Useful for gestures that only trigger JS-side logic and do not animate.
 

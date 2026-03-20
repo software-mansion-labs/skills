@@ -65,6 +65,28 @@ const pan = useMemo(() => Gesture.Pan().onBegin(...).onUpdate(...).onEnd(...), [
 
 v3 hook API handles memoization internally.
 
+**Never call JS-thread functions directly from gesture callbacks** -- when Reanimated is installed, gesture callbacks run on the UI thread (workletized). Calling any non-worklet function (state setters, navigation, audio APIs, native module methods, `useCallback` handlers) directly from a gesture callback crashes with "Tried to synchronously call a non-worklet function on the UI thread". Wrap every JS-thread call in `scheduleOnRN` from `react-native-worklets`:
+
+```tsx
+import { scheduleOnRN } from 'react-native-worklets';
+
+// WRONG -- crashes: calling JS function directly from UI thread
+const gesture = useMemo(() =>
+  Gesture.Pan().onUpdate((e) => {
+    handleTouch(e.absoluteX, e.absoluteY); // non-worklet function
+  }),
+[]);
+
+// CORRECT -- schedules JS function on RN thread
+const gesture = useMemo(() =>
+  Gesture.Pan().onUpdate((e) => {
+    scheduleOnRN(handleTouch, e.absoluteX, e.absoluteY);
+  }),
+[]);
+```
+
+This applies to all gesture callback types including `onTouchesDown`, `onTouchesMove`, `onTouchesUp`, `onStart`, `onUpdate`, `onEnd`, etc. The only code safe to run directly is worklet-compatible code (shared value mutations, other worklet functions).
+
 **Scroll containers** -- import `ScrollView`/`FlatList` from `react-native-gesture-handler`, not `react-native`. Use `RectButton` for tappable items inside scroll containers:
 
 ```tsx

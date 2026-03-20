@@ -2,32 +2,36 @@
 
 > **Work in progress.** This repository is actively being developed. Some sub-skills are stubs and more content is on the way.
 
-Production-ready patterns for React Native development, packaged as [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills). Maintained by [Software Mansion](https://swmansion.com/).
+Production-ready patterns for React Native development, packaged as a [Claude Code plugin](https://code.claude.com/docs/en/plugins#create-plugins). Maintained by [Software Mansion](https://swmansion.com/).
 
-Add a skill to your project and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, and other React Native features. Works with Claude Code, Cursor, Windsurf, and other tools that support the skill format.
+Install the plugin and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, and other React Native features.
 
 ## Installation
 
-Skills are discovered automatically from specific directories — no CLI command needed. Copy or symlink the skill directory into one of these locations:
+### As a plugin (recommended)
+
+Clone the repository and point Claude Code at it:
+
+```bash
+git clone https://github.com/software-mansion-labs/skills.git
+claude --plugin-dir ./skills
+```
+
+To load the plugin automatically in every session, add the `--plugin-dir` flag to your shell alias or configure a [plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) for your team.
+
+### As standalone skills
+
+If you prefer manual installation without the plugin system, copy or symlink skill directories into one of these locations:
 
 | Scope | Path | When to use |
 |-------|------|-------------|
 | Personal | `~/.claude/skills/<skill-name>/` | All your projects |
 | Project | `.claude/skills/<skill-name>/` | Current project only |
 
-**Install all skills globally (recommended):**
-
 ```bash
-git clone https://github.com/software-mansion/react-native-skills.git
-ln -s "$(pwd)/react-native-skills/skills/react-native-best-practices" ~/.claude/skills/react-native-best-practices
-ln -s "$(pwd)/react-native-skills/skills/radon-mcp" ~/.claude/skills/radon-mcp
-```
-
-**Install a single skill for a specific project:**
-
-```bash
-mkdir -p .claude/skills
-cp -r /path/to/react-native-skills/skills/react-native-best-practices .claude/skills/
+git clone https://github.com/software-mansion-labs/skills.git
+ln -s "$(pwd)/skills/skills/react-native-best-practices" ~/.claude/skills/react-native-best-practices
+ln -s "$(pwd)/skills/skills/radon-mcp" ~/.claude/skills/radon-mcp
 ```
 
 Once installed, the skills are automatically available in your next Claude Code session.
@@ -55,7 +59,9 @@ Best practices for using Radon IDE's MCP tools when developing, debugging, and i
 ## Repository Structure
 
 ```
-react-native-skills/
+skills/
+├── .claude-plugin/
+│   └── plugin.json
 └── skills/
     ├── radon-mcp/
     │   ├── references/

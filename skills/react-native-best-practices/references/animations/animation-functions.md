@@ -64,7 +64,7 @@ If you need access to the previous value, use `useAnimatedReaction` instead.
 
 ### [createAnimatedComponent](https://docs.swmansion.com/react-native-reanimated/docs/core/createAnimatedComponent)
 
-Function components **must** be wrapped with `React.forwardRef()`. Class components work directly.
+Function components can accept a `ref` prop directly (React 19+). For older React versions, wrap with `React.forwardRef()`. Class components work directly.
 
 Built-in animated components: `Animated.View`, `Animated.Text`, `Animated.Image`, `Animated.ScrollView`, `Animated.FlatList`.
 

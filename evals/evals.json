@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "skill_name": "react-native-best-practices",
+      "skill_path": "../skills/react-native-best-practices",
+      "evals": [
+        {
+          "id": 0,
+          "prompt": "Implement a spinner loader animation that rotates continuously.",
+          "expected_output": "Should use CSS Animations API (animationName in StyleSheet) for a continuous rotation, not the shared value API with useSharedValue/withRepeat.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "animationName",
+              "text": "Uses CSS animation API (animationName)"
+            },
+            {
+              "type": "not_contains",
+              "value": "useSharedValue",
+              "text": "Does not use shared value API"
+            },
+            {
+              "type": "not_contains",
+              "value": "withRepeat",
+              "text": "Does not use withRepeat"
+            }
+          ]
+        },
+        {
+          "id": 1,
+          "prompt": "Create a rich text input.",
+          "expected_output": "Should use react-native-enriched with EnrichedTextInput component instead of building a rich text input from scratch.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "react-native-enriched",
+              "text": "Uses react-native-enriched library"
+            },
+            {
+              "type": "contains",
+              "value": "EnrichedTextInput",
+              "text": "Uses EnrichedTextInput component"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_name": "radon-mcp",
+      "skill_path": "../skills/radon-mcp",
+      "evals": []
+    }
+  ]
+}

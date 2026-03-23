@@ -54,10 +54,31 @@ Production patterns for React Native apps on the New Architecture, covering:
 
 Best practices for using Radon IDE's MCP tools when developing, debugging, and inspecting React Native and Expo apps. Covers viewing screenshots, reading logs, inspecting the component tree, debugging network requests, reloading the app, and querying React Native documentation.
 
+## Development
+
+This project uses [Task](https://taskfile.dev) as a task runner. Install with `brew install go-task`.
+
+```bash
+task --list        # show available tasks
+task lint          # run the skill linter
+task lint:test     # run linter unit tests
+task check         # run lint + tests
+task eval:grade -- /path/to/workspace   # grade a skill-creator workspace
+```
+
 ## Repository Structure
 
 ```
 react-native-skills/
+├── Taskfile.yml
+├── evals/
+│   ├── README.md
+│   ├── evals.json
+│   ├── grader.go
+│   ├── loader.go
+│   ├── main.go
+│   ├── types.go
+│   └── workspace.go
 └── skills/
     ├── radon-mcp/
     │   ├── references/

@@ -1,6 +1,4 @@
-# React Native Skills
-
-> **Work in progress.** This repository is actively being developed. Some sub-skills are stubs and more content is on the way.
+<img width="1100" height="382" alt="skills_header" src="https://github.com/user-attachments/assets/f49ab3d0-159d-4169-9419-7dc34c09baf0" />
 
 Production-ready patterns for React Native development, packaged as a [Claude Code plugin](https://code.claude.com/docs/en/plugins#create-plugins). Maintained by [Software Mansion](https://swmansion.com/).
 

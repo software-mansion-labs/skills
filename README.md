@@ -155,3 +155,7 @@ The top-level `SKILL.md` acts as a table of contents. Reference files load only 
 ## License
 
 MIT
+
+## Skills are created by Software Mansion
+
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. We can help you build your next dream product – [Hire us](https://swmansion.com/contact?utm_source=skills&utm_medium=readme).

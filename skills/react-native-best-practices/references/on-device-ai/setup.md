@@ -10,9 +10,35 @@ For the full getting started guide, webfetch [Getting Started](https://docs.swma
 
 ```bash
 npm install react-native-executorch
+
+# For Expo projects
+npm install react-native-executorch-expo-resource-fetcher
+
+# For bare React Native projects
+npm install react-native-executorch-bare-resource-fetcher
 ```
 
-For bare React Native (non-Expo), install [Expo Modules](https://docs.expo.dev/bare/installing-expo-modules/) as the library depends on `expo-file-system` internally.
+### Initialization (required)
+
+Before using any hooks or APIs, call `initExecutorch` with a resource fetcher adapter at your app's entry point:
+
+```tsx
+// Expo projects
+import { initExecutorch } from 'react-native-executorch';
+import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+
+initExecutorch({ resourceFetcher: ExpoResourceFetcher });
+```
+
+```tsx
+// Bare React Native projects
+import { initExecutorch } from 'react-native-executorch';
+import { BareResourceFetcher } from 'react-native-executorch-bare-resource-fetcher';
+
+initExecutorch({ resourceFetcher: BareResourceFetcher });
+```
+
+Calling any library API without initializing first throws `ResourceFetcherAdapterNotInitialized`.
 
 ### Prerequisites
 
@@ -77,6 +103,22 @@ const llm = useLLM({ model: { modelSource: 'file:///var/mobile/.../model.pte', .
 
 Use predefined model constants (e.g., `LLAMA3_2_1B`, `EFFICIENTNET_V2_S`) when available. They point to optimized, pre-exported models from Software Mansion's [HuggingFace repository](https://huggingface.co/software-mansion).
 
+### Model Registry
+
+Use `MODEL_REGISTRY` to discover and enumerate all available models:
+
+```tsx
+import { MODEL_REGISTRY, LLAMA3_2_1B } from 'react-native-executorch';
+
+// Get all model names
+const names = Object.values(MODEL_REGISTRY.ALL_MODELS).map((m) => m.modelName);
+
+// Find models by name
+const whisperModels = Object.values(MODEL_REGISTRY.ALL_MODELS).filter((m) =>
+  m.modelName.includes('whisper')
+);
+```
+
 ### preventLoad
 
 All hooks accept `preventLoad: true` to defer model loading until you're ready:
@@ -100,16 +142,16 @@ const llm = useLLM({ model: LLAMA3_2_1B });
 
 ---
 
-## ResourceFetcher
+## Resource Fetcher
 
-For advanced download management (pause, resume, cancel, cleanup), use the `ResourceFetcher` utility. For the full API, webfetch [ResourceFetcher](https://docs.swmansion.com/react-native-executorch/docs/utilities/resource-fetcher).
+For advanced download management (pause, resume, cancel, cleanup), use the resource fetcher adapters. For the full API, webfetch [ResourceFetcher](https://docs.swmansion.com/react-native-executorch/docs/utilities/resource-fetcher).
 
 ### Download with progress
 
 ```tsx
-import { ResourceFetcher } from 'react-native-executorch';
+import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
 
-const uris = await ResourceFetcher.fetch(
+const uris = await ExpoResourceFetcher.fetch(
   (progress) => console.log(`${Math.round(progress * 100)}%`),
   'https://huggingface.co/.../model.pte',
   'https://huggingface.co/.../tokenizer.bin'
@@ -121,32 +163,32 @@ const uris = await ResourceFetcher.fetch(
 
 ```tsx
 // Pause an active download
-await ResourceFetcher.pauseFetching('https://...model.pte');
+await ExpoResourceFetcher.pauseFetching('https://...model.pte');
 
 // Resume a paused download (faster than re-calling fetch)
-const uris = await ResourceFetcher.resumeFetching('https://...model.pte');
+const uris = await ExpoResourceFetcher.resumeFetching('https://...model.pte');
 
 // Cancel entirely
-await ResourceFetcher.cancelFetching('https://...model.pte');
+await ExpoResourceFetcher.cancelFetching('https://...model.pte');
 ```
 
 ### Storage management
 
 ```tsx
 // List all downloaded files
-const files = await ResourceFetcher.listDownloadedFiles();
+const files = await ExpoResourceFetcher.listDownloadedFiles();
 
 // List all downloaded models
-const models = await ResourceFetcher.listDownloadedModels();
+const models = await ExpoResourceFetcher.listDownloadedModels();
 
 // Get total size of remote files before downloading
-const bytes = await ResourceFetcher.getFilesTotalSize('https://...model.pte');
+const bytes = await ExpoResourceFetcher.getFilesTotalSize('https://...model.pte');
 
 // Delete downloaded resources
-await ResourceFetcher.deleteResources('https://...model.pte');
+await ExpoResourceFetcher.deleteResources('https://...model.pte');
 ```
 
-Downloaded files are stored in the app's documents directory under `react-native-executorch/`.
+Downloaded files are stored in the app's documents directory.
 
 ---
 
@@ -158,6 +200,7 @@ All errors inherit from `RnExecutorchError` with a `code` property from `RnExecu
 
 | Error Code | When | Recovery |
 |---|---|---|
+| `ResourceFetcherAdapterNotInitialized` | Using any API before calling `initExecutorch()` | Call `initExecutorch({ resourceFetcher: ... })` at app entry |
 | `ModuleNotLoaded` | Calling `forward`/`generate` before model is ready | Check `isReady` before calling inference methods |
 | `ModelGenerating` | Calling inference while another is running | Wait for completion or call `interrupt()` |
 | `InvalidConfig` | Invalid config values (e.g., `topp` > 1) | Validate config parameters |
@@ -166,6 +209,8 @@ All errors inherit from `RnExecutorchError` with a `code` property from `RnExecu
 | `DownloadInterrupted` | Download did not complete | Retry the download |
 | `StreamingNotStarted` | Calling `streamInsert` before `stream()` is active | Start streaming first |
 | `StreamingInProgress` | Calling `stream()` while another stream is active | Wait for current stream to finish |
+| `InvalidUserInput` | Passing empty arrays, null values, or malformed data | Validate input before calling methods |
+| `FileReadFailed` | Invalid image URL, unsupported format, or missing file | Verify file path and format |
 
 ### Error handling pattern
 
@@ -234,7 +279,15 @@ Input and output use the `TensorPtr` representation: `{ dataPtr: ArrayBuffer | T
 
 ### TypeScript Module API
 
-For non-hook usage (e.g., in services or outside React components), use `ExecutorchModule` directly. For the full API, webfetch [ExecutorchModule](https://docs.swmansion.com/react-native-executorch/docs/typescript-api/executorch-bindings/ExecutorchModule).
+For non-hook usage (e.g., in services or outside React components), use module classes directly. Instantiate via the `fromModelName` factory method:
+
+```tsx
+import { ClassificationModule, EFFICIENTNET_V2_S } from 'react-native-executorch';
+
+const module = await ClassificationModule.fromModelName(EFFICIENTNET_V2_S);
+```
+
+For the full API, webfetch [ExecutorchModule](https://docs.swmansion.com/react-native-executorch/docs/typescript-api/executorch-bindings/ExecutorchModule).
 
 ---
 
@@ -255,5 +308,5 @@ For detailed memory usage and inference time per model per device, webfetch [Ben
 - Prefer quantized model variants to reduce memory usage and storage requirements.
 - Test on the lowest-spec device you plan to support.
 - Implement a cloud API fallback for devices that cannot fit the model in memory.
-- Monitor total downloaded model size and provide cleanup UI via `ResourceFetcher.deleteResources`.
+- Monitor total downloaded model size and provide cleanup UI via `ExpoResourceFetcher.deleteResources`.
 - Always show loading states. Model loading and inference are long-running operations that take seconds to minutes.

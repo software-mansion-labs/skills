@@ -12,14 +12,15 @@ All vision hooks share a common interface pattern:
 
 | Hook | Task | Input | Output |
 |---|---|---|---|
-| [useClassification](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useClassification) | Label an image | Image URI | `{ label: probability }` object |
-| [useObjectDetection](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useObjectDetection) | Locate objects | Image URI | `Detection[]` with bbox, label, score |
-| [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) | Read horizontal text | Image URI | `OCRDetection[]` with bbox, text, score |
-| [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR) | Read vertical text | Image URI | `OCRDetection[]` with bbox, text, score |
-| [useImageSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageSegmentation) | Pixel-level labels | Image URI | Segmentation mask dictionary |
-| [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer) | Apply art style | Image URI | Base64-encoded image URL |
+| [useClassification](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useClassification) | Label an image | Image source | `{ label: probability }` object |
+| [useObjectDetection](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useObjectDetection) | Locate objects | Image source | `Detection[]` with bbox, label, score |
+| [useOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useOCR) | Read horizontal text | Image source | `OCRDetection[]` with bbox, text, score |
+| [useVerticalOCR](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useVerticalOCR) | Read vertical text | Image source | `OCRDetection[]` with bbox, text, score |
+| [useSemanticSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useSemanticSegmentation) | Pixel-level class labels | Image source | Segmentation mask dictionary |
+| [useInstanceSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useInstanceSegmentation) | Per-instance masks | Image source | `SegmentedInstance[]` with bbox, label, score, mask |
+| [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer) | Apply art style | Image source | `PixelData` or file URI |
 | [useTextToImage](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useTextToImage) | Generate image from text | Text prompt | Base64 PNG |
-| [useImageEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageEmbeddings) | Image to vector | Image URI | `Float32Array` embedding |
+| [useImageEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageEmbeddings) | Image to vector | Image source | `Float32Array` embedding |
 | [useTextEmbeddings](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useTextEmbeddings) | Text to vector | String | `Float32Array` embedding |
 
 ### Common interface
@@ -32,13 +33,13 @@ Every vision hook returns an object with:
 - `downloadProgress` -- 0 to 1 during model download
 - `forward(input)` -- run inference on a single image (returns a Promise)
 
-Image inputs accept: remote URLs (`https://...`), local file URIs (`file:///...`), or base64-encoded strings.
+Image inputs accept: remote URLs (`https://...`), local file URIs (`file:///...`), base64-encoded strings, or `PixelData` objects (raw RGB pixel buffers).
 
 ---
 
 ## Image Classification
 
-Assigns a label to an image. Returns an object mapping ImageNet1k class names (1000 classes) to probabilities:
+Assigns a label to an image. Returns an object mapping class names to probabilities:
 
 ```tsx
 import { useClassification, EFFICIENTNET_V2_S } from 'react-native-executorch';
@@ -58,7 +59,7 @@ const classify = async (imageUri: string) => {
 };
 ```
 
-If multiple classes have similar probabilities, the model is not confident in its prediction.
+If multiple classes have similar probabilities, the model is not confident in its prediction. The hook is generic over the model config, so TypeScript automatically infers the correct label type.
 
 ---
 
@@ -80,7 +81,39 @@ const detect = async (imageUri: string) => {
 };
 ```
 
-Bounding box coordinates are bottom-left (`x1`, `y1`) and top-right (`x2`, `y2`) in the original image's pixel space. The `label` corresponds to one of 91 COCO class labels.
+Bounding box coordinates are top-left (`x1`, `y1`) and bottom-right (`x2`, `y2`) in the original image's pixel space.
+
+### Detection options
+
+`forward` accepts an optional second argument with detection parameters:
+
+```tsx
+const detections = await model.forward(imageUri, {
+  detectionThreshold: 0.5,   // minimum confidence score (default: ~0.7)
+  iouThreshold: 0.55,        // IoU threshold for non-maximum suppression
+  inputSize: 640,             // for YOLO multi-size models: 384, 512, or 640
+  classesOfInterest: ['CAR', 'PERSON'], // filter to specific classes
+});
+```
+
+### Multi-size models (YOLO)
+
+YOLO models support multiple input resolutions. Use `getAvailableInputSizes()` to query them:
+
+```tsx
+const model = useObjectDetection({ model: YOLO26N });
+const sizes = model.getAvailableInputSizes(); // [384, 512, 640]
+```
+
+Smaller sizes are faster but less accurate. Larger sizes are more accurate but slower.
+
+### Supported models
+
+| Model | Classes | Multi-size |
+|---|---|---|
+| SSDLite320 MobileNetV3 Large | 91 (COCO) | No |
+| RF-DETR Nano | 80 (COCO) | No |
+| YOLO26N/S/M/L/X | 80 (COCO) | Yes (384/512/640) |
 
 ---
 
@@ -115,34 +148,98 @@ The detector model is CRAFT (text detection); recognizers are CRNN (text recogni
 
 ---
 
-## Image Segmentation
+## Semantic Segmentation
 
-Assigns a class label to every pixel in an image. Useful for background removal, scene understanding, and portrait effects. For the full API, webfetch [useImageSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useImageSegmentation).
+Assigns a class label to every pixel in an image. Useful for background removal, scene understanding, and portrait effects. For the full API, webfetch [useSemanticSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useSemanticSegmentation).
 
 ```tsx
-import { useImageSegmentation, DEEPLAB_V3_RESNET50, DeeplabLabel } from 'react-native-executorch';
+import { useSemanticSegmentation, DEEPLAB_V3_RESNET50 } from 'react-native-executorch';
 
-const model = useImageSegmentation({ model: DEEPLAB_V3_RESNET50 });
+const model = useSemanticSegmentation({ model: DEEPLAB_V3_RESNET50 });
 
 const segment = async (imageUri: string) => {
-  // forward(imageUri, classesOfInterest?, resize?)
-  const outputDict = await model.forward(imageUri, [DeeplabLabel.CAT], true);
+  // forward(imageUri, classesOfInterest?, resizeToInput?)
+  const result = await model.forward(imageUri, ['CAT'], true);
 
-  // outputDict[DeeplabLabel.ARGMAX]: per-pixel class index (always present)
-  // outputDict[DeeplabLabel.CAT]: per-pixel probability for CAT class
+  // result.ARGMAX: per-pixel class index (Int32Array, always present)
+  // result.CAT: per-pixel probability for CAT class (Float32Array)
 };
 ```
 
-- `classesOfInterest` (optional): `DeeplabLabel[]` specifying which classes to return full probability arrays for. Default is empty (only argmax returned).
-- `resize` (optional): if `true`, output is rescaled to original image dimensions. Default is `false` (224x224 internal resolution). Setting to `true` makes `forward` slower.
+- `classesOfInterest` (optional): string array of label names specifying which classes to return full probability masks for. Default is `[]` (only ARGMAX returned).
+- `resizeToInput` (optional): if `true` (default), output is rescaled to original image dimensions. If `false`, returns the raw model output dimensions (e.g. 224x224). Setting to `false` makes `forward` faster.
 
-The model supports 21 `DeeplabLabel` classes.
+### Supported models
+
+| Model | Classes |
+|---|---|
+| deeplab-v3-resnet50 | 21 (DeeplabLabel) |
+| deeplab-v3-resnet101 | 21 (DeeplabLabel) |
+| deeplab-v3-mobilenet-v3-large | 21 (DeeplabLabel) |
+| lraspp-mobilenet-v3-large | 21 (DeeplabLabel) |
+| fcn-resnet50 | 21 (DeeplabLabel) |
+| fcn-resnet101 | 21 (DeeplabLabel) |
+| selfie-segmentation | 2 (SelfieSegmentationLabel) |
+
+---
+
+## Instance Segmentation
+
+Detects individual objects and produces a per-pixel segmentation mask for each one. Provides precise object boundaries beyond bounding boxes. For the full API, webfetch [useInstanceSegmentation](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useInstanceSegmentation).
+
+```tsx
+import { useInstanceSegmentation, YOLO26N_SEG } from 'react-native-executorch';
+
+const model = useInstanceSegmentation({ model: YOLO26N_SEG });
+
+const segment = async (imageUri: string) => {
+  const instances = await model.forward(imageUri, {
+    confidenceThreshold: 0.5,
+    inputSize: 640,
+  });
+
+  for (const inst of instances) {
+    console.log(inst.label, inst.score, inst.bbox);
+    console.log('Mask:', inst.maskWidth, 'x', inst.maskHeight);
+    // inst.mask: Uint8Array binary mask (0 or 1)
+  }
+};
+```
+
+### Options
+
+- `confidenceThreshold`: minimum confidence score (default: ~0.5)
+- `iouThreshold`: IoU threshold for NMS (default: 0.5)
+- `maxInstances`: maximum returned instances (default: 100)
+- `classesOfInterest`: filter to specific classes (e.g., `['PERSON', 'CAR']`)
+- `returnMaskAtOriginalResolution`: resize masks to original image dimensions (default: `true`)
+- `inputSize`: for multi-size models (384, 512, or 640)
+
+### Supported models
+
+| Model | Classes | Input sizes |
+|---|---|---|
+| yolo26n-seg / yolo26s-seg / yolo26m-seg / yolo26l-seg / yolo26x-seg | 80 (COCO) | 384, 512, 640 |
+| rfdetr-nano-seg | 91 (COCO) | N/A |
 
 ---
 
 ## Style Transfer
 
-Applies an artistic style to an image. Returns a base64-encoded image URL. For the full API, webfetch [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer).
+Applies an artistic style to an image. For the full API, webfetch [useStyleTransfer](https://docs.swmansion.com/react-native-executorch/docs/hooks/computer-vision/useStyleTransfer).
+
+```tsx
+import { useStyleTransfer, STYLE_TRANSFER_CANDY } from 'react-native-executorch';
+
+const model = useStyleTransfer({ model: STYLE_TRANSFER_CANDY });
+
+// Returns raw PixelData (default) -- useful for further processing
+const pixels = await model.forward(imageUri);
+// pixels.dataPtr is a Uint8Array of RGB bytes
+
+// Returns a file URI -- easy to pass to <Image source={{ uri }} />
+const uri = await model.forward(imageUri, 'url');
+```
 
 Available models: `STYLE_TRANSFER_CANDY`, `STYLE_TRANSFER_MOSAIC`, `STYLE_TRANSFER_UDNIE`, `STYLE_TRANSFER_RAIN_PRINCESS`.
 
@@ -209,14 +306,14 @@ Vision hooks that support `runOnFrame` can process camera frames in real time us
 
 ### Supported hooks
 
-`useClassification`, `useObjectDetection`, `useOCR`, `useVerticalOCR`, `useImageEmbeddings`, `useImageSegmentation`, `useStyleTransfer`.
+`useClassification`, `useObjectDetection`, `useOCR`, `useVerticalOCR`, `useImageEmbeddings`, `useSemanticSegmentation`, `useInstanceSegmentation`, `useStyleTransfer`.
 
 ### runOnFrame vs forward
 
 | | `runOnFrame` | `forward` |
 |---|---|---|
 | Thread | JS worklet thread (synchronous) | Background thread (async) |
-| Input | VisionCamera `Frame` | Image URI |
+| Input | VisionCamera `Frame` | Image source (URI, base64, PixelData) |
 | Use case | Real-time camera | Single image |
 
 ### Setup
@@ -253,7 +350,8 @@ function LiveClassifier() {
         'worklet';
         if (!runOnFrame) return;
         try {
-          const scores = runOnFrame(frame);
+          const isFrontCamera = false;
+          const scores = runOnFrame(frame, isFrontCamera);
           if (scores) {
             let best = '';
             let bestScore = -1;
@@ -281,11 +379,41 @@ function LiveClassifier() {
 
   return (
     <>
-      <Camera style={styles.camera} device={device} outputs={[frameOutput]} isActive />
+      <Camera
+        style={styles.camera}
+        device={device}
+        outputs={[frameOutput]}
+        isActive
+        orientationSource="device"
+      />
       <Text style={styles.label}>{topLabel}</Text>
     </>
   );
 }
+```
+
+### Camera configuration
+
+- **`orientationSource="device"`** is required for correct orientation handling. Without it, bounding boxes and masks will be misaligned.
+- **Do not set `enablePhysicalBufferRotation`** -- this conflicts with the library's orientation handling.
+
+### Handling front/back camera
+
+The `isFrontCamera` parameter tells the native side to correctly mirror results. Since worklets cannot read React state directly, use a `Synchronizable` from `react-native-worklets`:
+
+```tsx
+import { createSynchronizable } from 'react-native-worklets';
+
+const cameraPositionSync = createSynchronizable<'front' | 'back'>('back');
+
+// In component:
+useEffect(() => {
+  cameraPositionSync.setBlocking(cameraPosition);
+}, [cameraPosition]);
+
+// In worklet:
+const isFrontCamera = cameraPositionSync.getDirty() === 'front';
+const result = runOnFrame(frame, isFrontCamera);
 ```
 
 ### Gotchas
@@ -298,16 +426,15 @@ function LiveClassifier() {
 
 ### Module API with VisionCamera
 
-When using the TypeScript Module API (e.g., `ClassificationModule`) instead of hooks, `runOnFrame` is a worklet function. React would invoke it as a state initializer if passed directly to `useState`. Use the functional updater form:
+When using the TypeScript Module API (e.g., `ClassificationModule`) instead of hooks, instantiate via `fromModelName` and wrap `runOnFrame` in a functional updater to prevent React from calling it as a state initializer:
 
 ```tsx
-const [module] = useState(() => new ClassificationModule());
 const [runOnFrame, setRunOnFrame] = useState<typeof module.runOnFrame | null>(null);
 
 useEffect(() => {
-  module.load(EFFICIENTNET_V2_S).then(() => {
+  ClassificationModule.fromModelName(EFFICIENTNET_V2_S).then((module) => {
     // () => module.runOnFrame prevents React from calling it as initializer
     setRunOnFrame(() => module.runOnFrame);
   });
-}, [module]);
+}, []);
 ```

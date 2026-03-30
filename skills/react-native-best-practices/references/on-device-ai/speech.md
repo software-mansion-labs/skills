@@ -18,7 +18,7 @@ Transcribes spoken audio to text using Whisper models. For the full API, webfetc
 
 ### Batch transcription
 
-Process a complete audio file at once:
+Process a complete audio file at once. The `transcribe` method returns a `TranscriptionResult` object:
 
 ```tsx
 import { useSpeechToText, WHISPER_TINY_EN } from 'react-native-executorch';
@@ -32,8 +32,35 @@ const transcribe = async (audioFileUri: string) => {
   const waveform = decoded.getChannelData(0);
 
   const result = await model.transcribe(waveform);
-  console.log(result);
+  console.log(result.text);
 };
+```
+
+### Timestamps and transcription stats
+
+Pass `verbose: true` to get word-level timestamps and segment data (mimics the OpenAI Whisper API `verbose_json` format):
+
+```tsx
+const result = await model.transcribe(audioBuffer, { verbose: true });
+// result: {
+//   task: "transcription",
+//   text: "Example text for a ...",
+//   duration: 9.05,
+//   language: "en",
+//   segments: [
+//     {
+//       start: 0,
+//       end: 5.4,
+//       text: "Example text for",
+//       words: [{ word: "Example", start: 0, end: 1.4 }, ...],
+//       tokens: [1, 32, 45, ...],
+//       temperature: 0.0,
+//       avgLogprob: -1.235,
+//       compressionRatio: 1.632
+//     },
+//     ...
+//   ]
+// }
 ```
 
 ### Multilingual transcription
@@ -52,20 +79,14 @@ Using a multilingual model without specifying a language triggers auto-detection
 
 ### Streaming transcription
 
-For real-time transcription from a microphone, use the streaming API with `react-native-audio-api`:
+For real-time transcription from a microphone, use the async iterator streaming API with `react-native-audio-api`:
 
 ```tsx
 import { useSpeechToText, WHISPER_TINY_EN } from 'react-native-executorch';
 import { AudioManager, AudioRecorder } from 'react-native-audio-api';
 
 const model = useSpeechToText({ model: WHISPER_TINY_EN });
-const [recorder] = useState(
-  () =>
-    new AudioRecorder({
-      sampleRate: 16000,
-      bufferLengthInSamples: 1600,
-    })
-);
+const [recorder] = useState(() => new AudioRecorder());
 
 // Configure audio session for recording
 useEffect(() => {
@@ -78,15 +99,28 @@ useEffect(() => {
 }, []);
 
 const startStreaming = async () => {
-  // Feed audio chunks to the model
-  recorder.onAudioReady(({ buffer }) => {
-    model.streamInsert(buffer.getChannelData(0));
-  });
+  const sampleRate = 16000;
 
-  recorder.start();
+  // Feed audio chunks to the model
+  recorder.onAudioReady(
+    { sampleRate, bufferLength: 0.1 * sampleRate, channelCount: 1 },
+    (chunk) => {
+      model.streamInsert(chunk.buffer.getChannelData(0));
+    }
+  );
+
+  await recorder.start();
 
   try {
-    await model.stream();
+    let accumulatedCommitted = '';
+    const streamIter = model.stream({ verbose: false });
+
+    for await (const { committed, nonCommitted } of streamIter) {
+      if (committed.text) {
+        accumulatedCommitted += committed.text;
+      }
+      setTranscribedText(accumulatedCommitted + nonCommitted.text);
+    }
   } catch (error) {
     console.error('Error during streaming transcription:', error);
   }
@@ -98,18 +132,9 @@ const stopStreaming = () => {
 };
 ```
 
-Display streaming results using the `committedTranscription` and `nonCommittedTranscription` properties:
-
-```tsx
-<Text>
-  {model.committedTranscription}
-  {model.nonCommittedTranscription}
-</Text>
-```
+The streaming API returns an async iterator that yields `{ committed, nonCommitted }` objects. `committed.text` is finalized and will not change. `nonCommitted.text` is tentative and may be revised as more audio arrives. Display both for responsive UI, but only persist committed text.
 
 The streaming API uses the [whisper-streaming](https://aclanthology.org/2023.ijcnlp-demo.3.pdf) algorithm to split audio at sentence boundaries rather than fixed 30-second chunks. This introduces slight overhead but produces accurate transcription for arbitrarily long audio.
-
-**`committedTranscription` vs `nonCommittedTranscription`:** Committed text is finalized and will not change. Non-committed text is tentative and may be revised as more audio arrives. Display both for responsive UI, but only persist committed text.
 
 ### Supported models
 
@@ -121,8 +146,6 @@ The streaming API uses the [whisper-streaming](https://aclanthology.org/2023.ijc
 | whisper-base | Multilingual |
 | whisper-small.en | English |
 | whisper-small | Multilingual |
-
-A quantized variant is also available: `WHISPER_TINY_EN_QUANTIZED`.
 
 ### Gotchas
 
@@ -198,6 +221,25 @@ await tts.stream({
 });
 ```
 
+You can dynamically insert text during streaming with `tts.streamInsert(text)` and stop with `tts.streamStop(instant)`.
+
+### Synthesis from phonemes
+
+If you have pre-computed phonemes (e.g., from an external dictionary or custom G2P model), skip the internal phoneme generation step:
+
+```tsx
+// Batch from phonemes
+const audioData = await tts.forwardFromPhonemes({
+  phonemes: 'hˈɛloʊ wˈɜːld',
+});
+
+// Streaming from phonemes
+await tts.streamFromPhonemes({
+  phonemes: 'hˈɛloʊ wˈɜːld',
+  onNext: async (chunk) => { /* play chunk */ },
+});
+```
+
 ### Voice selection
 
 Kokoro supports multiple voices. Pass a voice constant when initializing:
@@ -268,7 +310,7 @@ const handleVoiceQuery = async (audioWaveform: Float32Array) => {
   // 2. Generate LLM response
   const response = await llm.generate([
     { role: 'system', content: 'You are a helpful voice assistant. Keep responses brief.' },
-    { role: 'user', content: transcription },
+    { role: 'user', content: transcription.text },
   ]);
 
   // 3. Speak the response

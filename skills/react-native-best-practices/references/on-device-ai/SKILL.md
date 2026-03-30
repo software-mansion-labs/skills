@@ -1,6 +1,6 @@
 ---
 name: on-device-ai
-description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Covers LLMs (chat, tool calling, structured output), computer vision (classification, object detection, OCR, segmentation, style transfer, embeddings, text-to-image), speech processing (speech-to-text, text-to-speech, voice activity detection), VisionCamera real-time frame processing, model loading and resource management. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useImageSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'real-time frame processing', 'runOnFrame', 'tool calling', 'structured output', or any request to run AI/ML models locally in a React Native app."
+description: "Software Mansion's best practices for on-device AI in React Native using React Native ExecuTorch. Covers LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, semantic segmentation, instance segmentation, style transfer, embeddings, text-to-image), speech processing (speech-to-text, text-to-speech, voice activity detection), VisionCamera real-time frame processing, model loading and resource management. Trigger on: 'react-native-executorch', 'ExecuTorch', 'on-device AI', 'on-device ML', 'local AI', 'offline AI', 'useLLM', 'useClassification', 'useObjectDetection', 'useOCR', 'useVerticalOCR', 'useStyleTransfer', 'useTextToImage', 'useImageEmbeddings', 'useSemanticSegmentation', 'useInstanceSegmentation', 'useSpeechToText', 'useTextToSpeech', 'useVAD', 'useTextEmbeddings', 'useTokenizer', 'useExecutorchModule', 'ResourceFetcher', 'real-time frame processing', 'runOnFrame', 'tool calling', 'structured output', 'VLM', 'vision-language model', or any request to run AI/ML models locally in a React Native app."
 ---
 
 # On-Device AI
@@ -17,37 +17,41 @@ Pick the right hook based on the AI task.
 What AI task does the feature need?
 │
 ├── Text generation, chatbot, or reasoning?
-│   └── useLLM                                    → see llm.md
+│   └── useLLM                                         → see llm.md
 │       ├── Text-only chat → standard useLLM
+│       ├── Vision-language (image+text) → useLLM with VLM model
 │       ├── Tool calling → configure with toolsConfig
 │       └── Structured JSON output → getStructuredOutputPrompt
 │
 ├── Understanding images?
-│   ├── What's in this image? → useClassification  → see vision.md
-│   ├── Where are objects? → useObjectDetection    → see vision.md
+│   ├── What's in this image? → useClassification       → see vision.md
+│   ├── Where are objects? → useObjectDetection         → see vision.md
 │   ├── Read text from image? → useOCR / useVerticalOCR → see vision.md
-│   ├── Segment regions? → useImageSegmentation    → see vision.md
-│   ├── Apply artistic style? → useStyleTransfer   → see vision.md
-│   ├── Generate image from text? → useTextToImage  → see vision.md
-│   └── Embed image as vector? → useImageEmbeddings → see vision.md
+│   ├── Segment by class? → useSemanticSegmentation     → see vision.md
+│   ├── Segment per-instance? → useInstanceSegmentation → see vision.md
+│   ├── Apply artistic style? → useStyleTransfer        → see vision.md
+│   ├── Generate image from text? → useTextToImage      → see vision.md
+│   └── Embed image as vector? → useImageEmbeddings     → see vision.md
 │
 ├── Speech or audio processing?
-│   ├── Transcribe speech → useSpeechToText        → see speech.md
-│   ├── Synthesize speech → useTextToSpeech        → see speech.md
-│   └── Detect speech segments → useVAD            → see speech.md
+│   ├── Transcribe speech → useSpeechToText             → see speech.md
+│   ├── Synthesize speech → useTextToSpeech             → see speech.md
+│   └── Detect speech segments → useVAD                 → see speech.md
 │
 ├── Text utilities?
-│   ├── Convert text to vectors → useTextEmbeddings → see vision.md
+│   ├── Convert text to vectors → useTextEmbeddings     → see vision.md
 │   └── Count tokens → useTokenizer
 │
 ├── Real-time camera processing?
-│   └── runOnFrame with VisionCamera v5            → see vision.md
+│   └── runOnFrame with VisionCamera v5                 → see vision.md
 │
 └── Custom model (.pte)?
-    └── useExecutorchModule                        → see setup.md
+    └── useExecutorchModule                             → see setup.md
 ```
 
 ## Critical Rules
+
+- **Call `initExecutorch()` before any other API.** You must initialize the library with a resource fetcher adapter at the entry point of your app. Without it, all hooks throw `ResourceFetcherAdapterNotInitialized`.
 
 - **Always check `isReady` before calling `forward` or `generate`.** Hooks load models asynchronously. Calling inference methods before the model is ready throws `ModuleNotLoaded`.
 
@@ -59,13 +63,13 @@ What AI task does the feature need?
 
 - **Audio from text-to-speech is 24kHz.** Create the `AudioContext` with `{ sampleRate: 24000 }` for playback.
 
-- **Set `pixelFormat: 'rgb'` for VisionCamera frame processing.** The default `yuv` format produces incorrect results with ExecuTorch vision models.
+- **Set `pixelFormat: 'rgb'` and `orientationSource="device"` for VisionCamera frame processing.** The default `yuv` format produces incorrect results with ExecuTorch vision models. Missing `orientationSource` causes misaligned bounding boxes and masks.
 
 ## References
 
 | File | When to read |
 |------|-------------|
-| `llm.md` | LLM chat (functional and managed), tool calling, structured output, token batching, context window configuration, model selection, generation config |
-| `vision.md` | Image classification, object detection, OCR, image segmentation, style transfer, text-to-image, image/text embeddings, VisionCamera real-time frame processing with `runOnFrame` |
-| `speech.md` | Speech-to-text (batch and streaming transcription), text-to-speech (batch and streaming synthesis), voice activity detection, audio format requirements |
-| `setup.md` | Installation, model loading strategies (bundled, remote, local), `ResourceFetcher` download management, error handling with `RnExecutorchError`, custom models with `useExecutorchModule`, Metro config for `.pte` files |
+| `llm.md` | LLM chat (functional and managed), tool calling, structured output, token batching, context strategy, vision-language models (VLM), model selection, generation config |
+| `vision.md` | Image classification, object detection, OCR, semantic segmentation, instance segmentation, style transfer, text-to-image, image/text embeddings, VisionCamera real-time frame processing with `runOnFrame` |
+| `speech.md` | Speech-to-text (batch and streaming transcription with timestamps), text-to-speech (batch and streaming synthesis, phoneme input), voice activity detection, audio format requirements |
+| `setup.md` | Installation with `initExecutorch`, resource fetcher adapters, model loading strategies (bundled, remote, local), download management, error handling with `RnExecutorchError`, custom models with `useExecutorchModule`, Metro config for `.pte` files |

@@ -17,6 +17,8 @@ Choose based on device constraints and task complexity. All models ship as quant
 | LLaMA 3.2 | 1B, 3B | General chat |
 | Hammer 2.1 | 0.5B-3B | Tool calling |
 | Phi 4 Mini | 4B | Complex reasoning (high-end devices only) |
+| LFM2.5 | 1.2B | General chat, instruction following |
+| LFM2.5-VL | 1.6B | Vision-language (image + text understanding) |
 
 **Device limits:** Low-end devices handle 135M-1.7B parameters. High-end devices (iPhone 15 Pro, Pixel 8 Pro) can run 3B-4B parameter models. Always test on the lowest-spec device you plan to support.
 
@@ -110,10 +112,14 @@ Use Hammer 2.1 models for tool calling. Their chat template supports the tool ca
 
 ### Configure and send messages
 
-Call `configure` once to set up the system prompt, conversation history, tool callbacks, and generation parameters. Then use `sendMessage` for each user message:
+Call `configure` once to set up the system prompt, conversation history, context strategy, tool callbacks, and generation parameters. Then use `sendMessage` for each user message:
 
 ```tsx
-import { useLLM, LLAMA3_2_1B } from 'react-native-executorch';
+import {
+  useLLM,
+  LLAMA3_2_1B,
+  MessageCountContextStrategy,
+} from 'react-native-executorch';
 
 const llm = useLLM({ model: LLAMA3_2_1B });
 
@@ -122,7 +128,7 @@ useEffect(() => {
   configure({
     chatConfig: {
       systemPrompt: 'You are a helpful translator.',
-      contextWindowLength: 6,
+      contextStrategy: new MessageCountContextStrategy(6),
     },
     generationConfig: {
       temperature: 0.7,
@@ -136,9 +142,31 @@ useEffect(() => {
 const send = (text: string) => llm.sendMessage(text);
 ```
 
-### Context window
+### Context strategy
 
-The `contextWindowLength` field in `chatConfig` controls the number of messages from the current conversation that the model uses to generate a response. Larger values increase inference time and memory usage. Set it to a reasonable limit for your use case.
+The `contextStrategy` field in `chatConfig` controls how conversation history is managed for context. Three built-in strategies are available:
+
+- `SlidingWindowContextStrategy` (default): trims oldest messages to fit a sliding window.
+- `MessageCountContextStrategy(n)`: keeps the last `n` messages from the conversation.
+- `NoopContextStrategy`: no trimming, passes the entire history every time.
+
+You can also implement a custom strategy using the `ContextStrategy` interface.
+
+### Initial message history
+
+Provide `initialMessageHistory` in `chatConfig` to seed the conversation with prior context:
+
+```tsx
+llm.configure({
+  chatConfig: {
+    systemPrompt: 'You are a helpful assistant.',
+    initialMessageHistory: [
+      { role: 'user', content: 'What is the current time and date?' },
+    ],
+    contextStrategy: new MessageCountContextStrategy(6),
+  },
+});
+```
 
 ### Tool calling (managed)
 
@@ -181,6 +209,59 @@ Access the full conversation via `messageHistory`:
 ```
 
 Use `deleteMessage` to remove specific messages from history.
+
+---
+
+## Vision-Language Models (VLM)
+
+Some models support multimodal input (text and images together). Load a VLM model and pass images alongside text:
+
+### Loading a VLM
+
+```tsx
+import { useLLM, LFM2_VL_1_6B_QUANTIZED } from 'react-native-executorch';
+
+const llm = useLLM({ model: LFM2_VL_1_6B_QUANTIZED });
+```
+
+The `capabilities` field is already set on the model constant. You can also construct the model object explicitly:
+
+```tsx
+const llm = useLLM({
+  model: {
+    modelSource: '...',
+    tokenizerSource: '...',
+    tokenizerConfigSource: '...',
+    capabilities: ['vision'],
+  },
+});
+```
+
+### Sending a message with an image (managed)
+
+```tsx
+llm.sendMessage('What is in this image?', {
+  imagePath: '/path/to/image.jpg',
+});
+```
+
+The `imagePath` should be a local file path on the device.
+
+### Functional generation with images
+
+Set `mediaPath` on user messages:
+
+```tsx
+const chat: Message[] = [
+  {
+    role: 'user',
+    content: 'Describe this image.',
+    mediaPath: '/path/to/image.jpg',
+  },
+];
+
+const response = await llm.generate(chat);
+```
 
 ---
 

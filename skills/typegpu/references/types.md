@@ -7,13 +7,13 @@ Plain JS numbers become abstract types that auto-convert without any cast in the
 | JS value | Abstract type | Resolves to |
 |---|---|---|
 | `0.96`, `1.5` (non-integer) | `abstractFloat` | `f32`, `f16` |
-| `0`, `1`, `42` (integer) | `abstractInt` | `i32`, `u32`, `f32` |
+| `0`, `1`, `42` (integer) | `abstractInt` | `i32`, `u32`, `f32`, `f16` |
 
 So `d.f32(0.88)` as an arithmetic operand is always redundant — write `0.88`. Same inside vector constructors: `d.vec3f(0.52, 0.68, 0.12)`, no per-element `d.f32()`.
 
 **When `d.f32()` IS needed:**
 - `1.0` — bundler may strip `.0` → `abstractInt` → `i32`. Use `d.f32(1)` or keep a fractional part (`1.1` is fine).
-- Uninitialised variable: `let x: d.v3f` errors — annotation is stripped. Use `let x = d.vec3f(0)`.
+- Uninitialised variable: `let x: number` errors — annotation is stripped. Use `let x = d.f32(0)`.
 
 ## Division always produces `f32`
 

@@ -317,19 +317,15 @@ This is a WebGPU rule, not a TypeGPU one - but it surprises people used to frame
 
 ---
 
-## `common.fullscreenTriangle`
+## `common.fullScreenTriangle`
 
 A helper for fullscreen post-processing - a single oversized triangle covering the viewport, no vertex buffer needed.
 
 ```ts
 import { common } from 'typegpu';
 
-const { vertex, uvs } = common.fullscreenTriangle;
-// `vertex`: TgpuVertexFn outputting a clip-space triangle covering [-1,1] x [-1,1]
-// `uvs`: maps the triangle to [0,1] x [0,1] UV coordinates
-
 const pipeline = root.createRenderPipeline({
-  vertex,
+  vertex: common.fullScreenTriangle,
   fragment: tgpu.fragmentFn({ in: { uv: d.vec2f }, out: d.vec4f })((input) => {
     'use gpu';
     return std.textureSample(screenTex.$, sampler.$, input.uv);
@@ -347,7 +343,7 @@ pipeline.withColorAttachment({ view: context }).draw(3);
 Generate the complete WGSL for a set of functions/pipelines - useful for debugging or integrating with other tools:
 
 ```ts
-const wgsl = tgpu.resolve({ externals: [myComputeFn, myVertexFn] });
+const wgsl = tgpu.resolve([pipeline]);
 console.log(wgsl);
 ```
 

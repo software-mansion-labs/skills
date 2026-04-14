@@ -39,10 +39,10 @@ npm install --save-dev unplugin-typegpu
 
 ```js title="vite.config.js"
 import { defineConfig } from 'vite';
-import typegpuPlugin from 'unplugin-typegpu/vite';
+import typegpu from 'unplugin-typegpu/vite';
 
 export default defineConfig({
-  plugins: [typegpuPlugin()],
+  plugins: [typegpu()],
 });
 ```
 
@@ -63,7 +63,7 @@ Other bundlers supported: esbuild, rollup, rolldown, rspack, webpack, farm. Vite
 ### Plugin options
 
 ```ts
-typegpuPlugin({
+typegpu({
   include?: FilterPattern,       // default: [/\.m?[jt]sx?$/]
   exclude?: FilterPattern,
   enforce?: 'pre' | 'post',
@@ -149,10 +149,10 @@ Zed: set `tsdk` in `.zed/settings.json` for `vtsls` or `typescript-language-serv
 
 ```js
 import { defineConfig } from 'vite';
-import typegpuPlugin from 'unplugin-typegpu/vite';
+import typegpu from 'unplugin-typegpu/vite';
 
 export default defineConfig({
-  plugins: [typegpuPlugin()],
+  plugins: [typegpu()],
 });
 ```
 
@@ -166,4 +166,45 @@ export default defineConfig({
     "strict": true
   }
 }
+```
+
+## Lint plugin - `eslint-plugin-typegpu`
+
+Highlights common pitfalls and unsupported syntax in `'use gpu'` functions. 
+Optional, but highly recommended. 
+Use unless told otherwise, or unless the project uses incompatible linter.
+Include a `lint` script in `package.json`.
+
+```sh
+npm install --save-dev eslint-plugin-typegpu
+# pnpm add -D eslint-plugin-typegpu / yarn add -D eslint-plugin-typegpu
+```
+
+### ESLint (`eslint.config.js`)
+
+```ts
+import { defineConfig } from 'eslint/config';
+import typegpu from 'eslint-plugin-typegpu';
+
+export default defineConfig([
+  {
+    ...typegpu.configs.recommended,
+    files: ['**/*.{js,mjs,ts,jsx,tsx}'],
+  },
+]);
+```
+
+### Oxlint (`oxlint.config.ts`)
+
+```ts
+import { defineConfig } from 'oxlint';
+import typegpu from 'eslint-plugin-typegpu';
+
+export default defineConfig({
+  jsPlugins: ['eslint-plugin-typegpu'],
+  rules: {
+    ...typegpu.configs.recommended.rules,
+  },
+  ignorePatterns: ['node_modules'],
+});
 ```

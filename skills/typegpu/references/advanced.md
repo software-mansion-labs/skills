@@ -90,7 +90,36 @@ pipeline.drawIndirect(MyBuffer, offset);
 
 TypeGPU supports passing an existing `GPUCommandEncoder` or active `GPURenderPassEncoder`/`GPUComputePassEncoder` via `.with(encoder)` or `.with(pass)`, allowing TypeGPU calls to interleave with raw WebGPU commands in a shared command buffer.
 
-> Full documentation for this pattern is not yet in this skill. Refer to the TypeGPU source or examples.
+---
+
+## `root.unwrap` — raw WebGPU objects and forced initialization
+
+`root.unwrap(resource)` serves two distinct purposes.
+
+**Escape hatch.** Returns the underlying raw WebGPU object, letting you pass TypeGPU resources to APIs that require native handles:
+
+```ts
+const gpuBuffer   = root.unwrap(tgpuBuffer);         // GPUBuffer
+const gpuPipeline = root.unwrap(computePipeline);    // GPUComputePipeline
+const gpuLayout   = root.unwrap(bindGroupLayout);    // GPUBindGroupLayout
+const gpuTexture  = root.unwrap(tgpuTexture);        // GPUTexture
+const gpuView     = root.unwrap(textureView);        // GPUTextureView
+const gpuSampler  = root.unwrap(tgpuSampler);        // GPUSampler
+// also: TgpuRenderPipeline, TgpuBindGroup, TgpuVertexLayout,
+//       TgpuComparisonSampler, TgpuQuerySet
+```
+
+`root.device` gives the underlying `GPUDevice` directly.
+
+**Forced initialization.** All TypeGPU resources are lazy — buffers (even those with initial data), pipelines, and shader compilation all defer until first use. **This is usually exactly what you want.** `unwrap` forces a resource to initialize immediately, which can be useful in specific situations where you want explicit control over when the work happens (e.g. a loading screen):
+
+```ts
+// Optional: force init during a loading screen rather than on first use
+root.unwrap(computePipeline);
+root.unwrap(particleBuffer); // initial data written here instead of on first dispatch
+```
+
+Don't reach for this by default — lazy init is simpler and correct for most apps. It's mainly worth considering when first-use timing is observable to the user and you have a natural moment (loading screen, asset preload) to absorb the cost.
 
 ---
 

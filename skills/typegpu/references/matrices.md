@@ -33,7 +33,7 @@ vec3.subtract(target, eye, dir); // writes into `dir`
 vec3.normalize(dir, dir);        // in-place
 ```
 
-> Requires `wgpu-matrix >= 3.3.0` and `typegpu >= 0.2.0`.
+> Requires `wgpu-matrix >= 3.3.0`.
 
 Without `dst`, `wgpu-matrix` allocates a new `Float32Array` per call. In a render loop doing 3-6 matrix ops per frame, that's 200+ allocations/sec - enough for GC stutters, just like per-frame `createView`/`createBindGroup`. Allocate once at setup, reuse forever.
 
@@ -81,11 +81,7 @@ mat4.lookAt(newEye, target, up, viewMat);
 cameraUniform.patch({ view: viewMat });
 ```
 
-Add `viewInv`/`projInv` fields when shaders need to go from clip/screen back to world space (ray marching, screen-space effects). Computing inverses once on the CPU beats per-fragment `std.inverse`.
-
-### Projection matrices and WebGPU clip-space z
-
-`mat4.perspective(fov, aspect, near, far, dst)` from `wgpu-matrix` already targets `z in [0, 1]`, not OpenGL's `[-1, 1]`. Hand-porting a GL projection clips the near plane. For reversed-Z (better depth precision), use `mat4.perspectiveReverseZ`.
+Add `viewInv`/`projInv` fields when shaders need to go from clip/screen back to world space (ray marching, screen-space effects). Computing inverses once on the CPU beats per-fragment `mat4.inverse`.
 
 ---
 

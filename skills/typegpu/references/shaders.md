@@ -65,6 +65,16 @@ Branch pruning also applies to compile-time-known captured values - `if` conditi
 
 ---
 
+## Register pressure
+
+When the GPU runs out of registers per thread it spills to slow memory, which can crater performance. Modern shader compilers (LLVM, SPIR-V, DXC) are smart — SSA optimisation means naming an intermediate `const` costs nothing, and aggressive inlining erases function-call boundaries before register allocation. Don't contort your code trying to outsmart them.
+
+The one thing compilers can't fix: **variable liveness**. A `mat4x4f` holds 16 registers for its entire live range. If you compute it at the top of a function and only use it at the bottom, those registers are locked out for everything in between. Compute large values close to where they're consumed.
+
+Vector ops and swizzles are still the right style — not because they pack registers differently (modern GPU hardware is scalar underneath), but because they express the math directly and let the compiler see the whole operation at once.
+
+---
+
 ## Arithmetic operators
 
 With `tsover`, `+ - * / %` work on scalars, vectors, and matrices. Infix methods (`.add()`, `.mul()`) and `std` functions (`std.dot`, `std.mod`) are alternatives.
@@ -89,6 +99,19 @@ Division on primitives defaults to `f32`. Integer division: `d.i32(10 / 3)`.
 let x = 1.0;       // BAD: "1.0" may become "1" -> abstract integer / i32
 let x = d.f32(1);  // OK
 let y = 1.1;       // OK - fractional part prevents integer interpretation
+```
+
+---
+
+## Do not assign textures or samplers to variables - use them directly
+
+```ts
+const myTex = layout.$.sampledTex; // BAD
+const color = std.textureSample(myTex, layout.$.sampler, uv);
+```
+
+```ts
+const color = std.textureSample(layout.$.sampledTex, layout.$.sampler, uv); // GOOD
 ```
 
 ---
@@ -138,7 +161,9 @@ for (const dy of tgpu.unroll([-1, 0, 1])) {
 }
 ```
 
-No hard size limits - you'll get a clear error if it can't unroll. Hard rules: **no `continue` or `break` inside an unrolled loop**, and the length must be known at compile time.
+Hard rules: **no `continue` or `break` inside an unrolled loop**, and the length must be known at compile time.
+
+**Warning — register spill.** Unrolling generates straight-line code, and the GPU register file is finite. Too many iterations means the compiler spills registers to slow memory, which can tank performance worse than the loop overhead you were avoiding. As a rough ceiling: **keep unrolled counts under ~8–16 for anything inside a hot shader; ~27 is an upper bound.** If you find yourself unrolling more than that, a regular `for...of` with `std.range` is almost certainly the better call.
 
 #### Unrolling a numeric range
 
@@ -164,7 +189,7 @@ for (const i of tgpu.unroll(std.range(FBM_OCTAVES))) {
 | Vector | `tgpu.unroll(d.vec3f(v))` | Iterates components: `v[0u]`, `v[1u]`, ... |
 | Array of struct keys | `tgpu.unroll(Object.keys(obj) as ...)` | Iterate `obj[key]`; each access folded at compile time |
 | Iterable in a variable | `const arr = [1,2,3]; tgpu.unroll(arr)` | Indexed access into WGSL `array<...>` - still unrolled |
-| Buffers / accessors / `const` / `comptime` / `lazy` | `tgpu.unroll(acc.$)` | Works whenever length is known at compile time |
+| Buffers / accessors / `const` / `comptime` | `tgpu.unroll(acc.$)` | Works whenever length is known at compile time |
 
 #### Conditional unrolling
 
@@ -214,7 +239,7 @@ const material = tgpu.fn([d.vec3f], d.vec3f)((diffuse) => {
 });
 ```
 
-The function passed to `tgpu.comptime` runs in JS - any JS APIs are fair game, but the return value must be a schema-typed value TypeGPU can embed.
+The function passed to `tgpu.comptime` runs in JS - any JS APIs are fair game, but the return value must be a schema-typed value TypeGPU can embed. Comptime calls are not cached - each call is evaluated separately.
 
 ---
 
@@ -350,16 +375,10 @@ std.pack2x16float(v)  std.unpack2x16float(x)
 
 ## Texture sampling rules
 
-The right sampling call depends on stage and control flow:
+Sampling function reference table: see `references/textures.md`.
 
-| Call | Stages | Control flow | Mip selection |
-|---|---|---|---|
-| `std.textureSample` | Fragment only | Must be **uniform** | Automatic (implicit derivatives) |
-| `std.textureSampleLevel` | Any | Non-uniform OK | Explicit mip level |
-| `std.textureSampleGrad` | Any | Non-uniform OK | Automatic via explicit `ddx`/`ddy` |
-
-- `textureSample` fails with a WGSL validation error if called inside a branch/loop whose condition depends on per-pixel data.
-- `textureSampleLevel` does **not** use implicit derivatives - pass `0` for single-mip textures, or the level you want.
+- `textureSample` fails with a WGSL validation error if called inside a branch/loop whose condition depends on per-pixel data (fragment-only, must be uniform).
+- `textureSampleLevel` does **not** use implicit derivatives — pass `0` for single-mip textures, or the level you want. Any stage, non-uniform OK.
 - `textureSampleGrad` is the way to get auto-LOD in compute or non-uniform branches.
 
 ---
@@ -369,8 +388,101 @@ The right sampling call depends on stage and control flow:
 Supported in fragment and compute (not vertex); injects atomics for thread-safe output - **significant overhead**, debug only.
 
 ```ts
-const debugCompute = tgpu.computeFn({ workgroupSize: [1], in: {} })(() => {
+const debugCompute = tgpu.computeFn({ workgroupSize: [1] })(() => {
   'use gpu';
   console.log('thread reached here', someValue);
 });
 ```
+
+---
+
+## GPU-scoped variables
+
+Declared at module scope; persistent for the shader's lifetime.
+
+```ts
+// Shared across all threads in a workgroup (compute only):
+const sharedAccum = tgpu.workgroupVar(d.arrayOf(d.f32, 64));
+
+// Thread-private — each thread gets its own copy:
+const threadState = tgpu.privateVar(d.vec3f);
+
+// Compile-time constant — embedded as a WGSL literal:
+const PI_OVER_2 = tgpu.const(d.f32, Math.PI / 2);
+```
+
+Access via `sharedAccum.$`, `threadState.$`, `PI_OVER_2.$`. Workgroup vars require a barrier (`std.workgroupBarrier()`) before reading results written by other threads.
+
+---
+
+## Values vs references in `'use gpu'` code
+
+**The single most common source of `ResolutionError` in hand-written shaders.**
+
+**Mental model.** Scalars (`d.f32`, `number`, `boolean`) behave as values. Composites (vectors, matrices, structs, arrays) behave as **references** — a variable holding a `d.vec3f` is a handle to a memory location, not a bag of numbers. Reading is free; writing a component (`v.x = 1`) mutates the location.
+
+**The extra rule.** A reference can be aliased with `const`, or copied with its schema constructor, but it cannot bind to `let` or be assigned with `=`. TypeGPU forces the ambiguity ("rebind or mutate through?") to be resolved at the binding site:
+
+```ts
+const startPoint = d.vec2f(1, 2);
+
+let endPoint = startPoint;           // BAD: "references cannot be assigned"
+let endPoint = d.vec2f(startPoint);  // OK: copy - fresh, independent, reassignable
+const endPoint = startPoint;         // OK: alias - same memory, not reassignable
+```
+
+Same rule for reassignment and returning a parameter directly:
+
+```ts
+outColor = d.vec3f(spriteRgb);   // OK - not: outColor = spriteRgb
+return d.vec3f(baseColor);       // OK when baseColor is a parameter
+```
+
+**Expression results are ephemeral and safe.** Constructor calls, arithmetic, function returns, and literals aren't named storage, so `let`/`const`/assignment/arguments/returns all work:
+
+```ts
+let p = d.vec2f(0);                 // constructor result
+p = input.uv * 2 + d.vec2f(1, 0);  // expression result
+let q = computeOffset();            // function return
+```
+
+The "must copy" rule only kicks in when the right-hand side is itself a named reference (local variable, struct field, array element, function parameter). **Fix:** wrap in the schema constructor (`d.vec2f(v)`, `d.mat4x4f(m)`, `MyStruct(other)`), or swap `let` for `const` if you don't need to reassign.
+
+---
+
+## Idiomatic shader code
+
+**Prefer vector operations over component decomposition.** With `tsover`, `+ - * / %` work on vectors and matrices directly, and scalar broadcast applies to all four arithmetic operators:
+
+```ts
+// GOOD - clean vector math:
+let uv = input.uv * d.vec2f(0.3, 0.2) + 0.5;
+let offset = direction * speed;
+let color = baseColor * intensity + ambient;
+
+// BAD - unnecessary decomposition:
+let uvX = input.uv.x * 0.3 + 0.5;
+let uvY = input.uv.y * 0.2 + 0.5;
+let uv = d.vec2f(uvX, uvY);
+```
+
+**Struct constructors work inside shaders** — build the whole struct locally and assign once rather than mutating fields one by one on a storage buffer:
+
+```ts
+const Particle = d.struct({ pos: d.vec2f, vel: d.vec2f, life: d.f32 });
+
+// GOOD - single write to global memory:
+const newP = Particle({
+  pos: oldP.pos + oldP.vel * dt,
+  vel: oldP.vel * 0.99,
+  life: oldP.life - dt,
+});
+particles.$[idx] = Particle(newP);
+
+// BAD - multiple global memory round-trips:
+particles.$[idx].pos = particles.$[idx].pos + particles.$[idx].vel * dt;
+particles.$[idx].vel.x = particles.$[idx].vel.x * 0.99;
+particles.$[idx].life = particles.$[idx].life - dt;
+```
+
+Struct constructor forms: `MyStruct()` (zero-init), `MyStruct({ field: value, ... })` (named fields), `MyStruct(otherInstance)` (copy). Both patterns also minimise **register pressure** — see the "Register pressure" section above.

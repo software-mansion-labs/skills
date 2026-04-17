@@ -7,7 +7,7 @@ description: "Software Mansion's guide for migrating Expo SDK apps to Meta Quest
 
 Software Mansion's production guide for adding Meta Quest support to Expo apps using the [expo-horizon](https://github.com/software-mansion-labs/expo-horizon) packages.
 
-Read the relevant reference for the topic at hand. All references are in `references/`.
+**This skill does not bundle a copy of the docs.** For any task below, always webfetch the linked official README or Meta documentation page to get up-to-date installation steps, plugin options, API surface, and feature matrices. This skill only captures the decision tree, critical rules, and non-obvious gotchas that agents routinely miss.
 
 ## Decision Tree
 
@@ -15,29 +15,30 @@ Read the relevant reference for the topic at hand. All references are in `refere
 What do you need to do?
 │
 ├── Starting from scratch or adding Quest support to an existing Expo app?
-│   └── See setup.md
+│   └── Webfetch: expo-horizon-core README
 │       ├── Install expo-horizon-core
-│       ├── Configure the config plugin
-│       ├── Set up build scripts
-│       └── Add runtime device detection
+│       ├── Configure the config plugin (horizonAppId, panel size, supportedDevices)
+│       ├── Add quest/mobile build scripts
+│       └── Add runtime device detection (isHorizonDevice, isHorizonBuild)
 │
 ├── Need location services on Quest?
-│   └── See location.md
+│   └── Webfetch: expo-horizon-location README
 │       ├── Replace expo-location with expo-horizon-location
-│       ├── Understand Quest location limitations (no GPS, no geocoding)
-│       └── Handle feature parity differences
+│       ├── Review the feature support matrix
+│       └── Guard unsupported calls (heading, geocoding, geofencing, background)
 │
 ├── Need push notifications on Quest?
-│   └── See notifications.md
+│   └── Webfetch: expo-horizon-notifications README
 │       ├── Replace expo-notifications with expo-horizon-notifications
-│       ├── Configure horizonAppId for push tokens
-│       └── Handle feature parity differences
+│       ├── Configure horizonAppId in expo-horizon-core
+│       ├── Use getDevicePushTokenAsync (Expo Push Service is not supported)
+│       └── Skip badge counts (not supported on Quest)
 │
 └── Need to build, run, or publish for Quest?
-    └── See build-and-deploy.md
-        ├── Build variants (questDebug, questRelease, mobileDebug, mobileRelease)
-        ├── Running on Quest hardware
-        └── Meta Horizon Store publishing requirements
+    └── Webfetch: expo-horizon-core README (build variants) + Meta docs below
+        ├── Build variants: questDebug, questRelease, mobileDebug, mobileRelease
+        ├── Meta Quest Developer Hub (device management, sideloading)
+        └── Meta Horizon Store manifest requirements
 ```
 
 ## Critical Rules
@@ -54,15 +55,24 @@ What do you need to do?
 
 - **Quest has no GPS, magnetic sensors, or Geocoder.** Features like heading, geocoding, reverse geocoding, and geofencing are unavailable on Quest. Guard these calls with `ExpoHorizon.isHorizonDevice` or `ExpoHorizon.isHorizonBuild`.
 
-- **Push notifications require `horizonAppId`.** Without it, `getDevicePushTokenAsync` will not return a valid token on Quest devices.
+- **Push notifications require `horizonAppId`.** Without it, `getDevicePushTokenAsync` will not return a valid token on Quest devices. Use `getDevicePushTokenAsync` (not `getExpoPushTokenAsync`) on Quest; send the returned `{ type: 'horizon', data }` token to your backend and deliver via Meta's push service.
 
-- **Expo Go is not supported.** You must use custom development builds (`npx expo prebuild`).
+- **`isHorizonDevice` vs `isHorizonBuild`.** Use `isHorizonDevice` for runtime hardware checks (physical Quest detection). Use `isHorizonBuild` for build-time feature gating (which native code was compiled in).
 
-## References
+- **Expo Go is not supported.** You must use custom development builds via `npx expo prebuild`.
 
-| File | When to read |
-|------|-------------|
-| `references/setup.md` | Installing expo-horizon-core, configuring the Expo config plugin, plugin options (horizonAppId, panel sizing, supportedDevices, VR headtracking, allowBackup), adding quest/mobile build scripts to package.json, runtime detection API (isHorizonDevice, isHorizonBuild, horizonAppId), accessing Horizon App ID from native modules |
-| `references/location.md` | Migrating from expo-location, Quest location limitations (no GPS, no geocoding, no heading, no geofencing, no background location), network provider behavior, feature support matrix |
-| `references/notifications.md` | Migrating from expo-notifications, configuring push notifications for Quest, Horizon push token type, Firebase vs Meta push service, feature support matrix, unsupported features (Expo Push Service, badge counts) |
-| `references/build-and-deploy.md` | Build flavors (quest/mobile), build variants (questDebug/questRelease/mobileDebug/mobileRelease), running on Quest hardware, package.json scripts, Meta Horizon Store requirements, Meta Quest Developer Hub |
+## Official References
+
+Always webfetch the raw markdown (`raw.githubusercontent.com/...`) if the HTML view does not render the source; the raw URL is the source of truth.
+
+| Topic | Official source |
+|-------|-----------------|
+| Repo overview and package list | [expo-horizon README](https://github.com/software-mansion-labs/expo-horizon/blob/main/README.md) |
+| Install, config plugin options, runtime API, native module access | [expo-horizon-core README](https://github.com/software-mansion-labs/expo-horizon/blob/main/expo-horizon-core/README.md) |
+| Location migration, limitations, feature support matrix | [expo-horizon-location README](https://github.com/software-mansion-labs/expo-horizon/blob/main/expo-horizon-location/README.md) |
+| Push notifications migration, token types, feature support matrix | [expo-horizon-notifications README](https://github.com/software-mansion-labs/expo-horizon/blob/main/expo-horizon-notifications/README.md) |
+| Example app wiring for all three packages | [expo-horizon example README](https://github.com/software-mansion-labs/expo-horizon/blob/main/example/README.md) |
+| Panel sizing guidelines (dp values, orientation, letterboxing) | [Meta Panel Sizing](https://developers.meta.com/horizon/documentation/android-apps/panel-sizing) |
+| Meta Horizon Store manifest checklist for publishing | [Publish Mobile Manifest](https://developers.meta.com/horizon/resources/publish-mobile-manifest/) |
+| Device management, casting, sideloading, ADB | [Meta Quest Developer Hub](https://developers.meta.com/horizon/documentation/android-apps/meta-quest-developer-hub) |
+| Server-side push delivery via Meta's push service | [Horizon OS push notifications](https://developers.meta.com/horizon/documentation/android-apps/ps-user-notifications/) |

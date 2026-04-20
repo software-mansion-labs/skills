@@ -8,6 +8,8 @@ description: >-
 
 A single schema (`d.*`) defines a GPU type, CPU buffer layout, and TypeScript type at once - no manual alignment, type mapping, or casting. The build plugin `unplugin-typegpu` transforms `'use gpu'`-marked TypeScript for runtime WGSL transpilation, enabling type inference and polymorphism across the CPU/GPU boundary.
 
+This skill targets TypeGPU `0.11.2`. If the user's project is on an older release, verify API availability before relying on examples or recommended patterns here.
+
 ---
 
 ## When to read reference files

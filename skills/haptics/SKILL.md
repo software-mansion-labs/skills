@@ -2,15 +2,15 @@
 name: pulsar-haptics
 description: >
   Expert guide for implementing haptic feedback using the Pulsar SDK across iOS (Swift),
-  Android (Kotlin), and React Native (TypeScript). Use this skill whenever the user is
-  working with haptics, vibrations, tactile feedback, or the Pulsar library in a mobile
-  app — including preset selection, custom pattern composition, real-time gesture-driven
-  haptics, migration from expo-haptics or UIKit/CoreHaptics, CompatibilityMode handling,
-  and haptic design decisions. Always use this skill even if the user only mentions
-  "vibration", "buzz", "taptic", "rumble", "pulse", "motor feedback", "tactile", "shake",
-  "UIFeedbackGenerator", "CHHapticEngine", or "VibrationEffect" — or wants their app to
-  "feel right". Vague phrases like "make it feel more responsive" or "add some feedback"
-  in a mobile context should also trigger this skill.
+  Android (Kotlin), and React Native (TypeScript). Use when the user is working with
+  haptics, vibrations, tactile feedback, or the Pulsar library in a mobile app, including
+  preset selection, custom pattern composition, real-time gesture-driven haptics,
+  migration from expo-haptics or UIKit/CoreHaptics, CompatibilityMode handling, and
+  haptic design decisions. Use when the user mentions "vibration", "buzz", "taptic",
+  "rumble", "pulse", "motor feedback", "tactile", "shake", "UIFeedbackGenerator",
+  "CHHapticEngine", or "VibrationEffect", or wants their app to "feel right". Vague
+  phrases like "make it feel more responsive" or "add some feedback" in a mobile context
+  should also trigger this skill.
 ---
 
 # Pulsar Haptics

@@ -1,6 +1,6 @@
 # Choosing the Right Preset
 
-See [common/presets-guide.md](../common/presets-guide.md) for the full categorized preset reference — all descriptions and "when to use" guidance apply equally to React Native.
+See `../common/presets-guide.md` for the full categorized preset reference. All descriptions and "when to use" guidance apply equally to React Native.
 
 All presets are called directly on the `Presets` object:
 

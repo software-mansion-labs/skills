@@ -64,21 +64,27 @@ task eval:grade -- /path/to/workspace   # grade a skill-creator workspace
 ```
 react-native-skills/
 └── skills/
+    ├── expo-horizon/
+    │   └── SKILL.md
     ├── haptics/
     │   ├── references/
     │   │   ├── android/
     │   │   │   ├── SKILL.md
     │   │   │   ├── api-overview.md
     │   │   │   ├── gesture-haptics.md
-    │   │   │   └── presets-guide.md
+    │   │   │   ├── pattern-composer.md
+    │   │   │   ├── presets-guide.md
+    │   │   │   └── types-reference.md
     │   │   ├── common/
     │   │   │   ├── design-principles.md
     │   │   │   ├── gesture-haptics.md
+    │   │   │   ├── preset-tags.md
     │   │   │   └── presets-guide.md
     │   │   ├── ios/
     │   │   │   ├── SKILL.md
     │   │   │   ├── api-overview.md
     │   │   │   ├── gesture-haptics.md
+    │   │   │   ├── pattern-composer.md
     │   │   │   └── presets-guide.md
     │   │   └── react-native/
     │   │       ├── SKILL.md
@@ -86,7 +92,6 @@ react-native-skills/
     │   │       ├── gesture-haptics.md
     │   │       ├── migration.md
     │   │       └── presets-guide.md
-    ├── expo-horizon/
     │   └── SKILL.md
     ├── radon-mcp/
     │   ├── references/
@@ -129,12 +134,13 @@ react-native-skills/
         │   │   ├── tap-handling.md
         │   │   └── testing.md
         │   ├── haptics/
-        │   │   ├── SKILL.md
-        │   │   ├── api-overview.md
         │   │   ├── common/
         │   │   │   ├── design-principles.md
         │   │   │   ├── gesture-haptics.md
+        │   │   │   ├── preset-tags.md
         │   │   │   └── presets-guide.md
+        │   │   ├── SKILL.md
+        │   │   ├── api-overview.md
         │   │   ├── gesture-haptics.md
         │   │   ├── migration.md
         │   │   └── presets-guide.md

@@ -864,6 +864,168 @@
           ]
         }
       ]
-    }
+    },
+    {
+      "skill_name": "rnrepo",
+      "skill_path": "../skills/rnrepo",
+      "evals": [
+        {
+          "id": 138,
+          "prompt": "How do I set up RNRepo in my Expo app to speed up builds?",
+          "should_trigger": true,
+          "expected_output": "Should recommend installing @rnrepo/expo-config-plugin and adding it to the plugins array in app.config.ts.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "@rnrepo/expo-config-plugin",
+              "text": "Mentions the Expo config plugin package"
+            },
+            {
+              "type": "contains",
+              "value": "plugins",
+              "text": "Shows adding the plugin to the plugins array"
+            }
+          ]
+        },
+        {
+          "id": 139,
+          "prompt": "How do I add RNRepo to a standard React Native project (not Expo)?",
+          "should_trigger": true,
+          "expected_output": "Should mention installing @rnrepo/build-tools, editing android/build.gradle to add the classpath, applying org.rnrepo.tools.prebuilds-plugin in android/app/build.gradle, and editing ios/Podfile to require the CocoaPods plugin and call rnrepo_post_install.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "@rnrepo/build-tools",
+              "text": "Mentions @rnrepo/build-tools package"
+            },
+            {
+              "type": "contains",
+              "value": "prebuilds-plugin",
+              "text": "Mentions the Gradle prebuilds-plugin"
+            },
+            {
+              "type": "contains",
+              "value": "rnrepo_post_install",
+              "text": "Mentions the CocoaPods post_install hook"
+            }
+          ]
+        },
+        {
+          "id": 140,
+          "prompt": "I want to stop RNRepo from using prebuilt artifacts for react-native-mmkv because I have a local patch applied to it. How do I do that?",
+          "should_trigger": true,
+          "expected_output": "Should recommend creating rnrepo.config.json at the project root with a denyList entry for the library under the relevant platform.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "rnrepo.config.json",
+              "text": "Mentions the config file"
+            },
+            {
+              "type": "contains",
+              "value": "denyList",
+              "text": "Mentions the denyList field"
+            }
+          ]
+        },
+        {
+          "id": 141,
+          "prompt": "How do I temporarily disable RNRepo for a single Gradle build to debug a native crash?",
+          "should_trigger": true,
+          "expected_output": "Should mention setting the DISABLE_RNREPO environment variable before the build command.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "DISABLE_RNREPO",
+              "text": "Mentions the DISABLE_RNREPO env variable"
+            }
+          ]
+        },
+        {
+          "id": 142,
+          "prompt": "RNRepo logs say 'Found the following supported prebuilt packages: None' even though I have react-native-reanimated installed. What could be wrong?",
+          "should_trigger": true,
+          "expected_output": "Should explain the likely causes: the plugin is applied before the Maven repository is defined, all packages are in the deny list, or the library/RN version has no prebuild yet. Should mention adding the maven URL to allprojects and ensuring it comes before the plugin is applied.",
+          "assertions": [
+            {
+              "type": "contains_any",
+              "values": ["allprojects", "maven", "packages.rnrepo.org"],
+              "text": "Mentions Maven repo configuration"
+            },
+            {
+              "type": "contains_any",
+              "values": ["before", "ordering", "applied before"],
+              "text": "Mentions plugin ordering issue"
+            }
+          ]
+        },
+        {
+          "id": 143,
+          "prompt": "My EAS build is failing because the fingerprint generated locally differs from the one on the build server after I added RNRepo. How do I fix this?",
+          "should_trigger": true,
+          "expected_output": "Should explain that the CocoaPods plugin caches xcframeworks in .rnrepo-cache directories inside node_modules, which changes the fingerprint. Should recommend adding **/.rnrepo-cache to .fingerprintignore.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": ".fingerprintignore",
+              "text": "Mentions .fingerprintignore file"
+            },
+            {
+              "type": "contains",
+              "value": ".rnrepo-cache",
+              "text": "Mentions the .rnrepo-cache directory"
+            }
+          ]
+        },
+        {
+          "id": 144,
+          "prompt": "I'm getting 'Undefined symbols for architecture arm64' linker errors for react-native-screens after enabling RNRepo on iOS. How do I fix this?",
+          "should_trigger": true,
+          "expected_output": "Should explain that prebuilt xcframeworks are compiled with Xcode 26 and older Xcode versions may be incompatible. Should recommend upgrading Xcode to 26+ or adding the library to the iOS denyList in rnrepo.config.json.",
+          "assertions": [
+            {
+              "type": "contains_any",
+              "values": ["Xcode 26", "Xcode version", "older Xcode"],
+              "text": "Mentions Xcode version mismatch"
+            },
+            {
+              "type": "contains_any",
+              "values": ["denyList", "deny list", "rnrepo.config.json"],
+              "text": "Mentions the denyList workaround"
+            }
+          ]
+        },
+        {
+          "id": 145,
+          "prompt": "How do I verify that RNRepo is actually substituting prebuilt libraries instead of building from source on Android?",
+          "should_trigger": true,
+          "expected_output": "Should mention running with --info flag and looking for [📦 RNRepo] log lines. Should also mention that compileDebugKotlin tasks will be absent for substituted packages.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "--info",
+              "text": "Mentions the --info flag"
+            },
+            {
+              "type": "contains_any",
+              "values": ["RNRepo", "📦", "compileDebugKotlin"],
+              "text": "Mentions the RNRepo log tags or absent compile tasks"
+            }
+          ]
+        },
+        {
+          "id": 146,
+          "prompt": "How do I set up automated deployment of my React Native app to the App Store using Fastlane?",
+          "should_trigger": false,
+          "expected_output": "Fastlane/App Store deployment task, unrelated to RNRepo prebuilds."
+        },
+        {
+          "id": 147,
+          "prompt": "How do I reduce my JavaScript bundle size in React Native?",
+          "should_trigger": false,
+          "expected_output": "JS bundle optimization task, unrelated to native build times or RNRepo."
+        }
+      ]
+    },
   ]
 }

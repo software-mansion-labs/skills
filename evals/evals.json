@@ -1026,6 +1026,6 @@
           "expected_output": "JS bundle optimization task, unrelated to native build times or RNRepo."
         }
       ]
-    },
+    }
   ]
 }

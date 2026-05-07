@@ -16,7 +16,7 @@ Read the relevant reference for the topic at hand. All references are in `refere
 - **How it works:** A Gradle plugin (Android) and CocoaPods plugin (iOS) intercept the build and substitute libraries with prebuilt artifacts from `packages.rnrepo.org`. Falls back to source if a prebuild is unavailable.
 - **Expo CNG:** Use `@rnrepo/expo-config-plugin` — it configures both Android and iOS automatically.
 - **Standard RN:** Install `@rnrepo/build-tools` and edit `android/build.gradle`, `android/app/build.gradle`, and `ios/Podfile` manually.
-- **Opt out per library:** Add a `rnrepo.config.json` with a `denyList` at the project root.
+- **Opt out per library:** Add a `rnrepo.config.json` with a `denyList` at the project root. Required for libraries with **native patches** (Objective-C/Java/Kotlin). JS-only patches do NOT require opting out.
 - **Opt out entirely:** Set `DISABLE_RNREPO=1` environment variable before the build command.
 
 ## References

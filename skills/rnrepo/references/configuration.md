@@ -18,7 +18,7 @@ Create `rnrepo.config.json` in the React Native project root:
 }
 ```
 
-Libraries in the deny list always build from source. Use this for libraries with local patches (via `patch-package`), build-time feature flags, or persistent C++ compatibility issues.
+Libraries in the deny list always build from source. Use this for libraries with **native patches** (Objective-C, Java, or Kotlin changes), build-time feature flags, or persistent C++ compatibility issues. JS-only patches do not require opting out - they don't affect the native artifact.
 
 ---
 

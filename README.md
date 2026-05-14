@@ -52,6 +52,10 @@ Best practices for using Radon IDE's MCP tools when developing, debugging, and i
 
 Practical guidance for building with TypeGPU, from project setup and schema design through shader authoring, resource management, and pipeline composition. It helps an AI coding agent work confidently across the CPU/GPU boundary while avoiding common typing, memory-layout, and WebGPU integration mistakes.
 
+### [rnrepo](./skills/rnrepo/)
+
+Best practices for integrating RNRepo — Software Mansion's infrastructure for pre-building and distributing React Native library artifacts. Covers installation (Expo CNG and standard React Native), configuration (denyList, disabling the plugin, GPG verification), and troubleshooting.
+
 ## Development
 
 This project uses [Task](https://taskfile.dev) as a task runner. Install with `brew install go-task`.
@@ -81,6 +85,12 @@ react-native-skills/
     │   │   ├── view-network-logs.md
     │   │   ├── view-network-request-details.md
     │   │   └── view-screenshot.md
+    │   └── SKILL.md
+    ├── rnrepo/
+    │   ├── references/
+    │   │   ├── configuration.md
+    │   │   ├── installation.md
+    │   │   └── troubleshooting.md
     │   └── SKILL.md
     ├── typegpu/
     │   ├── references/

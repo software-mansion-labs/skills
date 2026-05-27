@@ -1,134 +1,54 @@
-# LLM Patterns
+# LLMs
 
-Production patterns for running LLMs on-device with `useLLM`. For the full hook API, webfetch [useLLM docs](https://docs.swmansion.com/react-native-executorch/docs/hooks/natural-language-processing/useLLM). For all available model constants, webfetch the [API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference).
+Run Large Language Models on-device for text generation, chat, tool / function calling, structured JSON output, and vision-language understanding.
 
-For model loading strategies and resource fetcher setup, see **`setup.md`**.
-
----
-
-## Model Selection
-
-Choose based on device constraints and task complexity. All models ship as quantized variants.
-
-| Model Family | Sizes | Best for |
-|---|---|---|
-| SmolLM 2 | 135M, 360M, 1.7B | Low-end devices, simple tasks |
-| Qwen 2.5 / Qwen 3 | 0.5B-4B | General chat, reasoning (Qwen 3 supports `/no_think` to disable reasoning) |
-| LLaMA 3.2 | 1B, 3B | General chat |
-| Hammer 2.1 | 0.5B-3B | Tool calling |
-| Phi 4 Mini | 4B | Complex reasoning (high-end devices only) |
-| LFM2.5 | 1.2B | General chat, instruction following |
-| LFM2.5-VL | 1.6B | Vision-language (image + text understanding) |
-
-**Device limits:** Low-end devices handle 135M-1.7B parameters. High-end devices (iPhone 15 Pro, Pixel 8 Pro) can run 3B-4B parameter models. Always test on the lowest-spec device you plan to support.
-
-For full model list and download URLs, webfetch [LLM models](https://docs.swmansion.com/react-native-executorch/docs/api-reference#models---lmm).
+Pick models via the typed `models` registry: `models.llm.<model>({ quant?, backend? })`. Calling with no args returns the platform default (quantized variant when one is published). Passing a backend a model doesn't ship is a compile-time error. For full API surface and config options, webfetch [useLLM API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference/functions/useLLM).
 
 ---
 
-## Functional vs Managed
-
-`useLLM` supports two usage modes:
-
-| Mode | Method | State management | Tool calling |
-|---|---|---|---|
-| **Functional** | `generate(messages)` | You manage conversation history | You parse tool calls from output |
-| **Managed** | `sendMessage(text)` | Hook tracks `messageHistory` | Automatic via `executeToolCallback` |
-
-Use **functional** for full control or custom conversation flows. Use **managed** for standard chat UIs where the hook should handle message history and tool execution.
-
----
-
-## Functional Mode
-
-### Basic chat completion
-
-Pass a `Message[]` array to `generate`. The `response` property updates with each token. The returned Promise resolves to the complete response.
+## Functional mode (stateless)
 
 ```tsx
-import { useLLM, LLAMA3_2_1B } from 'react-native-executorch';
+import { useLLM, models, Message } from 'react-native-executorch';
 
-function Chat() {
-  const llm = useLLM({ model: LLAMA3_2_1B });
+const llm = useLLM({ model: models.llm.lfm2_5_1_2b_instruct() });
 
-  const handleGenerate = async () => {
-    const chat: Message[] = [
-      { role: 'system', content: 'You are a helpful assistant.' },
-      { role: 'user', content: 'What is the capital of France?' },
-    ];
-
-    const response = await llm.generate(chat);
-    console.log('Complete:', response);
-  };
-
-  return (
-    <View>
-      <Button onPress={handleGenerate} title="Ask" disabled={!llm.isReady} />
-      <Text>{llm.response}</Text>
-    </View>
-  );
-}
-```
-
-### Tool calling (functional)
-
-Pass tool definitions as the second argument to `generate`. Parse the response in a `useEffect` to detect tool calls:
-
-```tsx
-const TOOLS: LLMTool[] = [
-  {
-    name: 'get_weather',
-    description: 'Get weather in a location.',
-    parameters: {
-      type: 'dict',
-      properties: {
-        location: { type: 'string', description: 'City name' },
-      },
-      required: ['location'],
-    },
-  },
-];
-
-const llm = useLLM({ model: HAMMER2_1_1_5B });
-
-const ask = () => {
+const onGenerate = async () => {
   const chat: Message[] = [
-    { role: 'system', content: `You are a helpful assistant. Current date: ${new Date().toString()}` },
-    { role: 'user', content: "What's the weather in Cracow?" },
+    { role: 'system', content: 'You are a helpful assistant' },
+    { role: 'user', content: 'What is the meaning of life?' },
   ];
-  llm.generate(chat, TOOLS);
+  const response = await llm.generate(chat);
+  console.log(response);
 };
 
-useEffect(() => {
-  // Parse llm.response for tool call JSON and execute accordingly
-}, [llm.response]);
+return (
+  <View>
+    <Button onPress={onGenerate} title="Generate" disabled={!llm.isReady} />
+    <Text>{llm.response}</Text>
+  </View>
+);
 ```
 
-Use Hammer 2.1 models for tool calling. Their chat template supports the tool calling format. If a model does not support tool calling natively, you can work around it by describing tool schemas in the system prompt.
+Each `generate()` call is independent — the hook does not keep history.
 
 ---
 
-## Managed Mode
+## Managed mode (stateful chat)
 
-### Configure and send messages
-
-Call `configure` once to set up the system prompt, conversation history, context strategy, tool callbacks, and generation parameters. Then use `sendMessage` for each user message:
+For multi-turn chats, configure once and let the hook manage `messageHistory`:
 
 ```tsx
-import {
-  useLLM,
-  LLAMA3_2_1B,
-  MessageCountContextStrategy,
-} from 'react-native-executorch';
+import { useEffect } from 'react';
+import { useLLM, models, MessageCountContextStrategy } from 'react-native-executorch';
 
-const llm = useLLM({ model: LLAMA3_2_1B });
+const llm = useLLM({ model: models.llm.lfm2_5_1_2b_instruct() });
 
-const { configure } = llm;
 useEffect(() => {
-  configure({
+  llm.configure({
     chatConfig: {
-      systemPrompt: 'You are a helpful translator.',
-      contextStrategy: new MessageCountContextStrategy(6),
+      systemPrompt: 'You are a helpful assistant',
+      contextStrategy: new MessageCountContextStrategy(6), // keep last 6 messages
     },
     generationConfig: {
       temperature: 0.7,
@@ -137,264 +57,201 @@ useEffect(() => {
       batchTimeInterval: 100,
     },
   });
-}, [configure]);
+}, []);
 
-const send = (text: string) => llm.sendMessage(text);
+// Send messages — appended to llm.messageHistory automatically
+llm.sendMessage('Hello!');
 ```
 
-### Context strategy
+Render the chat from `llm.messageHistory`. `llm.response` streams the in-progress assistant message; `llm.isGenerating` is true during generation.
 
-The `contextStrategy` field in `chatConfig` controls how conversation history is managed for context. Three built-in strategies are available:
+---
 
-- `SlidingWindowContextStrategy` (default): trims oldest messages to fit a sliding window.
-- `MessageCountContextStrategy(n)`: keeps the last `n` messages from the conversation.
-- `NoopContextStrategy`: no trimming, passes the entire history every time.
+## Interrupting
 
-You can also implement a custom strategy using the `ContextStrategy` interface.
-
-### Initial message history
-
-Provide `initialMessageHistory` in `chatConfig` to seed the conversation with prior context:
+Always interrupt before unmounting — an in-flight generation will crash the app on tear-down.
 
 ```tsx
-llm.configure({
-  chatConfig: {
-    systemPrompt: 'You are a helpful assistant.',
-    initialMessageHistory: [
-      { role: 'user', content: 'What is the current time and date?' },
-    ],
-    contextStrategy: new MessageCountContextStrategy(6),
+{llm.isGenerating && <Button onPress={llm.interrupt} title="Stop" />}
+
+useEffect(() => {
+  return () => {
+    if (llm.isGenerating) llm.interrupt();
+  };
+}, []);
+```
+
+If you're navigating away programmatically, await until `isGenerating` becomes `false` before unmounting.
+
+---
+
+## Tool / function calling
+
+Define tools with a name, description, and JSON-schema-like parameter spec. Implement `executeToolCallback` to actually run the tool. Models with strong tool-calling support: `models.llm.hammer2_1_*`, `models.llm.qwen3_*`.
+
+```tsx
+import { useEffect } from 'react';
+import {
+  useLLM,
+  models,
+  DEFAULT_SYSTEM_PROMPT,
+  LLMTool,
+  ToolCall,
+} from 'react-native-executorch';
+
+const TOOLS: LLMTool[] = [
+  {
+    name: 'get_weather',
+    description: 'Get current weather in a given location.',
+    parameters: {
+      type: 'dict',
+      properties: {
+        location: { type: 'string', description: 'Location to check weather for' },
+      },
+      required: ['location'],
+    },
   },
-});
-```
+];
 
-### Tool calling (managed)
+const executeTool = async (call: ToolCall): Promise<string | null> => {
+  switch (call.toolName) {
+    case 'get_weather':
+      return 'It is sunny and 21°C.';
+    default:
+      return null;
+  }
+};
 
-In managed mode, tool calls are parsed and executed automatically via the `executeToolCallback`:
-
-```tsx
-const llm = useLLM({ model: HAMMER2_1_1_5B });
+const llm = useLLM({ model: models.llm.hammer2_1_1_5b() });
 
 useEffect(() => {
   llm.configure({
     chatConfig: {
-      systemPrompt: `You are a helpful assistant. Current date: ${new Date().toString()}`,
+      systemPrompt: `${DEFAULT_SYSTEM_PROMPT} Current time: ${new Date().toString()}`,
     },
     toolsConfig: {
       tools: TOOLS,
-      executeToolCallback: async (call) => {
-        if (call.toolName === 'get_weather') {
-          const result = await fetchWeather(call.parameters.location);
-          return JSON.stringify(result);
-        }
-        return null;
-      },
+      executeToolCallback: executeTool,
       displayToolCalls: true,
     },
   });
 }, []);
-
-// Tool results are automatically fed back to the model
-llm.sendMessage("What's the weather in Cracow?");
 ```
 
-### Conversation history
-
-Access the full conversation via `messageHistory`:
-
-```tsx
-{llm.messageHistory.map((msg, i) => (
-  <Text key={i}>{msg.role}: {msg.content}</Text>
-))}
-```
-
-Use `deleteMessage` to remove specific messages from history.
+In functional mode, pass tools as the second argument: `llm.generate(chat, TOOLS)`.
 
 ---
 
-## Vision-Language Models (VLM)
+## Structured JSON output
 
-Some models support multimodal input (text and images together). Load a VLM model and pass images alongside text:
-
-### Loading a VLM
+Use `getStructuredOutputPrompt` to build a system prompt from a JSON Schema or Zod schema, then validate the response with `fixAndValidateStructuredOutput`.
 
 ```tsx
-import { useLLM, LFM2_VL_1_6B_QUANTIZED } from 'react-native-executorch';
-
-const llm = useLLM({ model: LFM2_VL_1_6B_QUANTIZED });
-```
-
-The `capabilities` field is already set on the model constant. You can also construct the model object explicitly:
-
-```tsx
-const llm = useLLM({
-  model: {
-    modelSource: '...',
-    tokenizerSource: '...',
-    tokenizerConfigSource: '...',
-    capabilities: ['vision'],
-  },
-});
-```
-
-### Sending a message with an image (managed)
-
-```tsx
-llm.sendMessage('What is in this image?', {
-  imagePath: '/path/to/image.jpg',
-});
-```
-
-The `imagePath` should be a local file path on the device.
-
-### Functional generation with images
-
-Set `mediaPath` on user messages:
-
-```tsx
-const chat: Message[] = [
-  {
-    role: 'user',
-    content: 'Describe this image.',
-    mediaPath: '/path/to/image.jpg',
-  },
-];
-
-const response = await llm.generate(chat);
-```
-
----
-
-## Structured Output
-
-Force the LLM to respond with JSON matching a schema. Works with JSON Schema or Zod:
-
-```tsx
-import { Schema } from 'jsonschema';
+import * as z from 'zod/v4';
 import {
   useLLM,
-  QWEN3_4B_QUANTIZED,
+  models,
   getStructuredOutputPrompt,
   fixAndValidateStructuredOutput,
 } from 'react-native-executorch';
 
-const schema: Schema = {
-  type: 'object',
-  properties: {
-    name: { type: 'string', description: 'User name' },
-    intent: { type: 'string', description: 'User intent' },
-  },
-  required: ['name', 'intent'],
-};
+const schema = z.object({
+  username: z.string().meta({ description: 'User asking the question' }),
+  bid: z.number().meta({ description: 'Offer in the user message' }),
+  currency: z.optional(z.string()),
+});
 
-const llm = useLLM({ model: QWEN3_4B_QUANTIZED });
+const llm = useLLM({ model: models.llm.qwen3_4b() });
 
 useEffect(() => {
-  const formatting = getStructuredOutputPrompt(schema);
+  const instructions = getStructuredOutputPrompt(schema);
   llm.configure({
     chatConfig: {
-      systemPrompt: `Parse user messages into JSON.\n${formatting}\n/no_think`,
+      systemPrompt:
+        `Parse the user's message and return JSON. Don't reply to the user. ${instructions} /no_think`,
     },
   });
 }, []);
 
-// After generation completes:
 useEffect(() => {
   const last = llm.messageHistory.at(-1);
   if (!llm.isGenerating && last?.role === 'assistant') {
     try {
       const parsed = fixAndValidateStructuredOutput(last.content, schema);
-      console.log(parsed);
+      console.log(parsed); // typed by Zod
     } catch (e) {
-      console.error('Output does not match schema:', e);
+      console.warn('Output did not match schema', e);
     }
   }
 }, [llm.messageHistory, llm.isGenerating]);
 ```
 
-### Zod schemas
-
-Zod schemas are also supported via `zod/v4`. Use `z.meta()` for field descriptions:
-
-```tsx
-import * as z from 'zod/v4';
-
-const responseSchema = z.object({
-  username: z.string().meta({ description: 'Name of user' }),
-  question: z.optional(z.string().meta({ description: 'Question that user asks' })),
-  bid: z.number().meta({ description: 'Amount of money offered' }),
-});
-
-const formatting = getStructuredOutputPrompt(responseSchema);
-// fixAndValidateStructuredOutput with Zod returns typed output
-const parsed = fixAndValidateStructuredOutput(lastMessage.content, responseSchema);
-```
-
-The `/no_think` suffix disables Qwen 3's reasoning mode, producing cleaner JSON output.
+`getStructuredOutputPrompt` accepts both JSON Schema (`jsonschema`) and Zod schemas.
 
 ---
 
-## Token Batching
+## Vision-Language Models (VLM)
 
-On fast devices, the LLM can generate 60+ tokens per second. Updating React state on every token causes jank. Token batching groups tokens before emitting them:
+Some LLMs accept image + text input. They live under `models.llm` too — pick them by capability. Pass an image alongside text via `imagePath` (managed) or `mediaPath` on a `Message` (functional).
 
 ```tsx
-llm.configure({
-  generationConfig: {
-    outputTokenBatchSize: 15,  // emit after 15 tokens
-    batchTimeInterval: 100,    // or after 100ms, whichever comes first
-  },
-});
+import { useLLM, models, Message } from 'react-native-executorch';
+
+const llm = useLLM({ model: models.llm.lfm2_5_vl_1_6b() });
+
+// Managed
+llm.sendMessage('What is in this image?', { imagePath: '/path/to/image.jpg' });
+
+// Functional
+const chat: Message[] = [
+  { role: 'user', content: 'Describe this image.', mediaPath: '/path/to/image.jpg' },
+];
+await llm.generate(chat);
 ```
 
-Defaults: 10 tokens, 80ms interval (~12 batches per second). Increase `batchTimeInterval` on slower devices for smoother UI. Decrease `outputTokenBatchSize` for faster perceived response on high-end devices.
+`imagePath` / `mediaPath` must be a local filesystem path. To use a remote image, download it first (e.g. via the resource-fetcher adapter — see [setup.md](./setup.md)).
 
 ---
 
-## Token Counting
+## Choosing options on the accessor
 
-Track token usage with the counting methods:
+```ts
+// Platform default (quantized when published).
+models.llm.llama3_2_3b();
 
-```tsx
-const generatedTokens = llm.getGeneratedTokenCount();
-const promptTokens = llm.getPromptTokenCount();
-const totalTokens = llm.getTotalTokenCount();
+// Non-quantized variant.
+models.llm.llama3_2_3b({ quant: false });
+
+// Explicit backend — only the backends the model actually ships are accepted.
+models.llm.qwen3_4b({ backend: 'xnnpack' });
 ```
 
 ---
 
-## Interrupting Generation
+## Model selection
 
-Call `interrupt()` to stop generation mid-stream. The `response` updates one final time with the partial output:
+| Device tier | Parameter range | Recommended accessors |
+|---|---|---|
+| Low-end | 135M–500M | `models.llm.smollm2_1_135m`, `models.llm.smollm2_1_360m`, `models.llm.lfm2_5_350m` |
+| Mid-range | 0.5B–1.7B | `models.llm.llama3_2_1b`, `models.llm.qwen3_0_6b`, `models.llm.smollm2_1_1_7b`, `models.llm.lfm2_5_1_2b_instruct`, `models.llm.hammer2_1_1_5b`, `models.llm.bielik_v3_0_1_5b` |
+| High-end | 1.7B–4B | `models.llm.llama3_2_3b`, `models.llm.qwen3_4b`, `models.llm.qwen3_5_2b`, `models.llm.phi_4_mini_4b`, `models.llm.hammer2_1_3b` |
+| VLM | 450M / 1.6B | `models.llm.lfm2_5_vl_450m`, `models.llm.lfm2_5_vl_1_6b` |
 
-```tsx
-<Button
-  title="Stop"
-  onPress={() => llm.interrupt()}
-  disabled={!llm.isGenerating}
-/>
-```
-
-**You must interrupt before unmounting.** Unmounting a component while `isGenerating` is true crashes the app. Guard navigation:
-
-```tsx
-useEffect(() => {
-  return () => {
-    if (llm.isGenerating) {
-      llm.interrupt();
-    }
-  };
-}, []);
-```
+Full per-device benchmarks: webfetch [Inference time benchmarks](https://docs.swmansion.com/react-native-executorch/docs/benchmarks/inference-time).
 
 ---
 
-## Gotchas
+## Troubleshooting
 
-- `chatConfig` and `toolsConfig` only affect managed mode (`sendMessage`). They have no effect on functional mode (`generate`).
-- `generate` and `sendMessage` cannot run concurrently. Calling either while the other is running throws `ModelGenerating`.
-- `topp` must be between 0 and 1 (inclusive). Values outside this range throw `InvalidConfig`.
-- GGUF models are not supported. ExecuTorch uses the `.pte` format exclusively.
-- Most models run on the XNNPACK CPU backend. GPU acceleration via Core ML is available for some iOS models but coverage is limited.
-- iOS simulator release builds are not supported. Test release builds on real devices.
-- Qwen 3 enables reasoning by default. Append `/no_think` to the user prompt to disable it for faster, more concise responses.
+- **Crash on unmount.** Active generation was not interrupted — call `llm.interrupt()` and wait for `isGenerating === false`.
+- **Out-of-memory at load.** Pick a smaller accessor or stay on the default (quantized) variant.
+- **Poor output quality.** Try a larger model, raise `temperature` / `topp`, or improve the system prompt. For Qwen 3 reasoning models, pass `/no_think` in the prompt to skip the thinking phase.
+- **Tool calls never fire.** Use a tool-tuned model (`models.llm.hammer2_1_*`) and ensure `executeToolCallback` is set.
+
+---
+
+## See also
+
+- [useLLM API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference/functions/useLLM)
+- [LLMModule (non-hook) API](https://docs.swmansion.com/react-native-executorch/docs/typescript-api/natural-language-processing/LLMModule)
+- [LLM HuggingFace collection](https://huggingface.co/collections/software-mansion/llm)

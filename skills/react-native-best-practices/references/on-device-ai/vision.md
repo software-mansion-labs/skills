@@ -246,9 +246,9 @@ const cosine = v1.reduce((s, x, i) => s + x * v2[i], 0); // pre-normalized
 | `models.text_embedding.paraphrase_multilingual_minilm_l12_v2` | 128 | 384 | Multilingual paraphrase |
 | `models.text_embedding.clip_vit_base_patch32_text` | 74 | 512 | Pair with image embeddings (CLIP) |
 
-Text exceeding `Max tokens` is truncated. Use `useTokenizer` (see [setup.md](./setup.md)) to count first.
+Text exceeding `Max tokens` is truncated. Use `useTokenizer` (see `setup.md`) to count first.
 
-**Building a full RAG pipeline?** Don't roll your own — use [react-native-rag](https://github.com/software-mansion-labs/react-native-rag) (sibling library). It wraps `useTextEmbeddings` + `useLLM` with `ExecuTorchEmbeddings` / `ExecuTorchLLM`, ships a `MemoryVectorStore` + an op-sqlite persistence plugin, and exposes a `useRAG` hook. See [setup.md](./setup.md) for an end-to-end example.
+**Building a full RAG pipeline?** Don't roll your own — use [react-native-rag](https://github.com/software-mansion-labs/react-native-rag) (sibling library). It wraps `useTextEmbeddings` + `useLLM` with `ExecuTorchEmbeddings` / `ExecuTorchLLM`, ships a `MemoryVectorStore` + an op-sqlite persistence plugin, and exposes a `useRAG` hook. See `setup.md` for an end-to-end example.
 
 ---
 
@@ -265,4 +265,4 @@ Text exceeding `Max tokens` is truncated. Use `useTokenizer` (see [setup.md](./s
 
 - [API reference](https://docs.swmansion.com/react-native-executorch/docs/api-reference) — per-hook signatures
 - [HuggingFace collections](https://huggingface.co/software-mansion) — pre-exported model artefacts
-- [setup.md](./setup.md) — loading strategies, error handling, custom `.pte` models
+- `setup.md` — loading strategies, error handling, custom `.pte` models

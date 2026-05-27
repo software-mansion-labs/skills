@@ -107,7 +107,7 @@ useObjectDetection({ model: models.object_detection.rf_detr_nano({ backend: 'xnn
 useOCR({ model: models.ocr.craft({ language: 'en' }) });
 ```
 
-Available top-level categories: `llm`, `classification`, `object_detection`, `pose_estimation`, `semantic_segmentation`, `instance_segmentation`, `style_transfer`, `speech_to_text`, `text_to_speech`, `text_embedding`, `image_embedding`, `image_generation`, `vad`, `ocr`, `privacy_filter`. Per-category accessors are listed in [llm.md](./llm.md), [vision.md](./vision.md), [speech.md](./speech.md), and the privacy filter section below.
+Available top-level categories: `llm`, `classification`, `object_detection`, `pose_estimation`, `semantic_segmentation`, `instance_segmentation`, `style_transfer`, `speech_to_text`, `text_to_speech`, `text_embedding`, `image_embedding`, `image_generation`, `vad`, `ocr`, `privacy_filter`. Per-category accessors are listed in `llm.md`, `vision.md`, `speech.md`, and the privacy filter section below.
 
 ### `preventLoad`
 
@@ -341,7 +341,7 @@ export default function App() {
 **When to reach for `react-native-rag` vs. rolling your own:**
 
 - **Use the library** when you need document ingestion + chunking + retrieval + generation as one pipeline, persistent vector storage across launches, or want a hook-based API symmetric with `useLLM` / `useTextEmbeddings`.
-- **Roll your own** (just `useTextEmbeddings` + cosine similarity + `useLLM`) when the corpus is small and ephemeral, or you need custom retrieval logic the library doesn't expose. The `useTextEmbeddings` example in [vision.md](./vision.md) shows the minimal building blocks.
+- **Roll your own** (just `useTextEmbeddings` + cosine similarity + `useLLM`) when the corpus is small and ephemeral, or you need custom retrieval logic the library doesn't expose. The `useTextEmbeddings` example in `vision.md` shows the minimal building blocks.
 
 Both `ExecuTorchEmbeddings` and `ExecuTorchLLM` accept any model accessor from the registry — same `{ quant, backend }` options apply. Custom components (vector stores, splitters, embedders) implement the library's `Embeddings` / `LLM` / `VectorStore` / `TextSplitter` interfaces.
 

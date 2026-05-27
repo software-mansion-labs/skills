@@ -209,7 +209,7 @@ const chat: Message[] = [
 await llm.generate(chat);
 ```
 
-`imagePath` / `mediaPath` must be a local filesystem path. To use a remote image, download it first (e.g. via the resource-fetcher adapter — see [setup.md](./setup.md)).
+`imagePath` / `mediaPath` must be a local filesystem path. To use a remote image, download it first (e.g. via the resource-fetcher adapter — see `setup.md`).
 
 ---
 

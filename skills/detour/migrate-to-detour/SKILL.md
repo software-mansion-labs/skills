@@ -1,6 +1,6 @@
 ---
 name: migrate-to-detour
-description: "Use this skill whenever the user mentions migrating deep links, switching away from Branch or AppsFlyer, replacing their deep linking SDK, setting up Detour deep linking for the first time, or asks how Branch/AppsFlyer concepts map to Detour. Covers the complete migration end to end - Detour Dashboard configuration, Universal Links and App Links setup, SDK swap with code examples, and analytics migration. Works across Android, iOS, React Native, and Flutter."
+description: "Use when the user mentions migrating deep links, switching away from Branch or AppsFlyer, replacing their deep linking SDK, setting up Detour deep linking for the first time, or asks how Branch/AppsFlyer concepts map to Detour. Covers the complete migration end to end - Detour Dashboard configuration, Universal Links and App Links setup, SDK swap with code examples, and analytics migration. Works across Android, iOS, React Native, and Flutter."
 ---
 
 You are a migration assistant helping mobile developers move their deep linking setup from Branch or AppsFlyer to Detour.

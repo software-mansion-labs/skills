@@ -26,23 +26,22 @@ You can also install the skills using the [`skills` CLI](https://www.npmjs.com/p
 npx skills add software-mansion-labs/skills
 ```
 
-
 ## Available Skills
 
 ### [react-native-best-practices](./skills/react-native-best-practices/)
 
 Production patterns for React Native apps on the New Architecture, covering:
 
-| Topic | What it covers |
-|-------|---------------|
-| **Animations** | CSS transitions, CSS animations, shared value animations, canvas animations (Skia), GPU shader animations, layout animations, Reanimated 4, 120fps, performance tuning |
-| **Gestures** | Tap, pan, pinch, swipe, long press, drag with Gesture Handler |
-| **SVG** | Vector graphics, icons, charts, illustrations with React Native SVG |
-| **On-device AI** | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch |
-| **Rich Text** | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math |
-| **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets |
-| **Audio** | Playback, recording, visualization, session management with React Native Audio API |
-| **JSI** | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
+| Topic              | What it covers                                                                                                                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Animations**     | CSS transitions, CSS animations, shared value animations, canvas animations (Skia), GPU shader animations, layout animations, Reanimated 4, 120fps, performance tuning                               |
+| **Gestures**       | Tap, pan, pinch, swipe, long press, drag with Gesture Handler                                                                                                                                        |
+| **SVG**            | Vector graphics, icons, charts, illustrations with React Native SVG                                                                                                                                  |
+| **On-device AI**   | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch                                                                                                                |
+| **Rich Text**      | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math                     |
+| **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets                                                                                                                           |
+| **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
+| **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
 ### [radon-mcp](./skills/radon-mcp/)
 
@@ -55,6 +54,10 @@ Practical guidance for building with TypeGPU, from project setup and schema desi
 ### [rnrepo](./skills/rnrepo/)
 
 Best practices for integrating RNRepo — Software Mansion's infrastructure for pre-building and distributing React Native library artifacts. Covers installation (Expo CNG and standard React Native), configuration (denyList, disabling the plugin, GPG verification), and troubleshooting.
+
+### [detour](./skills/detour/)
+
+Best practices for setting up and migrating to Detour, Software Mansion's deferred deep linking ecosystem. Covers end-to-end SDK initialization, Universal/App Links registration, and type-safe analytics tracking across iOS, Android, React Native, and Flutter, as well as structural mappings for switching away from Branch or AppsFlyer.
 
 ## Development
 
@@ -104,6 +107,22 @@ react-native-skills/
     │   │   ├── textures.md
     │   │   └── types.md
     │   └── SKILL.md
+    ├── detour/
+    │   ├── migrate-to-detour/
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   │       ├── android.md
+    │   │       ├── ios.md
+    │   │       ├── react-native.md
+    │   │       └── flutter.md
+    │   │
+    │   └── detour-onboarding/
+    │       ├── SKILL.md
+    │       └── references/
+    │           ├── android.md
+    │           ├── ios.md
+    │           ├── react-native.md
+    │           └── flutter.md
     └── react-native-best-practices/
         ├── references/
         │   ├── animations/

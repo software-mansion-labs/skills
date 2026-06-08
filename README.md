@@ -115,7 +115,6 @@ react-native-skills/
     │   │       ├── ios.md
     │   │       ├── react-native.md
     │   │       └── flutter.md
-    │   │
     │   └── detour-onboarding/
     │       ├── SKILL.md
     │       └── references/

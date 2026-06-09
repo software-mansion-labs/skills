@@ -44,7 +44,7 @@ fishjam_client.delete_room(room_id)
 - `max_peers: int | None` — cap concurrent peers
 - `video_codec: Literal['h264', 'vp8'] | None` — default `None` (server picks)
 - `webhook_url: str | None`
-- `room_type: Literal['conference', 'audio_only', 'livestream', 'audio_only_livestream', 'full_feature', 'broadcaster']` — default `'conference'`
+- `room_type: Literal['conference', 'audio_only', 'livestream', 'audio_only_livestream', 'full_feature']` — default `'conference'`
 - `public: bool` — livestream only
 
 Returns `Room(id, config, peers)` (a dataclass).

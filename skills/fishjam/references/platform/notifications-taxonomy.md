@@ -21,8 +21,8 @@
 
 | Event | Trigger | Payload |
 |---|---|---|
-| `peerAdded` | Backend called `createPeer` (peer record created; peer has not connected yet). | `peerId`, `peerType`. Metadata is **not** on this event — it arrives via `peerMetadataUpdated`. |
-| `peerDeleted` | Backend called `deletePeer`, or token expired and peer was reaped. | `peerId`, `peerType`. |
+| `peerAdded` | Your backend called `createPeer` (peer record created; peer has not connected yet). | `peerId`, `peerType`. Metadata is **not** on this event — it arrives via `peerMetadataUpdated`. |
+| `peerDeleted` | Your backend called `deletePeer`, or token expired and peer was reaped. | `peerId`, `peerType`. |
 | `peerConnected` | Client established a WebRTC connection using its peer token. | `peerId`, `peerType`. |
 | `peerDisconnected` | Client dropped the WebRTC connection (may reconnect; if not, eventually `peerDeleted`). | `peerId`, `peerType`. |
 | `peerMetadataUpdated` | Peer metadata changed (also fires on initial set after `peerAdded`). | `peerId`, `peerType`, new `metadata`. |
@@ -69,7 +69,6 @@ The protobuf `ServerMessage` union includes other oneof fields that the SDKs del
 
 - `authenticated`, `authRequest`, `subscribeRequest`, `subscribeResponse` — handshake / request-side messages, never inbound notifications.
 - `trackForwarding`, `trackForwardingRemoved` — feature exists but no consumer demand to surface.
-- `vadNotification` — voice-activity-detection events are surfaced to clients, not server-notification consumers.
 - `notificationBatch` — webhook-only transport wrapper, the WS notifier never receives it.
 - `streamConnected`, `streamDisconnected`, `hlsPlayable`, `hlsUploaded`, `hlsUploadCrashed`, `componentCrashed` — deprecated.
 

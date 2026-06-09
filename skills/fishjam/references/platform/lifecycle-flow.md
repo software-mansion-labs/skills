@@ -31,7 +31,7 @@ For a single peer:
 
 - `roomCreated` (once per room)
   - `peerAdded` → `peerConnected`
-    - `trackAdded` (× N as peer publishes)
+    - `trackAdded` (received for each published track)
     - `trackMetadataUpdated` / `trackRemoved` (during session)
     - `peerMetadataUpdated` (if you allow metadata updates)
   - `peerDisconnected`
@@ -75,7 +75,7 @@ On the backend side, you don't normally need to do anything — Fishjam keeps th
 | Symptom | Likely cause | Remediation |
 | --- | --- | --- |
 | Client can't connect, sees auth error | Peer token expired (24h) or revoked | Refresh and retry, or treat as new session |
-| Backend gets `peerAdded` but no `peerConnected` follows | Client never actually called `joinRoom`, or NAT/firewall blocked WebRTC | Check client logs; verify TURN reachability |
+| Backend gets `peerAdded` but no `peerConnected` follows | Client never actually called `joinRoom`, or NAT/firewall blocked WebRTC | Check client logs |
 | `peerConnected` then immediately `peerDisconnected` | Failed ICE / TURN renegotiation | Same; check client network and Fishjam status page |
 | Webhook delivery fails (your endpoint 500s) | Fishjam retries 5xx with exponential backoff (up to 8 attempts, capped at 30s total wall-clock). 4xx is not retried. Per-room dispatch is serialised, so a slow endpoint stalls subsequent events for that room. | Return 2xx fast; if you 4xx, the event is dropped — reconcile via `GET /room/{id}`. |
 | WS notifier silently stops emitting | Process lost the socket, no auto-reconnect | Supervise the notifier, restart on close |

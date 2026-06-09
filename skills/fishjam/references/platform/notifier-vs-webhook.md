@@ -120,7 +120,7 @@ async def fishjam_webhook(secret: str, req: Request):
 
 ### Webhook security pattern
 
-Fishjam doesn't sign webhook bodies. Common pattern: include a long random secret in the URL path (`/webhooks/fishjam/<secret>`) and reject mismatched secrets. Alternatives include IP allowlisting (if Fishjam publishes egress ranges) and shared HMAC (compute yourself, attach as `X-Custom-Sig` if you proxy through your own router).
+Fishjam doesn't sign webhook bodies. Common pattern: include a long random secret in the URL path (`/webhooks/fishjam/<secret>`) and reject mismatched secrets.
 
 ## Hybrid
 

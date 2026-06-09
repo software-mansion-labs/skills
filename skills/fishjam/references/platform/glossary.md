@@ -27,7 +27,7 @@ A single stream of media — one camera, one microphone, one screen share, or on
 
 ## Agent
 
-A programmatic peer — a server-side program that joins a room via the server SDK (`FishjamClient.createAgent` / `create_agent`) and sends or receives audio frames directly. Used for AI voice integrations (e.g., Gemini Live, Vapi) and custom server-side audio processing. Agents do not run a WebRTC negotiation; they use a direct protocol over WebSocket.
+A programmatic peer — a server-side program that joins a room via the server SDK (`FishjamClient.createAgent` / `create_agent`) and sends or receives audio frames directly. Used for AI voice integrations (e.g., Gemini Live) and custom server-side audio processing. Agents do not run a WebRTC negotiation; they use a direct protocol over WebSocket.
 
 ## Streamer
 

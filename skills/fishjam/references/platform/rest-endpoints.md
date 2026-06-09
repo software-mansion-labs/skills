@@ -45,15 +45,6 @@ The Fishjam ID is the hex string shown in the [Dashboard](https://fishjam.io/app
 
 The `subscribePeer` and `subscribeTracks` endpoints only matter for peers created with `subscribeMode: 'manual'` (set on the peer's `PeerOptionsWebRTC` / `PeerOptionsAgent` / `PeerOptionsVapi`, **not** on the room). In the default `auto` mode each peer is subscribed to every other peer's tracks automatically.
 
-## Livestream — token issuance (room-scoped)
-
-When you create a `livestream`-type room and need credentials for the streamer or viewers:
-
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/room/{room_id}/streamer` | Issue a streamer token (the single peer authorized to broadcast). |
-| `POST` | `/room/{room_id}/viewer` | Issue a viewer token (for private livestreams). |
-
 ## Livestream — direct management
 
 For lower-level livestream management (independent of the room):

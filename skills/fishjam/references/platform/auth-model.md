@@ -28,13 +28,15 @@ fishjam_client = FishjamClient(
 )
 ```
 
-## Tier 2 — Peer Token
+## Tier 2 — Participant (Peer, Viewer, Streamer) Tokens
 
 - **Holder:** the client (browser, mobile app).
 - **Issued by:** your backend, by calling `createPeer` / `create_peer` (which internally calls `POST /room/{room_id}/peer`).
 - **Lifetime:** 24 hours from creation. After that, calls to Fishjam with the token fail with an auth error.
 - **Scope:** one specific peer in one specific room. Cannot create rooms, list rooms, or impersonate other peers.
 - **Safe for client transport:** yes — send it back from your `/join-room` endpoint to the frontend.
+
+### Peer token
 
 Generation:
 
@@ -60,7 +62,7 @@ const { joinRoom } = useConnection();
 await joinRoom({ peerToken });
 ```
 
-## Token refresh
+#### Token refresh
 
 Peer tokens expire after 24 hours. Two strategies:
 
@@ -69,7 +71,7 @@ Peer tokens expire after 24 hours. Two strategies:
 
 The HTTP endpoint is `POST /room/{room_id}/peer/{id}/refresh_token`.
 
-## Livestream tokens
+### Livestream tokens
 
 Livestream rooms (`roomType: 'livestream'`) use additional token types issued by the backend:
 
@@ -85,7 +87,7 @@ Both endpoints under the hood:
 
 Detail: `room-types.md`.
 
-## MoQ tokens
+### MoQ tokens
 
 For [Media-over-QUIC](https://fishjam.swmansion.com/docs/explanation/moq-streaming) streaming Fishjam issues a separate, path-scoped JWT.
 
@@ -98,11 +100,11 @@ Endpoint: `POST /moq/token`.
 
 ## Full auth flow
 
-1. Client calls backend `/join-room` with your app-level auth.
-2. Backend validates user against your DB/auth system.
-3. Backend calls Fishjam `createPeer` using the **management token**.
-4. Fishjam returns `{ peer, peerToken }` to backend.
-5. Backend returns `{ peerToken, roomId }` to client.
+1. User calls the backend controlled by you with your app-level auth.
+2. Your backend validates the user against your DB/auth system.
+3. Your backend calls Fishjam `createPeer` using the **management token**.
+4. Fishjam returns `{ peer, peerToken }` to your backend.
+5. Your backend returns `{ peerToken, roomId }` to the client.
 6. Client joins Fishjam with `peerToken`.
 
 Backend authenticates the user (your auth scheme, not Fishjam's), creates the peer using the management token, returns the peer token. The client never sees the management token; Fishjam never sees your user IDs (unless you put them in `metadata`).

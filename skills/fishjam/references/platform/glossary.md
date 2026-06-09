@@ -11,7 +11,7 @@ A collection of peers that exchange audio and video. Identified by a `room.id` (
 A user or program connected to a room. Each peer has:
 
 - An `id` (server-assigned).
-- A `peerType`: `webrtc` (client SDK), `agent` (server-side via `createAgent` / `create_agent`), `vapi` (managed voice agent), or `unspecified`.
+- A `peerType`: `webrtc` (client SDK), `agent` (server-side via `createAgent` / `create_agent`), `vapi` (managed voice agent).
 - Optional `metadata` (set at peer creation by the backend; the **client** can update its own metadata mid-session via `useUpdatePeerMetadata` / `update_peer_metadata`, emitting `peerMetadataUpdated` to notifier/webhook).
 - A `peerToken` issued by the backend that authorizes the client to connect.
 

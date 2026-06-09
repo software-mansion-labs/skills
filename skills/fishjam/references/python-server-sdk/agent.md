@@ -44,7 +44,7 @@ async with agent.connect() as session:
 
 `OutgoingAudioTrackOptions` fields:
 
-- `encoding: TrackEncoding` — `TRACK_ENCODING_OPUS`, `TRACK_ENCODING_PCM16`, or `TRACK_ENCODING_UNSPECIFIED` (the actual default if you omit this field — pass `encoding` explicitly so the server knows what to expect).
+- `encoding: TrackEncoding` — `TRACK_ENCODING_OPUS`, `TRACK_ENCODING_PCM16`.
 - `sample_rate: Literal[16000, 24000]`
 - `channels: Literal[1, 2]` — mono or stereo
 - `metadata: dict | None` — JSON-encodable

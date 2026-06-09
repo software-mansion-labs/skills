@@ -6,8 +6,8 @@
 
 - **Room-scoped events** carry **`roomId`** (the room they relate to). **Exception:** the four livestream streamer/viewer events use **`streamId`** (the livestream ID) instead — see the per-event tables below.
 - Peer-scoped events carry **`peerId`**.
-- Peer-lifecycle events also carry **`peerType`**: `'webrtc' | 'agent' | 'vapi' | 'unspecified'` (mapped from protobuf enum in the JS SDK; raw enum in Python).
-- Track-scoped events carry **`track: { id, type, metadata }`** where `type` is `'video' | 'audio' | 'unspecified'`.
+- Peer-lifecycle events also carry **`peerType`**: `'webrtc' | 'agent' | 'vapi` (mapped from protobuf enum in the JS SDK; raw enum in Python).
+- Track-scoped events carry **`track: { id, type, metadata }`** where `type` is `'video' | 'audio'`.
 
 ## Room lifecycle (3)
 

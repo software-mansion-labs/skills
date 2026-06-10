@@ -2,7 +2,7 @@
 
 Mobile devices have multiple audio outputs — earpiece, speaker, wired headset, Bluetooth headset — and the OS routes audio to one of them. The SDK exposes a hook to read and override the routing.
 
-> Web equivalent doesn't exist — browsers don't yet expose audio-output enumeration through `MediaDevices.enumerateDevices`. This is mobile-only.
+> No web equivalent in the React client — programmatic audio-output routing on the web relies on browser-specific APIs (e.g. `HTMLMediaElement.setSinkId`) with uneven cross-browser support, so the SDK doesn't expose an equivalent hook. This is mobile-only.
 
 ## API
 

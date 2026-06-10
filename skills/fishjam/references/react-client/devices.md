@@ -31,6 +31,8 @@ function MediaBootstrap() {
 
 Simulcast layers are configured separately via `videoConfig` on `FishjamProvider` — not here. See `simulcast-and-bandwidth.md`.
 
+This hook can batch camera + microphone permission requests into a single browser popup if both are enabled simultaneously.
+
 Returns an `InitializeDevicesResult` describing what was granted; status enum (`InitializeDevicesStatus`) shows progress.
 
 Browser permission prompt timing: this is when the user sees the permission dialog. Trigger off a user gesture if you want predictable UX (don't auto-request on mount in a tab the user just opened — Safari sometimes silently denies).

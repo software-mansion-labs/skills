@@ -31,7 +31,7 @@ function CallScreen() {
           <RTCView
             key={peer.id}
             mediaStream={peer.cameraTrack.stream}
-            style={{ flex: 1 }}
+            style={{ width: 200, height: 200 }}
             objectFit="cover"
           />
         ) : null,

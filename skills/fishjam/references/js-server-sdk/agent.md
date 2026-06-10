@@ -22,12 +22,11 @@ const { agent, peer } = await fishjamClient.createAgent(
   } satisfies AgentCallbacks,
 );
 
-// agent is already connected here — createAgent awaits the WS handshake internally.
 // ...interact with audio...
 agent.disconnect();
 ```
 
-`createAgent` resolves only after `agent.awaitConnected()` completes internally, so the agent is ready to use as soon as the promise resolves. From there it behaves as a typed `EventEmitter`.
+`agent` is a typed `EventEmitter`, ready as soon as `createAgent` resolves — no need to call `agent.awaitConnected()` yourself (the SDK awaits it inside `createAgent`).
 
 ## Outgoing audio
 
@@ -92,7 +91,7 @@ If you just want a hosted voice agent and don't need fine-grained audio control,
 
 ```ts
 const { peer } = await fishjamClient.createVapiAgent(roomId, vapiOptions);
-// no agent.awaitConnected, no track APIs — Vapi handles them
+// no agent object, no track APIs — Vapi handles them
 ```
 
 ## Sources

@@ -34,33 +34,8 @@ const fishjamClient = new FishjamClient({
   managementToken: process.env.FISHJAM_MANAGEMENT_TOKEN!,
 });
 
-// Your own auth middleware. NOT Fishjam's — it verifies YOUR user.
-app.use(authenticateUser);
-
-app.post('/api/join-room', async (req, res, next) => {
-  try {
-    const { roomName, roomType = 'conference' } = req.body;
-    const user = req.user;
-
-    if (!userCanJoin(user, roomName)) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-
-    // Either look up an existing room by name in your DB, or create a fresh one.
-    const room = await getOrCreateRoom(roomName, roomType);
-
-    const { peer, peerToken } = await fishjamClient.createPeer(room.id, {
-      metadata: { userId: user.id, name: user.name, role: user.role },
-    });
-
-    res.json({ peerToken, roomId: room.id, fishjamId: process.env.FISHJAM_ID });
-  } catch (err) {
-    next(err); // delegated to the error middleware below
-  }
-});
-
-// Error middleware — map Fishjam exceptions to HTTP responses
-app.use((err: Error, req, res, next) => {
+// Map Fishjam exceptions to HTTP responses. Called explicitly from each route's catch
+function respondFishjamError(err: unknown, res: express.Response) {
   if (err instanceof FishjamNotFoundException) {
     return res.status(404).json({ error: err.message });
   }
@@ -80,16 +55,41 @@ app.use((err: Error, req, res, next) => {
     return res.status(502).json({ error: 'Upstream error', status: err.statusCode, details: err.details });
   }
   console.error('Unhandled error', err);
-  res.status(500).json({ error: 'Internal server error' });
+  return res.status(500).json({ error: 'Internal server error' });
+}
+
+// Your own auth middleware. NOT Fishjam's — it verifies YOUR user.
+app.use(authenticateUser);
+
+app.post('/api/join-room', async (req, res) => {
+  try {
+    const { roomName, roomType = 'conference' } = req.body;
+    const user = req.user;
+
+    if (!userCanJoin(user, roomName)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Either look up an existing room by name in your DB, or create a fresh one.
+    const room = await getOrCreateRoom(roomName, roomType);
+
+    const { peer, peerToken } = await fishjamClient.createPeer(room.id, {
+      metadata: { userId: user.id, name: user.name, role: user.role },
+    });
+
+    res.json({ peerToken, roomId: room.id, fishjamId: process.env.FISHJAM_ID });
+  } catch (err) {
+    respondFishjamError(err, res);
+  }
 });
 
 app.listen(3000);
 ```
 
-Production checklist for this endpoint:
+If the app already centralizes errors in a four-argument Express error-handling middleware, `next(err)` from the catch block reaches it the same way (that's the pattern Express's own error-handling guide documents) — but don't introduce one just for Fishjam; the explicit helper is simpler and framework-portable.
 
-- **CORS** — `cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true })` so the client can call it.
-- **Rate limiting** — `express-rate-limit` per IP and per user. This is what protects you from token spam.
+Fishjam-specific decisions for this endpoint:
+
 - **Idempotency** — pick whether `roomName` resolves to an existing room or always creates a new one. Match your product's semantics.
 - **Authorization** — `userCanJoin(user, roomName)` is the policy hook. Fishjam authorizes the token bearer, not your user. Enforce *your* rules here.
 
@@ -156,6 +156,7 @@ Common production shape:
 
 ## Sources
 
-- `js-server-sdk` repo: `packages/js-server-sdk/src/client.ts` (constructor JSDoc mentions Fastify pattern), `examples/room-manager/` (Fastify reference implementation). There is no first-party Express example in the SDK repo.
+- `js-server-sdk` repo: `packages/js-server-sdk/src/client.ts` (constructor JSDoc mentions Fastify pattern), `examples/room-manager/` (Fastify reference implementation; `src/errors.ts` has the `parseError` helper the error mapping above mirrors). There is no first-party Express example in the SDK repo.
 - <https://fishjam.swmansion.com/docs/how-to/backend/fastify-example>
 - <https://fishjam.swmansion.com/docs/how-to/backend/production-deployment>
+- <https://expressjs.com/en/guide/error-handling.html> (the `next(err)` / error-middleware alternative)

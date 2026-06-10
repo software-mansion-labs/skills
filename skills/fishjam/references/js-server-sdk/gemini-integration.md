@@ -17,7 +17,7 @@ import {
 
 | Export | What it is |
 |---|---|
-| `createClient(options)` | A thin wrapper around `new GoogleGenAI(options)` that injects an `X-Goog-Api-Client: fishjam-js-server-sdk/<version>` header for telemetry. |
+| `createClient(options)` | A thin wrapper around `new GoogleGenAI(options)` |
 | `geminiInputAudioSettings` | `{ audioFormat: 'pcm16', audioSampleRate: 16000 }` — pass to `createAgent` as `output` so other peers' audio is downmixed into the format Gemini expects. |
 | `geminiOutputAudioSettings` | `{ encoding: 'pcm16', sampleRate: 24000, channels: 1 }` — pass to `agent.createTrack(...)` so Gemini's TTS output flows back into the room. |
 | `inputMimeType` | `'audio/pcm;rate=16000'` — the MIME string to attach to audio chunks sent to Gemini. |

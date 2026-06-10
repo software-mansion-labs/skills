@@ -7,13 +7,13 @@ REST client for the Fishjam server. Source: `packages/js-server-sdk/src/client.t
 ```ts
 import { FishjamClient } from '@fishjam-cloud/js-server-sdk';
 
-const fishjamClient = new FishjamClient({
+const fishjamClient = await FishjamClient.create({
   fishjamId: process.env.FISHJAM_ID!,
   managementToken: process.env.FISHJAM_MANAGEMENT_TOKEN!,
 });
 ```
 
-Internally creates an axios instance with `Authorization: Bearer <token>` and an `x-fishjam-api-client: js-server/<version>` header. Logs any `x-fishjam-api-deprecated` response header once per process.
+A thin axios wrapper — the management token goes out as an `Authorization: Bearer` header on every request. The async factory `await FishjamClient.create(config)` **does** validate credentials. The synchronous constructor flow does **not** validate credentials on its own unless you explicitly call `client.checkCredentials()`, which throws `InvalidFishjamCredentialsException` when the backend rejects them. If the backend reports the SDK version as deprecated or unsupported, the client logs a one-time console warning/error.
 
 ## Rooms
 
@@ -59,7 +59,9 @@ await fishjamClient.deletePeer(roomId, peer.id);
 const newToken: string = await fishjamClient.refreshPeerToken(roomId, peer.id);
 ```
 
-`PeerOptionsWebRTC.metadata` is the **initial** peer metadata set at creation. The backend cannot mutate it afterwards, but the client owning the peer can update it mid-session via `useUpdatePeerMetadata` — those updates surface as `peerMetadataUpdated` notifications. Clients can read it via the client SDK.
+`PeerOptionsWebRTC.metadata` is the peer's **server metadata** — set by your backend at creation, fixed for the peer's lifetime, and read by clients as `peer.metadata.server`. Nobody can change it afterwards: clients have no API for it, and there is no REST endpoint to update a peer.
+
+Don't confuse it with **peer metadata** (`peer.metadata.peer` on clients) — a separate, client-owned field set at `joinRoom({ peerMetadata })` and updated mid-session via `useUpdatePeerMetadata` / `updatePeerMetadata`; those updates surface as `peerMetadataUpdated` notifications. Rule of thumb: server metadata for trusted facts your backend vouches for (user id, role), peer metadata for client-mutable state (display name).
 
 `peerToken` is the credential you hand to the client. It's valid for 24 hours from creation. The initial WS handshake consumes it; once the peer has joined, the established session stays alive regardless of token wall-clock expiry. For peers that haven't yet connected, or need to *reconnect* after the 24h window, mint a fresh token with `refreshPeerToken`.
 
@@ -77,8 +79,7 @@ const { agent, peer } = await fishjamClient.createAgent(roomId, {
   onClose: (code, reason) => console.log('agent ws closed', code, reason),
 });
 
-await agent.awaitConnected();
-// agent is a FishjamAgent — see agent.md
+// agent is a connected FishjamAgent — see agent.md
 ```
 
 `PeerOptionsAgent.output` is a single `AgentOutput` (NOT an array) that controls the format of incoming audio — what other peers' tracks are downmixed into for the agent to consume. `PeerOptionsAgent` also accepts `subscribeMode?: 'auto' | 'manual'`.
@@ -138,6 +139,7 @@ Every method wraps axios errors in typed exceptions via `mapException`. Import f
 | Class | Triggers |
 |---|---|
 | `MissingFishjamIdException` | `fishjamId` blank in constructor (sync throw) |
+| `InvalidFishjamCredentialsException` | credentials rejected (401/404) during synchronous constructor credential check / explicit `checkCredentials()` |
 | `BadRequestException` | 400 — invalid request body or path params |
 | `UnauthorizedException` | 401 — bad management token |
 | `FishjamNotFoundException` | 404 — generic not found (instance / endpoint) |
@@ -150,7 +152,7 @@ Every method wraps axios errors in typed exceptions via `mapException`. Import f
 
 All extend `FishjamBaseException` with `.statusCode`, `.axiosCode`, `.details` fields.
 
-Pattern for Express error mapping:
+Pattern for mapping them to HTTP responses — call explicitly from each route's `catch` (see `express-fastify.md`):
 
 ```ts
 import {
@@ -159,15 +161,15 @@ import {
   UnauthorizedException,
 } from '@fishjam-cloud/js-server-sdk';
 
-app.use((err, req, res, next) => {
+function respondFishjamError(err: unknown, res: Response) {
   if (err instanceof RoomNotFoundException || err instanceof PeerNotFoundException) {
     return res.status(404).json({ error: err.message });
   }
   if (err instanceof UnauthorizedException) {
     return res.status(502).json({ error: 'Fishjam credentials misconfigured' }); // not the user's auth!
   }
-  res.status(500).json({ error: 'Internal' });
-});
+  return res.status(500).json({ error: 'Internal' });
+}
 ```
 
 ## Sources
@@ -175,4 +177,5 @@ app.use((err, req, res, next) => {
 - `js-server-sdk` repo (<https://github.com/fishjam-cloud/js-server-sdk>): `packages/js-server-sdk/src/client.ts`, `packages/js-server-sdk/src/index.ts`, `packages/js-server-sdk/src/exceptions/index.ts`, `packages/js-server-sdk/src/types.ts`
 - `packages/fishjam-openapi/src/generated/api.ts` (`RoomConfig`, `PeerOptionsWebRTC` / `PeerOptionsAgent` / `PeerOptionsVapi`, `RoomType`)
 - <https://fishjam.swmansion.com/docs/how-to/backend/server-setup>
+- <https://fishjam.swmansion.com/docs/how-to/client/metadata> (server metadata vs peer metadata)
 - <https://fishjam.swmansion.com/docs/api/server> (generated TypeDoc)

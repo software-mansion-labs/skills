@@ -3,11 +3,11 @@
 ## Install
 
 ```bash
-npm install @fishjam-cloud/react-native-client @fishjam-cloud/react-native-webrtc
-# or yarn add @fishjam-cloud/react-native-client @fishjam-cloud/react-native-webrtc
+npm install @fishjam-cloud/react-native-client @fishjam-cloud/react-native-webrtc react-native-get-random-values
+# or yarn add @fishjam-cloud/react-native-client @fishjam-cloud/react-native-webrtc react-native-get-random-values
 ```
 
-`@fishjam-cloud/react-native-webrtc` is declared as a **peer dependency** of `@fishjam-cloud/react-native-client` — you must install it explicitly alongside the wrapper. It is not transitively pulled in.
+Both `@fishjam-cloud/react-native-webrtc` and `react-native-get-random-values` are declared as **peer dependencies** of `@fishjam-cloud/react-native-client` — you must install them explicitly alongside the wrapper. They are not transitively pulled in. The wrapper imports the `react-native-get-random-values` polyfill itself at module load (used by the WebRTC stack); if the package or its native module isn't linked the SDK throws a setup error at startup.
 
 The wrapper package ships:
 

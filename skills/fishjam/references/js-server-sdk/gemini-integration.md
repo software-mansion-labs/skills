@@ -11,7 +11,7 @@ import {
 } from '@fishjam-cloud/js-server-sdk/gemini';
 ```
 
-This import path keeps `@google/genai` an optional peer dependency — you only pay for it if you opt in.
+`@google/genai` is an optional peer dependency - you only need to install it if you import from the `'@fishjam-cloud/js-server-sdk/gemini'` path.
 
 ## What the helper provides
 

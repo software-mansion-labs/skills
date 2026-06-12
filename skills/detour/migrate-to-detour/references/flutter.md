@@ -234,3 +234,15 @@ Retention / session events:
 ```dart
 await _detour.logRetention('app_open');
 ```
+
+---
+
+## Keeping this reference current
+
+If the user asks about the latest version, installation steps, or you suspect anything above may be outdated, fetch the live README:
+
+```
+https://github.com/software-mansion-labs/detour-flutter-plugin/blob/main/README.md
+```
+
+Cross-reference against the sections above and prefer the live README if they conflict.

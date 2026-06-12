@@ -330,3 +330,15 @@ Two rules that are easy to get wrong:
 1. **Click the link after uninstalling, not before.** The flow is: uninstall app → click Detour link in browser → install app → open app. If you click the link while the app is installed, it resolves as a normal Universal Link, not a deferred one.
 
 2. **Each deferred link test needs a fresh link.** Detour tracks device fingerprints — the same link won't trigger deferred resolution a second time on the same device. Generate a new link from the dashboard for each test run.
+
+---
+
+## Keeping this reference current
+
+If the user asks about the latest version, installation steps, or you suspect anything above may be outdated, fetch the live README:
+
+```
+https://github.com/software-mansion-labs/android-detour/blob/main/README.md
+```
+
+Cross-reference against the sections above and prefer the live README if they conflict.

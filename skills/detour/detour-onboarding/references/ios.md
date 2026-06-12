@@ -179,3 +179,15 @@ DetourAnalytics.logEvent(.viewItem, data: ["item_id": "article_2"])
 DetourAnalytics.logRetention("article_opened")
 DetourAnalytics.logRetention("app_open")
 ```
+
+---
+
+## Keeping this reference current
+
+If the user asks about the latest version, installation steps, or you suspect anything above may be outdated, fetch the live README:
+
+```
+https://github.com/software-mansion-labs/ios-detour/blob/main/README.md
+```
+
+Cross-reference against the sections above and prefer the live README if they conflict.

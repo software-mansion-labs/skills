@@ -2,7 +2,7 @@
 
 Production-ready patterns for React Native development, packaged as a [Claude Code plugin](https://code.claude.com/docs/en/plugins#create-plugins). Maintained by [Software Mansion](https://swmansion.com/).
 
-Optimized for Claude Opus 4.6 and tested with [Claude Code](https://claude.ai/code). Install the plugin and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, and other React Native features.
+Optimized for Claude models and tested with [Claude Code](https://claude.ai/code). Install the plugin and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, real-time video, and other React Native features.
 
 ## Installation
 
@@ -59,6 +59,14 @@ Best practices for integrating RNRepo — Software Mansion's infrastructure for 
 
 Best practices for setting up and migrating to Detour, Software Mansion's deferred deep linking ecosystem. Covers end-to-end SDK initialization, Universal/App Links registration, and type-safe analytics tracking across iOS, Android, React Native, and Flutter, as well as structural mappings for switching away from Branch or AppsFlyer.
 
+### [fishjam](./skills/fishjam/)
+
+Guidance for building real-time video, audio, and livestreaming apps with [Fishjam](https://fishjam.io), Software Mansion's hosted WebRTC platform. Covers the platform fundamentals (rooms, peers, tracks, two-tier auth, notifications, REST API) and all four SDKs: the Node.js and Python server SDKs (including AI voice agents and Gemini Live integration), the React web client, and the React Native / Expo client (permissions, foreground service, CallKit, screen sharing, Picture-in-Picture).
+
+### [expo-horizon](./skills/expo-horizon/)
+
+Software Mansion's guide for migrating Expo SDK apps to Meta Quest using the [expo-horizon](https://github.com/software-mansion-labs/expo-horizon) packages. Covers build flavors for Quest, panel sizing, device detection, and migrating `expo-location` and `expo-notifications` to their Horizon counterparts, through Meta Horizon Store publishing.
+
 ## Development
 
 This project uses [Task](https://taskfile.dev) as a task runner. Install with `brew install go-task`.
@@ -74,114 +82,171 @@ task eval:grade -- /path/to/workspace   # grade a skill-creator workspace
 ## Repository Structure
 
 ```
-react-native-skills/
-└── skills/
-    ├── expo-horizon/
-    │   └── SKILL.md
-    ├── radon-mcp/
-    │   ├── references/
-    │   │   ├── get-library-description.md
-    │   │   ├── query-documentation.md
-    │   │   ├── reload-application.md
-    │   │   ├── view-application-logs.md
-    │   │   ├── view-component-tree.md
-    │   │   ├── view-network-logs.md
-    │   │   ├── view-network-request-details.md
-    │   │   └── view-screenshot.md
-    │   └── SKILL.md
-    ├── rnrepo/
-    │   ├── references/
-    │   │   ├── configuration.md
-    │   │   ├── installation.md
-    │   │   └── troubleshooting.md
-    │   └── SKILL.md
-    ├── typegpu/
-    │   ├── references/
-    │   │   ├── advanced.md
-    │   │   ├── matrices.md
-    │   │   ├── noise.md
-    │   │   ├── pipelines.md
-    │   │   ├── sdf.md
-    │   │   ├── setup.md
-    │   │   ├── shaders.md
-    │   │   ├── textures.md
-    │   │   └── types.md
-    │   └── SKILL.md
-    ├── detour/
-    │   ├── migrate-to-detour/
+skills/
+├── expo-horizon/
+│   └── SKILL.md
+├── fishjam/
+│   ├── references/
+│   │   ├── platform/
+│   │   │   ├── SKILL.md
+│   │   │   ├── auth-model.md
+│   │   │   ├── glossary.md
+│   │   │   ├── lifecycle-flow.md
+│   │   │   ├── llms-and-docs.md
+│   │   │   ├── notifications-taxonomy.md
+│   │   │   ├── notifier-vs-webhook.md
+│   │   │   ├── rest-endpoints.md
+│   │   │   ├── room-types.md
+│   │   │   └── sandbox-vs-production.md
+│   │   ├── js-server-sdk/
+│   │   │   ├── SKILL.md
+│   │   │   ├── agent.md
+│   │   │   ├── client.md
+│   │   │   ├── express-fastify.md
+│   │   │   ├── gemini-integration.md
+│   │   │   ├── livestream-and-moq.md
+│   │   │   ├── selective-subscriptions.md
+│   │   │   ├── webhooks.md
+│   │   │   └── ws-notifier.md
+│   │   ├── python-server-sdk/
+│   │   │   ├── SKILL.md
+│   │   │   ├── agent.md
+│   │   │   ├── client.md
+│   │   │   ├── fastapi.md
+│   │   │   ├── gemini-integration.md
+│   │   │   ├── livestream-and-moq.md
+│   │   │   ├── notifier.md
+│   │   │   ├── selective-subscriptions.md
+│   │   │   └── webhooks.md
+│   │   ├── react-client/
+│   │   │   ├── SKILL.md
+│   │   │   ├── connection.md
+│   │   │   ├── custom-sources.md
+│   │   │   ├── data-and-events.md
+│   │   │   ├── devices.md
+│   │   │   ├── livestream.md
+│   │   │   ├── peers-and-tracks.md
+│   │   │   ├── provider.md
+│   │   │   ├── simulcast-and-bandwidth.md
+│   │   │   └── ts-client-escape.md
+│   │   └── react-native-client/
+│   │       ├── SKILL.md
+│   │       ├── audio-output.md
+│   │       ├── callkit.md
+│   │       ├── example-projects.md
+│   │       ├── foreground-service.md
+│   │       ├── mobile-hook-overrides.md
+│   │       ├── native-setup.md
+│   │       ├── permissions.md
+│   │       ├── picture-in-picture.md
+│   │       ├── rtcview.md
+│   │       └── screen-sharing.md
+│   └── SKILL.md
+├── radon-mcp/
+│   ├── references/
+│   │   ├── get-library-description.md
+│   │   ├── query-documentation.md
+│   │   ├── reload-application.md
+│   │   ├── view-application-logs.md
+│   │   ├── view-component-tree.md
+│   │   ├── view-network-logs.md
+│   │   ├── view-network-request-details.md
+│   │   └── view-screenshot.md
+│   └── SKILL.md
+├── rnrepo/
+│   ├── references/
+│   │   ├── configuration.md
+│   │   ├── installation.md
+│   │   └── troubleshooting.md
+│   └── SKILL.md
+├── typegpu/
+│   ├── references/
+│   │   ├── advanced.md
+│   │   ├── matrices.md
+│   │   ├── noise.md
+│   │   ├── pipelines.md
+│   │   ├── sdf.md
+│   │   ├── setup.md
+│   │   ├── shaders.md
+│   │   ├── textures.md
+│   │   └── types.md
+│   └── SKILL.md
+├── detour/
+│   ├── README.md
+│   ├── migrate-to-detour/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   │       ├── android.md
+│   │       ├── ios.md
+│   │       ├── react-native.md
+│   │       └── flutter.md
+│   └── detour-onboarding/
+│       ├── SKILL.md
+│       └── references/
+│           ├── android.md
+│           ├── ios.md
+│           ├── react-native.md
+│           └── flutter.md
+└── react-native-best-practices/
+    ├── references/
+    │   ├── animations/
     │   │   ├── SKILL.md
-    │   │   └── references/
-    │   │       ├── android.md
-    │   │       ├── ios.md
-    │   │       ├── react-native.md
-    │   │       └── flutter.md
-    │   └── detour-onboarding/
+    │   │   ├── animation-functions.md
+    │   │   ├── animations-performance.md
+    │   │   ├── animations.md
+    │   │   ├── canvas-animations.md
+    │   │   ├── canvas-atlas.md
+    │   │   ├── gpu-animations.md
+    │   │   ├── layout-animations.md
+    │   │   ├── scroll-and-events.md
+    │   │   └── svg-animations.md
+    │   ├── audio/
+    │   │   ├── SKILL.md
+    │   │   ├── audio.md
+    │   │   ├── effects-and-analysis.md
+    │   │   ├── playback.md
+    │   │   ├── recording.md
+    │   │   ├── system-and-notifications.md
+    │   │   └── worklets.md
+    │   ├── gestures/
+    │   │   ├── SKILL.md
+    │   │   ├── continuous-gestures.md
+    │   │   ├── gesture-composition.md
+    │   │   ├── gestures.md
+    │   │   ├── swipeable-and-drawer.md
+    │   │   ├── tap-handling.md
+    │   │   └── testing.md
+    │   ├── multithreading/
+    │   │   ├── SKILL.md
+    │   │   ├── setup-and-advanced.md
+    │   │   ├── shared-memory.md
+    │   │   └── threading-api.md
+    │   ├── on-device-ai/
+    │   │   ├── SKILL.md
+    │   │   ├── llm.md
+    │   │   ├── setup.md
+    │   │   ├── speech.md
+    │   │   └── vision.md
+    │   ├── rich-text/
+    │   │   └── SKILL.md
+    │   ├── svg/
+    │   │   ├── SKILL.md
+    │   │   ├── svg.md
+    │   │   └── when-to-use.md
+    │   └── jsi/
     │       ├── SKILL.md
-    │       └── references/
-    │           ├── android.md
-    │           ├── ios.md
-    │           ├── react-native.md
-    │           └── flutter.md
-    └── react-native-best-practices/
-        ├── references/
-        │   ├── animations/
-        │   │   ├── SKILL.md
-        │   │   ├── animation-functions.md
-        │   │   ├── animations-performance.md
-        │   │   ├── animations.md
-        │   │   ├── canvas-animations.md
-        │   │   ├── canvas-atlas.md
-        │   │   ├── gpu-animations.md
-        │   │   ├── layout-animations.md
-        │   │   ├── scroll-and-events.md
-        │   │   └── svg-animations.md
-        │   ├── audio/
-        │   │   ├── SKILL.md
-        │   │   ├── audio.md
-        │   │   ├── effects-and-analysis.md
-        │   │   ├── playback.md
-        │   │   ├── recording.md
-        │   │   ├── system-and-notifications.md
-        │   │   └── worklets.md
-        │   ├── gestures/
-        │   │   ├── SKILL.md
-        │   │   ├── continuous-gestures.md
-        │   │   ├── gesture-composition.md
-        │   │   ├── gestures.md
-        │   │   ├── swipeable-and-drawer.md
-        │   │   ├── tap-handling.md
-        │   │   └── testing.md
-        │   ├── multithreading/
-        │   │   ├── SKILL.md
-        │   │   ├── setup-and-advanced.md
-        │   │   ├── shared-memory.md
-        │   │   └── threading-api.md
-        │   ├── on-device-ai/
-        │   │   ├── SKILL.md
-        │   │   ├── llm.md
-        │   │   ├── setup.md
-        │   │   ├── speech.md
-        │   │   └── vision.md
-        │   ├── rich-text/
-        │   │   └── SKILL.md
-        │   ├── svg/
-        │   │   ├── SKILL.md
-        │   │   ├── svg.md
-        │   │   └── when-to-use.md
-        │   └── jsi/
-        │       ├── SKILL.md
-        │       ├── overview.md
-        │       ├── core-types.md
-        │       ├── casting-and-serialization.md
-        │       ├── threading-safety.md
-        │       ├── calling-js-and-async.md
-        │       ├── performance.md
-        │       ├── setup-and-templates.md
-        │       ├── module-approaches.md
-        │       ├── cpp-memory-patterns.md
-        │       └── debugging-and-pitfalls.md
-        ├── README.md
-        └── SKILL.md
+    │       ├── overview.md
+    │       ├── core-types.md
+    │       ├── casting-and-serialization.md
+    │       ├── threading-safety.md
+    │       ├── calling-js-and-async.md
+    │       ├── performance.md
+    │       ├── setup-and-templates.md
+    │       ├── module-approaches.md
+    │       ├── cpp-memory-patterns.md
+    │       └── debugging-and-pitfalls.md
+    ├── README.md
+    └── SKILL.md
 ```
 
 The top-level `SKILL.md` acts as a table of contents. Reference files load only when relevant to the current task, keeping the context window focused.

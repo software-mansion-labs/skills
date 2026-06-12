@@ -160,7 +160,12 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["single thread", "not thread-safe", "single-thread", "thread-safe"],
+              "values": [
+                "single thread",
+                "not thread-safe",
+                "single-thread",
+                "thread-safe"
+              ],
               "text": "Explains the single-thread constraint"
             },
             {
@@ -183,7 +188,12 @@
             },
             {
               "type": "contains_any",
-              "values": ["non-copyable", "move-only", "not copyable", "no copy"],
+              "values": [
+                "non-copyable",
+                "move-only",
+                "not copyable",
+                "no copy"
+              ],
               "text": "Explains Value is non-copyable"
             }
           ]
@@ -201,7 +211,14 @@
             },
             {
               "type": "contains_any",
-              "values": ["arbitrary thread", "no VM", "unsafe", "not allowed", "cannot", "must not"],
+              "values": [
+                "arbitrary thread",
+                "no VM",
+                "unsafe",
+                "not allowed",
+                "cannot",
+                "must not"
+              ],
               "text": "States VM operations are forbidden in the dtor"
             },
             {
@@ -219,7 +236,12 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["JSI_UNSTABLE", "unstable", "experimental", "subject to change"],
+              "values": [
+                "JSI_UNSTABLE",
+                "unstable",
+                "experimental",
+                "subject to change"
+              ],
               "text": "Warns that ISerialization is under JSI_UNSTABLE / experimental"
             }
           ]
@@ -273,7 +295,13 @@
             },
             {
               "type": "contains_any",
-              "values": ["serializ", "JSON", "async bridge", "old bridge", "asynchronous"],
+              "values": [
+                "serializ",
+                "JSON",
+                "async bridge",
+                "old bridge",
+                "asynchronous"
+              ],
               "text": "Contrasts with old bridge async/serialization"
             }
           ]
@@ -296,7 +324,12 @@
             },
             {
               "type": "contains_any",
-              "values": ["codegen", "code generation", "typed spec", "type spec"],
+              "values": [
+                "codegen",
+                "code generation",
+                "typed spec",
+                "type spec"
+              ],
               "text": "Mentions codegen or typed specs as advantage"
             }
           ]
@@ -337,7 +370,12 @@
             },
             {
               "type": "contains_any",
-              "values": ["primitive", "stack", "no allocation", "without allocat"],
+              "values": [
+                "primitive",
+                "stack",
+                "no allocation",
+                "without allocat"
+              ],
               "text": "Explains primitives don't need Runtime&"
             }
           ]
@@ -350,12 +388,25 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["cache", "cach", "store", "member variable", "constructor"],
+              "values": [
+                "cache",
+                "cach",
+                "store",
+                "member variable",
+                "constructor"
+              ],
               "text": "Recommends caching PropNameID"
             },
             {
               "type": "contains_any",
-              "values": ["hash", "intern", "expensive", "overhead", "per call", "every call"],
+              "values": [
+                "hash",
+                "intern",
+                "expensive",
+                "overhead",
+                "per call",
+                "every call"
+              ],
               "text": "Explains forAscii is expensive on every call"
             }
           ]
@@ -419,7 +470,13 @@
             },
             {
               "type": "contains_any",
-              "values": ["Float32Array", "TypedArray", "typed array", "zero-copy", "binary"],
+              "values": [
+                "Float32Array",
+                "TypedArray",
+                "typed array",
+                "zero-copy",
+                "binary"
+              ],
               "text": "Mentions TypedArray or zero-copy binary transfer"
             }
           ]
@@ -501,7 +558,13 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["hot reload", "bundle reload", "runtime torn down", "runtime is destroyed", "runtime teardown"],
+              "values": [
+                "hot reload",
+                "bundle reload",
+                "runtime torn down",
+                "runtime is destroyed",
+                "runtime teardown"
+              ],
               "text": "Identifies hot reload / runtime teardown as cause"
             },
             {
@@ -583,7 +646,14 @@
             },
             {
               "type": "contains_any",
-              "values": ["platform API", "Web API", "not built-in", "not provided", "must be implemented", "implemented on top"],
+              "values": [
+                "platform API",
+                "Web API",
+                "not built-in",
+                "not provided",
+                "must be implemented",
+                "implemented on top"
+              ],
               "text": "Explains setTimeout is not a JSI built-in"
             }
           ]
@@ -655,7 +725,14 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["use-after-free", "use after free", "GC", "garbage collect", "freed", "destructor"],
+              "values": [
+                "use-after-free",
+                "use after free",
+                "GC",
+                "garbage collect",
+                "freed",
+                "destructor"
+              ],
               "text": "Identifies use-after-free / GC finalization cause"
             },
             {
@@ -696,7 +773,12 @@
             },
             {
               "type": "contains_any",
-              "values": ["-fsanitize=address", "CMakeLists", "Xcode", "Diagnostics"],
+              "values": [
+                "-fsanitize=address",
+                "CMakeLists",
+                "Xcode",
+                "Diagnostics"
+              ],
               "text": "Shows how to enable ASan"
             }
           ]
@@ -714,7 +796,11 @@
             },
             {
               "type": "contains_any",
-              "values": ["weak_from_this", "enable_shared_from_this", "weak_ptr"],
+              "values": [
+                "weak_from_this",
+                "enable_shared_from_this",
+                "weak_ptr"
+              ],
               "text": "Recommends weak_from_this or weak_ptr"
             }
           ]
@@ -745,7 +831,13 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["dangling", "undefined behavior", "local variable", "stack", "destroyed when"],
+              "values": [
+                "dangling",
+                "undefined behavior",
+                "local variable",
+                "stack",
+                "destroyed when"
+              ],
               "text": "Explains [&db] is a dangling reference"
             },
             {
@@ -763,12 +855,22 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["refcount", "reference count", "count drops", "runtime holds"],
+              "values": [
+                "refcount",
+                "reference count",
+                "count drops",
+                "runtime holds"
+              ],
               "text": "Explains shared_ptr refcount keeps the object alive"
             },
             {
               "type": "contains_any",
-              "values": ["GC", "garbage collect", "JS drops", "runtime releases"],
+              "values": [
+                "GC",
+                "garbage collect",
+                "JS drops",
+                "runtime releases"
+              ],
               "text": "Explains GC triggers final destruction"
             }
           ]
@@ -786,7 +888,13 @@
             },
             {
               "type": "contains_any",
-              "values": ["dynamic", "arbitrary", "flat methods", "TurboModule cannot", "not supported"],
+              "values": [
+                "dynamic",
+                "arbitrary",
+                "flat methods",
+                "TurboModule cannot",
+                "not supported"
+              ],
               "text": "Explains TurboModules lack dynamic property dispatch"
             }
           ]
@@ -799,7 +907,13 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["pure C++", "Pure C++", "thin adapter", "no JSI dependency", "no #include"],
+              "values": [
+                "pure C++",
+                "Pure C++",
+                "thin adapter",
+                "no JSI dependency",
+                "no #include"
+              ],
               "text": "Recommends pure C++ core with no JSI dependency"
             },
             {
@@ -822,7 +936,12 @@
             },
             {
               "type": "contains_any",
-              "values": ["compile-time", "compiler", "abstract class", "generated"],
+              "values": [
+                "compile-time",
+                "compiler",
+                "abstract class",
+                "generated"
+              ],
               "text": "Explains compile-time type enforcement"
             }
           ]
@@ -835,7 +954,13 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["JS thread", "mqt_js", "synchronous", "event queue", "blocks"],
+              "values": [
+                "JS thread",
+                "mqt_js",
+                "synchronous",
+                "event queue",
+                "blocks"
+              ],
               "text": "Explains JSI runs synchronously on the JS thread"
             },
             {
@@ -853,7 +978,11 @@
           "assertions": [
             {
               "type": "contains_any",
-              "values": ["JSIModulePackage", "getJSIModules", "ReactInstanceManager"],
+              "values": [
+                "JSIModulePackage",
+                "getJSIModules",
+                "ReactInstanceManager"
+              ],
               "text": "Mentions JSIModulePackage registration"
             },
             {
@@ -1024,6 +1153,30 @@
           "prompt": "How do I reduce my JavaScript bundle size in React Native?",
           "should_trigger": false,
           "expected_output": "JS bundle optimization task, unrelated to native build times or RNRepo."
+        }
+      ]
+    },
+    {
+      "skill_name": "detour-onboarding",
+      "skill_path": "../skills/detour/detour-onboarding",
+      "evals": [
+        {
+          "id": 148,
+          "prompt": "Hey, I just heard about Detour. Can you explain what it is and help me set it up for my React Native (Expo) app? I have never used any deep linking before.",
+          "expected_output": "Complete onboarding: deferred deep linking explanation, dashboard setup steps, React Native Expo SDK installation with correct package names and peer deps, DetourProvider, useDetourContext hook, Universal Links app.json config, test on real device.",
+          "files": []
+        },
+        {
+          "id": 149,
+          "prompt": "I am building an iOS app in Swift and want to add deferred deep links so users land on the right product page after installing from an ad. Where do I start with Detour?",
+          "expected_output": "iOS onboarding: deferred linking explanation, dashboard setup, SPM/CocoaPods install, DetourConfig, resolveInitialLink in AppDelegate, Universal Links entitlements, link result handling, iOS-specific limitations.",
+          "files": []
+        },
+        {
+          "id": 150,
+          "prompt": "I already have a Detour account and app on the dashboard with the API key and app ID ready. I need to integrate the Android SDK into my Kotlin app and set up App Links.",
+          "expected_output": "Skip dashboard, go straight to Android SDK: gradle dependency, DetourConfig with BuildConfig, Detour.initialize in Application.onCreate, DetourDelegate in Activity, LinkResult handling, App Links AndroidManifest.xml with autoVerify, analytics.",
+          "files": []
         }
       ]
     }

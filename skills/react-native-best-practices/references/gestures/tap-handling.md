@@ -8,13 +8,13 @@ Patterns for tappable elements in React Native using Gesture Handler. For the fu
 
 | What to use | When |
 |---|---|
-| [RectButton](https://docs.swmansion.com/react-native-gesture-handler/docs/components/buttons) | Inside ScrollView / FlatList -- native feel, no highlight on scroll start |
-| RectButton + GestureDetector(Tap) | Inside ScrollView / FlatList + need UI-thread animation on press |
+| [RectButton](https://docs.swmansion.com/react-native-gesture-handler/docs/components/buttons) | Touch interaction with feedback -- native feel, no highlight on scroll start, V2 |
+| [Touchable](https://docs.swmansion.com/react-native-gesture-handler/docs/components/touchable) | Touch interaction with feedback -- native feel, no highlight on scroll start, V3 |
 | Tap gesture (`useTapGesture` / `Gesture.Tap()`) | Custom animation, multi-tap, double-tap, or programmatic control |
-| [RNGH Pressable](https://docs.swmansion.com/react-native-gesture-handler/docs/components/pressable) | Outside scroll containers, drop-in replacement for RN Pressable |
+| [RNGH Pressable](https://docs.swmansion.com/react-native-gesture-handler/docs/components/pressable) | Drop-in replacement for RN Pressable, prefer `Touchable` when possible |
 | RN Pressable / TouchableOpacity | Avoid -- conflicts with RNGH, causes double-tap bugs |
 
-**RectButton vs RNGH Pressable in scroll containers**: Pressable highlights items immediately when scroll starts (poor native feel). RectButton delays highlight until the OS confirms a press, matching platform conventions. Always prefer RectButton inside lists.
+**RectButton vs RNGH Pressable in scroll containers**: Pressable highlights items immediately when scroll starts (poor native feel). RectButton delays highlight until the OS confirms a press, matching platform conventions. Always prefer RectButton/Touchable inside lists.
 
 **Never mix React Native touch components with RNGH** in the same tree -- causes gesture conflicts. Pick one system per app.
 
@@ -94,6 +94,24 @@ const tap = useMemo(() =>
 ```
 
 Use `onBegin`/`onFinalize` for visual feedback -- `onBegin` fires on finger down (before activation), `onFinalize` fires on finger up regardless of success or failure. This gives immediate feedback that reverses even when the tap is cancelled.
+
+---
+
+## Touchable
+
+In Gesture Handler 3 the `Touchable` component replaces both the old buttons (`BaseButton`, `RectButton`, `BorderlessButton`) and the legacy core-style touchables (`TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback`). It is a single component whose visual feedback is controlled entirely through props — pick the right combination instead of picking a different component.
+
+The most important props on `Touchable`:
+- `onPress(event)` — fired on a successful tap. Note: the callback signature changed; the old `BaseButton.onPress` received `(pointerInside: boolean)`, `Touchable.onPress` receives a gesture event object instead.
+- `onPressIn(event)` / `onPressOut(event)` — fired when the pointer first touches and when it is released or leaves the component.
+- `onLongPress()` — fired after the press is held for `delayLongPress` milliseconds (default `600`). When a long press fires, the subsequent release does **not** call `onPress`.
+- `disabled` — replaces the old `enabled` prop (note the inverted sense). Defaults to `false`.
+- `cancelOnLeave` — whether the press is cancelled when the pointer leaves the component bounds. Defaults to `true`. Use this to replace `shouldCancelWhenOutside` from raw buttons.
+- `activeOpacity` — opacity applied to the component itself while pressed (mirrors `TouchableOpacity`). Defaults to `1` (no opacity change).
+- `underlayColor` + `activeUnderlayOpacity` — color and opacity of the underlay shown while pressed (mirrors `TouchableHighlight` / `RectButton`). `underlayColor` defaults to `'transparent'` and `activeUnderlayOpacity` to `0.105`.
+- `androidRipple` — Android ripple config (`{ color?, radius?, borderless?, foreground? }`). When omitted, no native ripple is rendered, to apply the default ripple pass `{}`. Use this to replace `TouchableNativeFeedback`.
+- `animationDuration` — press/hover animation timing in milliseconds. Pass a single number to apply it to every phase, or `{ in, out }` (optionally with `tap`/`hover`/`longPress` overrides). Defaults to `50` in / `100` out.
+- `hitSlop`, `testID`, `style`, `children` — same as before.
 
 ---
 

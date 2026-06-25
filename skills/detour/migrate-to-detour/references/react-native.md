@@ -1,5 +1,13 @@
 # React Native — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal / App Links — native config (iOS, Android) and Expo config
+- SDK Installation
+- SDK Initialization & Deep Link Handling — provider setup, Expo Router, `+native-intent`, React Navigation (linking adapter + auth-gated)
+- Deferred Deep Links (First Install)
+- Analytics — event mapping and code
+- Keeping this reference current
+
 ## Universal / App Links
 
 ### Native config — iOS
@@ -305,9 +313,9 @@ A deep link that arrives while the user is signed-out is parsed, found unreachab
 screen isn't currently rendered), and remembered. When the rendered screen set changes — after
 sign-in, then again after onboarding — React Navigation retries and lands the user on the target.
 
-> The `UNSTABLE_` prefix is dropped in React Navigation 8, where it becomes a stable
-> `routeNamesChangeBehavior` API ([upgrade guide](https://reactnavigation.org/docs/8.x/upgrading-from-7.x/)).
-> v8 is in alpha as of mid-2026 — on v7 use the `UNSTABLE_` prefix; the behavior is stable and sound.
+> On React Navigation 7 the prop is prefixed `UNSTABLE_`. React Navigation 8 drops the prefix and
+> makes it a stable `routeNamesChangeBehavior` API ([upgrade guide](https://reactnavigation.org/docs/8.x/upgrading-from-7.x/)).
+> Use the name that matches your installed major version; the behavior is stable and sound.
 
 See the [`react-navigation-advanced` example](https://github.com/software-mansion-labs/react-native-detour/blob/main/examples/react-navigation-advanced/README.md)
 for a complete auth + onboarding gated setup.

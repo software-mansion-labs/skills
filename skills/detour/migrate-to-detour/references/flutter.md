@@ -2,6 +2,14 @@
 
 > Branch does not have an official Flutter SDK, so this file covers AppsFlyer → Detour only.
 
+## Contents
+- Universal / App Links
+- SDK Installation
+- SDK Initialization & Deep Link Handling
+- Deferred Deep Links (First Install)
+- Analytics
+- Keeping this reference current
+
 ## Universal / App Links
 
 ### Native config — iOS

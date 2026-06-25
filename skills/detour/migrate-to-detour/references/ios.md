@@ -1,5 +1,13 @@
 # iOS — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal Links
+- SDK Installation
+- SDK Initialization & Deep Link Handling
+- Deferred Deep Links (First Install)
+- Analytics
+- Keeping this reference current
+
 ## Universal Links
 
 ### Before (Branch)

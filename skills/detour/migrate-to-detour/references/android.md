@@ -1,5 +1,14 @@
 # Android — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal / App Links
+- SDK Installation
+- SDK Initialization & Deep Link Handling
+- Deferred Deep Links (First Install)
+- Analytics
+- Testing
+- Keeping this reference current
+
 ## Universal / App Links
 
 ### Before (Branch)

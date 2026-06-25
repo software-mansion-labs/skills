@@ -117,10 +117,11 @@ For React Native, ask the user which navigation library they use before showing 
 
 - Branch has separate handling for deferred links (`getFirstReferringParams`) vs direct links (`subscribe`)
 - AppsFlyer has `onInstallConversionData` for deferred vs `onDeepLink` / `onAppOpenAttribution` for direct
-- Detour uses one callback for both. Check `link.type` to know which case it is:
-  - `'deferred'` — user clicked a link before installing
-  - `'verified'` — Universal Link / App Link (app already installed)
-  - `'scheme'` — custom URI scheme
+- Detour uses one callback for both. Inspect the link's `type` to know which case it is (exact field
+  path and value casing follow each platform's SDK — see the platform reference file):
+  - `deferred` — user clicked a link before installing
+  - `verified` — Universal Link / App Link (app already installed)
+  - `scheme` — custom URI scheme
 
 **Route is ready to use:**
 

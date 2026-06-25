@@ -1,5 +1,14 @@
 # Detour — Android SDK Reference
 
+## Contents
+- Requirements
+- Installation
+- App Links
+- SDK Setup
+- Testing on Android 12+
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 
 - `compileSdk` 34+

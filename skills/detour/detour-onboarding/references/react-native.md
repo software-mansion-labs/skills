@@ -1,5 +1,13 @@
 # Detour — React Native SDK Reference
 
+## Contents
+- Installation
+- Universal / App Links
+- SDK Setup
+- Expo Router Integration
+- Analytics
+- Keeping this reference current
+
 ## Installation
 
 ```bash

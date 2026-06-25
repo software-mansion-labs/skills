@@ -1,5 +1,13 @@
 # Detour — Flutter Plugin Reference
 
+## Contents
+- Requirements
+- Installation
+- Universal / App Links
+- SDK Setup
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 - Flutter 3.3.0+, Dart ^3.11.1
 - Android minSdk 24, iOS 13+

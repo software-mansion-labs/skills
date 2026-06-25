@@ -1,5 +1,15 @@
 # Detour — iOS SDK Reference
 
+## Contents
+- Requirements
+- Installation
+- Universal Links
+- Custom URL Scheme (optional)
+- SDK Setup
+- Testing deferred links on iOS
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 - iOS 13+, Swift 5.5+
 

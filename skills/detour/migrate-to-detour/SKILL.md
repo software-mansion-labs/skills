@@ -9,7 +9,7 @@ Detour is an open-source deep linking SDK by Software Mansion. It handles deferr
 
 ## Starting the migration
 
-Ask the user both questions at once before doing anything else:
+You need two things before doing anything else:
 
 1. **What are you migrating from?**
    - Branch
@@ -20,6 +20,8 @@ Ask the user both questions at once before doing anything else:
    - iOS (native Swift)
    - React Native
    - Flutter
+
+**Infer first, ask only for what's genuinely unresolved.** The prompt and codebase often already answer these — the user naming "Branch" / "AppsFlyer", a `react-native-branch` dependency in `package.json`, an `ios/` + `android/` layout, an `AppsFlyerLib` import. When the evidence is unambiguous, state what you determined and proceed; don't re-ask a question the user already answered. Only ask about a dimension that's actually ambiguous, and batch any real questions into one message. (Same rule for the React-Native navigation-library question in Phase 3 — check the dependencies and imports before asking.)
 
 Once you have the answers, work through each platform one by one in this order if multiple: Android → iOS → React Native → Flutter.
 
@@ -103,8 +105,8 @@ Load the relevant reference file for installation instructions, initialization c
 - React Native → `references/react-native.md`
 - Flutter → `references/flutter.md`
 
-For React Native, ask the user which navigation library they use before showing code — the link handling code differs:
-- **Expo Router** → use the Expo Router section; also ask if they use short links (if yes, show the `+native-intent` pattern with `createDetourNativeIntentHandler`)
+For React Native, the link-handling code differs by navigation library, so determine which one is in use — but infer it from the project first (`@react-navigation/*` vs `expo-router` in `package.json`, `app/` route files, import statements) and only ask if it's genuinely unclear:
+- **Expo Router** → use the Expo Router section; also check whether they use short links (if yes, show the `+native-intent` pattern with `createDetourNativeIntentHandler`)
 - **React Navigation** → use the React Navigation section
 
 **When showing code with `YOUR_API_KEY` and `YOUR_APP_ID` placeholders**, always tell the user explicitly: *"You'll find both values in the Detour Dashboard → your app → API Configuration tab."*

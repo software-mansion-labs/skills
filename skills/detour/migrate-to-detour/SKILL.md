@@ -189,7 +189,7 @@ After mapping all events, review every call site where the user logs analytics e
 - **Android:** `DetourAnalytics.logEvent()` only accepts `DetourEventNames` (enum). Any raw string must go through `DetourAnalytics.logRetention()` instead.
 - **iOS:** Same — `DetourAnalytics.logEvent()` takes `DetourEventName` enum values. Custom strings use `DetourAnalytics.logRetention()`.
 - **React Native:** `DetourAnalytics.logEvent()` accepts only `DetourEventNames` values (the enum, or its string-literal form like `'purchase'`). Any custom event name must go through `DetourAnalytics.logRetention()`, which takes only a name — no properties payload.
-- **Flutter:** `logEvent` takes the typed `DetourEventName` enum for standard events, but also accepts a custom string **with** a `data` payload for non-standard events (unlike React Native). Confirm against `references/flutter.md` before mapping custom events.
+- **Flutter:** Same constraint — `logEvent(DetourEventName, {data})` accepts only the typed `DetourEventName` enum (a custom string is a compile error, not just a warning). Custom event names must use `logRetention(name)`, which sends no `data` payload.
 
 ### Features with no Detour equivalent
 

@@ -145,8 +145,10 @@ await _detour.logEvent(DetourEventName.purchase, data: {
   'product_id': 'abc123',
 });
 
-// Custom event
-await _detour.logEvent('promo_banner_tapped', data: {'placement': 'home_top'});
+// Custom / non-standard event — logEvent accepts only DetourEventName enum values
+// (a custom string is a compile error). Use logRetention for custom names.
+// Note: logRetention takes only a name — no data payload.
+await _detour.logRetention('promo_banner_tapped');
 
 // Retention
 await _detour.logRetention('app_open');

@@ -210,7 +210,7 @@ void _onDetourChanged() {
 | `AFEvent.completeRegistration` | `DetourEventName.signUp` |
 | `AFEvent.search` / `"af_search"` | `DetourEventName.search` |
 | `AFEvent.share` | `DetourEventName.share` |
-| custom string | custom string |
+| custom event name | `logRetention('name')` (no enum entry — see below) |
 
 ### Before (AppsFlyer)
 ```dart
@@ -233,9 +233,11 @@ await _detour.logEvent(
 );
 ```
 
-Custom events:
+Custom / non-standard events — `logEvent` accepts only `DetourEventName` enum values (a custom
+string is a compile error); custom names must use `logRetention`, which takes only a name
+(no `data` payload):
 ```dart
-await _detour.logEvent('promo_banner_tapped', data: {'placement': 'home_top'});
+await _detour.logRetention('promo_banner_tapped');
 ```
 
 Retention / session events:

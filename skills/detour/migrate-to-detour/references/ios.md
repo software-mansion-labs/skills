@@ -282,7 +282,7 @@ Detour.shared.resetSession(allowDeferredRetry: true)
 | `.search` | `AFEventSearch` | `.search` |
 | `.share` | `AFEventShare` | `.share` |
 | `.invite` | — | `.invite` |
-| custom string | custom string | custom string |
+| custom event name | custom event name | `logRetention("name")` (no enum entry — see below) |
 
 ### Before (Branch)
 ```swift
@@ -314,9 +314,10 @@ DetourAnalytics.logEvent(.purchase, data: [
 ])
 ```
 
-Custom events:
+Custom / non-standard events — `logEvent` accepts only `DetourEventName` enum values; a custom
+name must use `logRetention`, which takes only a name (no `data` payload):
 ```swift
-DetourAnalytics.logEvent("promo_banner_tapped", data: ["placement": "home_top"])
+DetourAnalytics.logRetention("promo_banner_tapped")
 ```
 
 Retention / session events:

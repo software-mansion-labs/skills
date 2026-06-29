@@ -17,7 +17,8 @@
 `pubspec.yaml`:
 ```yaml
 dependencies:
-  detour_flutter_plugin: ^1.2.0
+  # Use the latest version — check pub.dev / the README (linked below).
+  detour_flutter_plugin: ^LATEST_VERSION
 ```
 
 ```bash

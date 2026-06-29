@@ -72,8 +72,8 @@ dependencies:
   # Remove:
   # appsflyer_sdk: ^x.x.x
 
-  # Add:
-  detour_flutter_plugin: ^1.0.0
+  # Add (use the latest version — check pub.dev / the README):
+  detour_flutter_plugin: ^LATEST_VERSION
 ```
 
 ```bash

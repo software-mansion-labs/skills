@@ -114,9 +114,8 @@ dependencies {
     // implementation("io.branch.sdk.android:library:5.x.x")
     // implementation("com.appsflyer:af-android-sdk:6.x.x")
 
-    // Add:
-    implementation("com.swmansion.detour:detour-sdk:1.1.0")
-    // Always check the latest version at: https://maven.swmansion.com
+    // Add (use the latest version — check Maven Central / the README):
+    implementation("com.swmansion.detour:detour-sdk:LATEST_VERSION")
 }
 ```
 

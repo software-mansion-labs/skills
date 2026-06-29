@@ -32,7 +32,8 @@ android {
 
 ```kotlin
 dependencies {
-    implementation("com.swmansion.detour:detour-sdk:1.1.0")
+    // Use the latest version — check Maven Central / the README (linked below).
+    implementation("com.swmansion.detour:detour-sdk:LATEST_VERSION")
 }
 ```
 

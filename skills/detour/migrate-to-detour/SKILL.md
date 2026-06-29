@@ -111,6 +111,8 @@ For React Native, ask the user which navigation library they use before showing 
 
 **Env variable naming:** If the user has environment variables whose names suggest the previous provider (e.g. `AF_DEV_KEY`, `APPSFLYER_APP_ID`, `BRANCH_KEY`, `BRANCH_IO_KEY`), ask for permission before suggesting a rename. Don't rename them automatically.
 
+**Verify generated code against the installed SDK.** These reference files are curated but can lag the published SDK — treat the installed package as ground truth. Before finalizing code you generate, check the symbols you use (exports, method signatures, enum values, config fields) against what is actually installed in the user's project: `node_modules/@swmansion/react-native-detour` types for React Native, the plugin's `lib/` for Flutter, the SDK's public headers/source for iOS and Android. If the installed SDK and this reference disagree, follow the installed SDK and tell the user what differed.
+
 ### Key concept differences to explain to the user
 
 **Single callback for everything:**

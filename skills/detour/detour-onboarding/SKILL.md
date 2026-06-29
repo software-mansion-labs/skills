@@ -109,6 +109,8 @@ Load the reference file for the user's platform:
 - Android → `references/android.md`
 - Flutter → `references/flutter.md`
 
+**Verify generated code against the installed SDK.** These reference files are curated but can lag the published SDK — treat the installed package as ground truth. Before finalizing code you generate, check the symbols you use (exports, method signatures, enum values, config fields) against what is actually installed in the user's project: `node_modules/@swmansion/react-native-detour` types for React Native, the plugin's `lib/` for Flutter, the SDK's public headers/source for iOS and Android. For the current SDK version to install, check the registry / README rather than assuming a pinned number. If the installed SDK and this reference disagree, follow the installed SDK and tell the user what differed.
+
 ### Shared concepts across all platforms
 
 **linkProcessingMode** controls which link sources the SDK handles:

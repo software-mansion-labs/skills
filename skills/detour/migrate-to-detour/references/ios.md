@@ -76,7 +76,8 @@ https://github.com/software-mansion-labs/ios-detour
 
 Or in `Package.swift`:
 ```swift
-.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "1.0.2")
+// Pin the current release — check the GitHub releases page / README for the latest version.
+.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "LATEST_VERSION")
 ```
 
 Remove the Branch or AppsFlyer package.

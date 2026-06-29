@@ -367,7 +367,13 @@ route, which lands in the destination screen's params.
 | `BranchEvent.CompleteRegistration` | `"af_complete_registration"` | `'sign_up'` |
 | `BranchEvent.Search` | `"af_search"` | `'search'` |
 | `BranchEvent.Share` | `"af_share"` | `'share'` |
-| custom string | custom string | custom string |
+| custom event name | custom event name | `logRetention('name')` (see note below) |
+
+`logEvent` accepts **only** `DetourEventNames` values (the lowercase strings above, e.g. `'purchase'`,
+`'view_item'`). Any event that isn't in that enum — including all of your custom Branch/AppsFlyer
+events — must go through `logRetention(name)` instead. `logRetention` takes only an event name and
+carries **no** properties payload, so data you previously attached to custom events (e.g. a
+`placement` value) is not forwarded; keep that in mind when mapping.
 
 ### Before (Branch)
 ```tsx
@@ -393,18 +399,20 @@ appsFlyer.logEvent('af_purchase', {
 
 ### After (Detour)
 ```tsx
-import { DetourAnalytics } from '@swmansion/react-native-detour';
+import { DetourAnalytics, DetourEventNames } from '@swmansion/react-native-detour';
 
-DetourAnalytics.logEvent('purchase', {
+// Standard events — use the DetourEventNames enum (or its string-literal value).
+DetourAnalytics.logEvent(DetourEventNames.Purchase, {
     revenue: 29.99,
     currency: 'USD',
     product_id: 'abc123',
 });
 ```
 
-Custom events:
+Custom / non-standard events — anything not in `DetourEventNames` goes through `logRetention`,
+which takes only an event name (no properties payload):
 ```tsx
-DetourAnalytics.logEvent('promo_banner_tapped', { placement: 'home_top' });
+DetourAnalytics.logRetention('promo_banner_tapped');
 ```
 
 Retention / session events:

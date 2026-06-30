@@ -9,7 +9,7 @@ Detour is an open-source deep linking SDK by Software Mansion. It handles deferr
 
 ## Starting the migration
 
-Ask the user both questions at once before doing anything else:
+You need two things before doing anything else:
 
 1. **What are you migrating from?**
    - Branch
@@ -20,6 +20,8 @@ Ask the user both questions at once before doing anything else:
    - iOS (native Swift)
    - React Native
    - Flutter
+
+**Infer first, ask only for what's genuinely unresolved.** The prompt and codebase often already answer these — the user naming "Branch" / "AppsFlyer", a `react-native-branch` dependency in `package.json`, an `ios/` + `android/` layout, an `AppsFlyerLib` import. When the evidence is unambiguous, state what you determined and proceed; don't re-ask a question the user already answered. Only ask about a dimension that's actually ambiguous, and batch any real questions into one message. (Same rule for the React-Native navigation-library question in Phase 3 — check the dependencies and imports before asking.)
 
 Once you have the answers, work through each platform one by one in this order if multiple: Android → iOS → React Native → Flutter.
 
@@ -103,13 +105,15 @@ Load the relevant reference file for installation instructions, initialization c
 - React Native → `references/react-native.md`
 - Flutter → `references/flutter.md`
 
-For React Native, ask the user which navigation library they use before showing code — the link handling code differs:
-- **Expo Router** → use the Expo Router section; also ask if they use short links (if yes, show the `+native-intent` pattern with `createDetourNativeIntentHandler`)
+For React Native, the link-handling code differs by navigation library, so determine which one is in use — but infer it from the project first (`@react-navigation/*` vs `expo-router` in `package.json`, `app/` route files, import statements) and only ask if it's genuinely unclear:
+- **Expo Router** → use the Expo Router section; also check whether they use short links (if yes, show the `+native-intent` pattern with `createDetourNativeIntentHandler`)
 - **React Navigation** → use the React Navigation section
 
 **When showing code with `YOUR_API_KEY` and `YOUR_APP_ID` placeholders**, always tell the user explicitly: *"You'll find both values in the Detour Dashboard → your app → API Configuration tab."*
 
 **Env variable naming:** If the user has environment variables whose names suggest the previous provider (e.g. `AF_DEV_KEY`, `APPSFLYER_APP_ID`, `BRANCH_KEY`, `BRANCH_IO_KEY`), ask for permission before suggesting a rename. Don't rename them automatically.
+
+**Verify generated code against the installed SDK.** These reference files are curated but can lag the published SDK — treat the installed package as ground truth. Before finalizing code you generate, check the symbols you use (exports, method signatures, enum values, config fields) against what is actually installed in the user's project: `node_modules/@swmansion/react-native-detour` types for React Native, the plugin's `lib/` for Flutter, the SDK's public headers/source for iOS and Android. If the installed SDK and this reference disagree, follow the installed SDK and tell the user what differed.
 
 ### Key concept differences to explain to the user
 
@@ -117,10 +121,11 @@ For React Native, ask the user which navigation library they use before showing 
 
 - Branch has separate handling for deferred links (`getFirstReferringParams`) vs direct links (`subscribe`)
 - AppsFlyer has `onInstallConversionData` for deferred vs `onDeepLink` / `onAppOpenAttribution` for direct
-- Detour uses one callback for both. Check `result.type` to know which case it is:
-  - `DEFERRED` — user clicked a link before installing
-  - `VERIFIED` — Universal Link / App Link (app already installed)
-  - `SCHEME` — custom URI scheme
+- Detour uses one callback for both. Inspect the link's `type` to know which case it is (exact field
+  path and value casing follow each platform's SDK — see the platform reference file):
+  - `deferred` — user clicked a link before installing
+  - `verified` — Universal Link / App Link (app already installed)
+  - `scheme` — custom URI scheme
 
 **Route is ready to use:**
 
@@ -187,7 +192,8 @@ After mapping all events, review every call site where the user logs analytics e
 
 - **Android:** `DetourAnalytics.logEvent()` only accepts `DetourEventNames` (enum). Any raw string must go through `DetourAnalytics.logRetention()` instead.
 - **iOS:** Same — `DetourAnalytics.logEvent()` takes `DetourEventName` enum values. Custom strings use `DetourAnalytics.logRetention()`.
-- **React Native / Flutter:** Confirm with the user whether the SDK accepts raw strings in `logEvent` or requires typed constants — this affects how custom events are logged.
+- **React Native:** `DetourAnalytics.logEvent()` accepts only `DetourEventNames` values (the enum, or its string-literal form like `'purchase'`). Any custom event name must go through `DetourAnalytics.logRetention()`, which takes only a name — no properties payload.
+- **Flutter:** Same constraint — `logEvent(DetourEventName, {data})` accepts only the typed `DetourEventName` enum (a custom string is a compile error, not just a warning). Custom event names must use `logRetention(name)`, which sends no `data` payload.
 
 ### Features with no Detour equivalent
 

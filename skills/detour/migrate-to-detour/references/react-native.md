@@ -1,5 +1,13 @@
 # React Native — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal / App Links — native config (iOS, Android) and Expo config
+- SDK Installation
+- SDK Initialization & Deep Link Handling — provider setup, Expo Router, `+native-intent`, React Navigation (linking adapter + auth-gated)
+- Deferred Deep Links (First Install)
+- Analytics — event mapping and code
+- Keeping this reference current
+
 ## Universal / App Links
 
 ### Native config — iOS
@@ -209,37 +217,119 @@ const config = {
 
 ### After (Detour) — link handling: React Navigation
 
+Do **not** subscribe to `useDetourContext` and call `navigation.navigate` with a hand-written
+pathname-to-screen mapping. Detour plugs directly into React Navigation's
+[built-in linking system](https://reactnavigation.org/docs/deep-linking?config=static#integrating-with-other-tools)
+via `getInitialURL` + `subscribe`, so React Navigation parses the route and navigates for you —
+the same way it would for any other deep link source.
+
+The SDK exposes a linking adapter from the package: `Detour.getInitialURL`,
+`Detour.addEventListener`, and the `DETOUR_LINKING_PREFIX` constant. Wire them into
+`NavigationContainer`'s `linking` prop. `DetourProvider` **must** be mounted above
+`NavigationContainer` for the adapter to receive resolved links.
+
 ```tsx
-import { useDetourContext } from '@swmansion/react-native-detour';
-import { useNavigation } from '@react-navigation/native';
+import {
+    type Config,
+    DETOUR_LINKING_PREFIX,
+    Detour,
+    DetourProvider,
+} from '@swmansion/react-native-detour';
+import {
+    type LinkingOptions,
+    NavigationContainer,
+} from '@react-navigation/native';
 
-export function RootNavigator() {
-    const { isLinkProcessed, link, clearLink } = useDetourContext();
-    const navigation = useNavigation();
+// Map routes to screens declaratively — React Navigation handles parsing.
+// This replaces any manual pathname → screen mapping.
+const linkingConfig: LinkingOptions<RootStackParamList>['config'] = {
+    screens: {
+        Home: '',
+        Details: 'details',
+        NotFound: '*',
+    },
+};
 
-    useEffect(() => {
-        if (!isLinkProcessed || !link) return;
+function AppNavigator() {
+    const linking: LinkingOptions<RootStackParamList> = {
+        prefixes: [DETOUR_LINKING_PREFIX],
+        config: linkingConfig,
+        async getInitialURL() {
+            return await Detour.getInitialURL();
+        },
+        subscribe(listener) {
+            const subscription = Detour.addEventListener('url', ({ url }) => {
+                listener(url);
+            });
+            return () => subscription.remove();
+        },
+    };
 
-        // link.pathname maps to your screen — adjust to your navigator structure
-        // e.g. "/products/123" → navigate to "Product" screen with { id: "123" }
-        navigation.navigate(
-            pathnameToScreenName(link.pathname),
-            link.params
-        );
-        clearLink();
-    }, [isLinkProcessed, link]);
+    return (
+        <NavigationContainer linking={linking}>
+            <YourScreens />
+        </NavigationContainer>
+    );
+}
 
-    return <YourScreens />;
+export function App() {
+    return (
+        <DetourProvider config={detourConfig}>
+            <AppNavigator />
+        </DetourProvider>
+    );
 }
 ```
 
-React Navigation doesn't use file-based routing, so you need to map `link.pathname` to your screen names manually. Keep that mapping close to your navigator definition. See the [`react-navigation` example](https://github.com/software-mansion-labs/react-native-detour/blob/main/examples/react-navigation/README.md) for a complete reference.
+`DETOUR_LINKING_PREFIX` is `"detour://"` — an internal adapter prefix for Detour-resolved routes.
+React Navigation matches it against `linkingConfig.screens` and navigates automatically. There is
+**no** manual `pathnameToScreenName` step.
+
+See the [`react-navigation` example](https://github.com/software-mansion-labs/react-native-detour/blob/main/examples/react-navigation/README.md)
+for a minimal working setup.
+
+#### Auth-gated deep links (React Navigation)
+
+For apps with sign-in / onboarding gates, let React Navigation hold the pending deep link until the
+target screen becomes reachable. Render screens conditionally on auth state and opt in to React
+Navigation's pending-link behavior with `UNSTABLE_routeNamesChangeBehavior="lastUnhandled"` on the
+navigator. This is the React Navigation equivalent of Expo Router's `Stack.Protected`.
+
+```tsx
+<Stack.Navigator UNSTABLE_routeNamesChangeBehavior="lastUnhandled">
+    {isSignedIn
+        ? isOnboardingCompleted
+            ? <>
+                  <Stack.Screen name="Tabs" component={TabNavigator} />
+                  <Stack.Screen name="Details" component={Details} />
+              </>
+            : <Stack.Screen name="Onboarding" component={Onboarding} />
+        : <Stack.Screen name="SignIn" component={SignIn} />}
+    <Stack.Screen name="NotFound" component={NotFound} />
+</Stack.Navigator>
+```
+
+A deep link that arrives while the user is signed-out is parsed, found unreachable (its target
+screen isn't currently rendered), and remembered. When the rendered screen set changes — after
+sign-in, then again after onboarding — React Navigation retries and lands the user on the target.
+
+> On React Navigation 7 the prop is prefixed `UNSTABLE_`. React Navigation 8 drops the prefix and
+> makes it a stable `routeNamesChangeBehavior` API ([upgrade guide](https://reactnavigation.org/docs/8.x/upgrading-from-7.x/)).
+> Use the name that matches your installed major version; the behavior is stable and sound.
+
+See the [`react-navigation-advanced` example](https://github.com/software-mansion-labs/react-native-detour/blob/main/examples/react-navigation-advanced/README.md)
+for a complete auth + onboarding gated setup.
 
 ---
 
 ## Deferred Deep Links (First Install)
 
-With Detour, deferred links arrive through the same `link` object from `useDetourContext`. Check `link.type === 'deferred'`:
+`DetourProvider` handles first-launch detection internally — no separate API call needed. Deferred
+links (a user clicked a Detour link *before* the app was installed) are delivered through the same
+channel as regular links; you don't need separate handling to route them.
+
+**Expo Router** — deferred links arrive through the `link` object from `useDetourContext`. Check
+`link.type === 'deferred'`:
 
 ```tsx
 useEffect(() => {
@@ -254,7 +344,11 @@ useEffect(() => {
 }, [isLinkProcessed, link]);
 ```
 
-`DetourProvider` handles first-launch detection internally — no separate API call needed.
+**React Navigation** — deferred links flow through the **same linking adapter** as regular links
+(`Detour.getInitialURL` / `Detour.addEventListener`). There is nothing extra to wire up: the
+`linking` config from the section above already handles them. If you need to branch on link type,
+the adapter appends a `linkType` query param (`deferred` | `verified` | `scheme`) to the resolved
+route, which lands in the destination screen's params.
 
 ---
 
@@ -273,7 +367,13 @@ useEffect(() => {
 | `BranchEvent.CompleteRegistration` | `"af_complete_registration"` | `'sign_up'` |
 | `BranchEvent.Search` | `"af_search"` | `'search'` |
 | `BranchEvent.Share` | `"af_share"` | `'share'` |
-| custom string | custom string | custom string |
+| custom event name | custom event name | `logRetention('name')` (see note below) |
+
+`logEvent` accepts **only** `DetourEventNames` values (the lowercase strings above, e.g. `'purchase'`,
+`'view_item'`). Any event that isn't in that enum — including all of your custom Branch/AppsFlyer
+events — must go through `logRetention(name)` instead. `logRetention` takes only an event name and
+carries **no** properties payload, so data you previously attached to custom events (e.g. a
+`placement` value) is not forwarded; keep that in mind when mapping.
 
 ### Before (Branch)
 ```tsx
@@ -299,18 +399,20 @@ appsFlyer.logEvent('af_purchase', {
 
 ### After (Detour)
 ```tsx
-import { DetourAnalytics } from '@swmansion/react-native-detour';
+import { DetourAnalytics, DetourEventNames } from '@swmansion/react-native-detour';
 
-DetourAnalytics.logEvent('purchase', {
+// Standard events — use the DetourEventNames enum (or its string-literal value).
+DetourAnalytics.logEvent(DetourEventNames.Purchase, {
     revenue: 29.99,
     currency: 'USD',
     product_id: 'abc123',
 });
 ```
 
-Custom events:
+Custom / non-standard events — anything not in `DetourEventNames` goes through `logRetention`,
+which takes only an event name (no properties payload):
 ```tsx
-DetourAnalytics.logEvent('promo_banner_tapped', { placement: 'home_top' });
+DetourAnalytics.logRetention('promo_banner_tapped');
 ```
 
 Retention / session events:

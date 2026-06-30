@@ -1,5 +1,13 @@
 # iOS — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal Links
+- SDK Installation
+- SDK Initialization & Deep Link Handling
+- Deferred Deep Links (First Install)
+- Analytics
+- Keeping this reference current
+
 ## Universal Links
 
 ### Before (Branch)
@@ -68,7 +76,8 @@ https://github.com/software-mansion-labs/ios-detour
 
 Or in `Package.swift`:
 ```swift
-.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "1.0.2")
+// Pin the current release — check the GitHub releases page / README for the latest version.
+.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "LATEST_VERSION")
 ```
 
 Remove the Branch or AppsFlyer package.
@@ -274,7 +283,7 @@ Detour.shared.resetSession(allowDeferredRetry: true)
 | `.search` | `AFEventSearch` | `.search` |
 | `.share` | `AFEventShare` | `.share` |
 | `.invite` | — | `.invite` |
-| custom string | custom string | custom string |
+| custom event name | custom event name | `logRetention("name")` (no enum entry — see below) |
 
 ### Before (Branch)
 ```swift
@@ -306,9 +315,10 @@ DetourAnalytics.logEvent(.purchase, data: [
 ])
 ```
 
-Custom events:
+Custom / non-standard events — `logEvent` accepts only `DetourEventName` enum values; a custom
+name must use `logRetention`, which takes only a name (no `data` payload):
 ```swift
-DetourAnalytics.logEvent("promo_banner_tapped", data: ["placement": "home_top"])
+DetourAnalytics.logRetention("promo_banner_tapped")
 ```
 
 Retention / session events:

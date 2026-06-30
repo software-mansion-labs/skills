@@ -1,5 +1,13 @@
 # Detour — Flutter Plugin Reference
 
+## Contents
+- Requirements
+- Installation
+- Universal / App Links
+- SDK Setup
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 - Flutter 3.3.0+, Dart ^3.11.1
 - Android minSdk 24, iOS 13+
@@ -9,7 +17,8 @@
 `pubspec.yaml`:
 ```yaml
 dependencies:
-  detour_flutter_plugin: ^1.2.0
+  # Use the latest version — check pub.dev / the README (linked below).
+  detour_flutter_plugin: ^LATEST_VERSION
 ```
 
 ```bash
@@ -137,8 +146,10 @@ await _detour.logEvent(DetourEventName.purchase, data: {
   'product_id': 'abc123',
 });
 
-// Custom event
-await _detour.logEvent('promo_banner_tapped', data: {'placement': 'home_top'});
+// Custom / non-standard event — logEvent accepts only DetourEventName enum values
+// (a custom string is a compile error). Use logRetention for custom names.
+// Note: logRetention takes only a name — no data payload.
+await _detour.logRetention('promo_banner_tapped');
 
 // Retention
 await _detour.logRetention('app_open');

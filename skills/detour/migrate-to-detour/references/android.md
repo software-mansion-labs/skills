@@ -1,5 +1,14 @@
 # Android — Branch / AppsFlyer → Detour
 
+## Contents
+- Universal / App Links
+- SDK Installation
+- SDK Initialization & Deep Link Handling
+- Deferred Deep Links (First Install)
+- Analytics
+- Testing
+- Keeping this reference current
+
 ## Universal / App Links
 
 ### Before (Branch)
@@ -105,9 +114,8 @@ dependencies {
     // implementation("io.branch.sdk.android:library:5.x.x")
     // implementation("com.appsflyer:af-android-sdk:6.x.x")
 
-    // Add:
-    implementation("com.swmansion.detour:detour-sdk:1.1.0")
-    // Always check the latest version at: https://maven.swmansion.com
+    // Add (use the latest version — check Maven Central / the README):
+    implementation("com.swmansion.detour:detour-sdk:LATEST_VERSION")
 }
 ```
 

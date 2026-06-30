@@ -1,5 +1,15 @@
 # Detour — iOS SDK Reference
 
+## Contents
+- Requirements
+- Installation
+- Universal Links
+- Custom URL Scheme (optional)
+- SDK Setup
+- Testing deferred links on iOS
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 - iOS 13+, Swift 5.5+
 
@@ -12,7 +22,8 @@ https://github.com/software-mansion-labs/ios-detour
 
 **Package.swift:**
 ```swift
-.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "1.1.0")
+// Pin the current release — check the GitHub releases page / README for the latest version.
+.package(url: "https://github.com/software-mansion-labs/ios-detour", from: "LATEST_VERSION")
 ```
 
 **CocoaPods:**
@@ -20,7 +31,7 @@ https://github.com/software-mansion-labs/ios-detour
 platform :ios, '13.0'
 target 'YourAppTarget' do
   use_frameworks!
-  pod 'Detour', '~> 1.1.0'
+  pod 'Detour'  # latest; add a version constraint to pin — see the README
 end
 ```
 Then run `pod install`.

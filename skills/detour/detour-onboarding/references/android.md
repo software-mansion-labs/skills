@@ -1,5 +1,14 @@
 # Detour — Android SDK Reference
 
+## Contents
+- Requirements
+- Installation
+- App Links
+- SDK Setup
+- Testing on Android 12+
+- Analytics
+- Keeping this reference current
+
 ## Requirements
 
 - `compileSdk` 34+
@@ -23,7 +32,8 @@ android {
 
 ```kotlin
 dependencies {
-    implementation("com.swmansion.detour:detour-sdk:1.1.0")
+    // Use the latest version — check Maven Central / the README (linked below).
+    implementation("com.swmansion.detour:detour-sdk:LATEST_VERSION")
 }
 ```
 

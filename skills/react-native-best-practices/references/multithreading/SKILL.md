@@ -74,4 +74,6 @@ Load at most one reference file per question.
 |------|------------------------------|
 | `threading-api.md` | Scheduling work across runtimes, creating Worker Runtimes, sync vs async execution, migrating from deprecated APIs |
 | `shared-memory.md` | Passing data between runtimes, closures in worklets, Serializable, Synchronizable, shared mutable state |
-| `setup-and-advanced.md` | Installing worklets, Babel plugin config, Bundle Mode, testing with Jest, feature flags, troubleshooting |
+| `setup-and-advanced.md` | Installing worklets, Babel plugin config, Bundle Mode usage, import forwarding, testing with Jest, feature flags, troubleshooting |
+
+For enabling Bundle Mode in an app (babel option, metro config, mandatory metro/metro-runtime patches, "Failed to get the SHA-1" errors), use the dedicated sub-skill instead: `../enable-worklets-bundle-mode/SKILL.md`.

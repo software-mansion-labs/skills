@@ -40,6 +40,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **On-device AI**   | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch                                                                                                                |
 | **Rich Text**      | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math                     |
 | **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets                                                                                                                           |
+| **Worklets Bundle Mode** | Enabling react-native-worklets Bundle Mode: imports inside worklets, third-party libraries on worklet runtimes, mandatory metro/metro-runtime patches, Fast Refresh for worklet code            |
 | **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
 | **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
@@ -208,6 +209,14 @@ skills/
     │   │   ├── recording.md
     │   │   ├── system-and-notifications.md
     │   │   └── worklets.md
+    │   ├── enable-worklets-bundle-mode/
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   │       ├── patching-bun.md
+    │   │       ├── patching-patch-package.md
+    │   │       ├── patching-pnpm.md
+    │   │       ├── patching-yarn-berry.md
+    │   │       └── uniwind-remap-workaround.md
     │   ├── gestures/
     │   │   ├── SKILL.md
     │   │   ├── continuous-gestures.md

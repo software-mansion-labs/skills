@@ -6,10 +6,10 @@
 
 ### Expo (SDK 54+)
 
-Expo includes the Worklets Babel plugin by default since SDK 54. Install and rebuild:
+The Expo starter template includes the Worklets Babel plugin by default since SDK 54. Install and rebuild native dependencies:
 
 ```bash
-npx expo install react-native-worklets
+npm install react-native-worklets
 npx expo prebuild
 ```
 
@@ -31,7 +31,7 @@ module.exports = {
 };
 ```
 
-Then clear the Metro cache and install iOS pods:
+Then clear the Metro cache and install iOS pods (Android needs no extra steps):
 
 ```bash
 npm start -- --reset-cache
@@ -94,7 +94,7 @@ scheduleOnUI(() => {
 
 Limitations: no inheritance, no static members, instances cannot be shared between threads.
 
-### Key plugin options
+### Plugin options
 
 Configure by passing an options object to the Babel plugin:
 
@@ -113,10 +113,18 @@ plugins: [['react-native-worklets/plugin', workletsPluginOptions]];
 | Option | Default | Purpose |
 |--------|---------|---------|
 | `bundleMode` | `false` | Enable Bundle Mode (full bundle on all runtimes) |
-| `strictGlobal` | `false` | Prevent implicit capture of globals. Recommended. |
+| `strictGlobal` | `false` | Stricter access to global variables inside worklets. Recommended. |
 | `globals` | `[]` | Identifiers that should not be copied to worklet runtimes |
+| `importForwarding.moduleNames` | `[]` | Module names whose imports are forwarded into worklets (Bundle Mode) |
+| `importForwarding.relativePaths` | `[]` | Module paths whose relative imports are forwarded into worklets (Bundle Mode) |
 | `disableWorkletClasses` | `false` | Disable Worklet Classes (needed for Custom Serializables with `new`) |
-| `workletizableModules` | `[]` | Allow-list of third-party modules usable on Worklet Runtimes in Bundle Mode |
+| `hermesBytecode` | `false` | Compile worklets to Hermes bytecode ahead of time instead of shipping source (Legacy Eval Mode) |
+| `getHBCBinary` | `undefined` | Returns the path to the Hermes bytecode compiler (required by `hermesBytecode`) |
+| `extraPlugins` | `[]` | Extra Babel plugins applied when transforming worklet code |
+| `extraPresets` | `[]` | Extra Babel presets applied when transforming worklet code |
+| `disableInlineStylesWarning` | `false` | Suppress warnings about `.value` access on shared values in Reanimated inline styles |
+| `disableSourceMaps` | `false` | Turn off source map generation for worklets |
+| `relativeSourceLocation` | `false` | Worklet file paths relative to `process.cwd()` for stable test snapshots |
 | `omitNativeOnlyData` | `false` | Smaller bundles for Web builds |
 | `substituteWebPlatformChecks` | `false` | Helps tree-shaking for Web builds |
 
@@ -125,70 +133,71 @@ plugins: [['react-native-worklets/plugin', workletsPluginOptions]];
 - **Worklets are not hoisted.** Using a workletized function before its declaration crashes at runtime.
 - **Imported functions need explicit `'worklet'` directive.** Autoworkletization only applies within the same file.
 - **Conditional expressions bypass autoworkletization.** Add `'worklet';` to each branch manually.
+- **Custom hooks are not autoworkletized.** Only registered APIs trigger autoworkletization; callbacks passed to your own hooks need explicit directives.
 
 ---
 
-## Bundle Mode (Experimental)
+## Bundle Mode
 
-Bundle Mode gives worklets access to the full JavaScript bundle, allowing third-party libraries to run on Worklet Runtimes without patching.
+Bundle Mode gives worklets access to the full JavaScript bundle, allowing imports inside worklets and third-party libraries to run on Worklet Runtimes without patching. Stable since react-native-worklets 0.10.0.
 
 ### Setup
 
-1. Install the bundle-mode-preview tag: `npm i react-native-worklets@bundle-mode-preview`
-2. Enable in Babel config: `bundleMode: true, strictGlobal: true`
-3. Configure Metro with `getBundleModeMetroConfig`:
+Enablement (babel plugin options, Expo/RN CLI metro config helpers, the mandatory metro + metro-runtime patches, verification) is covered end-to-end by the dedicated sub-skill: `../enable-worklets-bundle-mode/SKILL.md`. Follow it instead of setting up manually.
+
+### Imports inside worklets (Import Forwarding)
+
+Runtimes don't share state, so a module-level import used inside a worklet is ambiguous — it could mean the RN Runtime's copy of the module or the Worklet Runtime's. Disambiguate one of three ways:
+
+- **RN Runtime state**: read the value before the worklet and let the closure capture it.
+- **Worklet Runtime state, per worklet**: `require('my-library')` inside the worklet body.
+- **Worklet Runtime state, app-wide**: list the module in `importForwarding.moduleNames` — its imports are then forwarded into worklet bodies automatically:
 
 ```js
-// metro.config.js (Expo)
-const { getBundleModeMetroConfig } = require('react-native-worklets/bundleMode');
-let config = getDefaultConfig(__dirname);
-config = getBundleModeMetroConfig(config);
-module.exports = config;
+const workletsPluginOptions = {
+  bundleMode: true,
+  strictGlobal: true,
+  importForwarding: { moduleNames: ['my-library'] },
+};
 ```
 
-4. Enable the `BUNDLE_MODE_ENABLED` static feature flag in `package.json`:
-
-```json
-{
-  "worklets": {
-    "staticFeatureFlags": {
-      "BUNDLE_MODE_ENABLED": true
-    }
-  }
-}
-```
-
-5. Patch `metro` and `metro-runtime` for seamless bundling and fast refresh (see the Worklets repository for patch files).
+`importForwarding.relativePaths` does the same for relative imports from your own code. The docs describe the `importForwarding` API as temporary, to be replaced with a more robust solution. Docs: https://docs.swmansion.com/react-native-worklets/docs/bundleMode/importForwarding
 
 ### Using third-party libraries in worklets
 
-Libraries must be on an allow-list via the `workletizableModules` Babel plugin option:
-
-```js
-workletizableModules: ['my-library'],
-```
+Libraries must be allow-listed via `importForwarding.moduleNames` (the earlier `workletizableModules` option no longer exists in the plugin options).
 
 Libraries that import React Native internals cannot run on Worklet Runtimes (they would load a second RN instance).
 
 ### Networking in worklets
 
-Enable `fetch` on Worklet Runtimes by adding the `FETCH_PREVIEW_ENABLED` feature flag (requires `BUNDLE_MODE_ENABLED`).
+Worklet Runtimes offer a simplified `fetch` implementation. Enable it with the `FETCH_PREVIEW_ENABLED` static feature flag; it only takes effect in Bundle Mode and requires the Bundle Mode metro patches.
 
 ---
 
 ## Feature Flags
 
-Static feature flags go in `package.json` under `worklets.staticFeatureFlags`. They require a native rebuild.
+Static feature flags go in `package.json` under `worklets.staticFeatureFlags`. Changing one requires `pod install` (iOS) and a native rebuild.
+
+```json
+{
+  "worklets": {
+    "staticFeatureFlags": {
+      "FETCH_PREVIEW_ENABLED": true
+    }
+  }
+}
+```
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `BUNDLE_MODE_ENABLED` | `false` | Enable Bundle Mode |
-| `FETCH_PREVIEW_ENABLED` | `false` | Enable `fetch` on Worklet Runtimes (requires Bundle Mode) |
 | `IOS_DYNAMIC_FRAMERATE_ENABLED` | `true` | Auto-adjust frame rate for expensive animations (falls back from 120fps to 60fps) |
+| `FETCH_PREVIEW_ENABLED` | `false` | Enable `fetch` on Worklet Runtimes (only takes effect in Bundle Mode) |
+| `ENABLE_CROSS_RUNTIME_STACK_TRACES` | `true` | Stitch stack traces across runtimes in dev builds; can hurt performance in scheduling-heavy code paths |
 
-Static flags are unavailable in Expo Go. Use Expo Prebuild instead.
+Static flags are unavailable in Expo Go and in RNRepo prebuilt configurations. Use Expo Prebuild or force source builds instead.
 
-Dynamic flags can be toggled at runtime via `setDynamicFeatureFlag('FLAG_NAME', true)`.
+Dynamic flags can be toggled at runtime via `setDynamicFeatureFlag('FLAG_NAME', true)` and read via `getDynamicFeatureFlag('FLAG_NAME')`; no dynamic flags are currently available.
 
 ---
 
@@ -229,7 +238,11 @@ Rebuild the app after installing or upgrading. If using a brownfield app, initia
 
 ### Version mismatch errors
 
-Clear the Metro cache: `npm start -- --reset-cache`. If the issue persists, a dependency bundles worklets transpiled with an older Babel plugin version.
+Mismatches between the JS code, the Babel plugin, and the native part all have the same fixes: clear the Metro cache (`npm start -- --reset-cache`, `expo start -c`) and rebuild the app after upgrading. If the issue persists, a dependency bundles worklets transpiled with an older Babel plugin version. On Expo Go, use the exact worklets version bundled with the SDK.
+
+### "TypeError: right operand of 'in' is not an object" / "Cannot read property 'createSerializableString' of undefined"
+
+Expo apps disable `inlineRequires` by default, which breaks Worklets initialization. Enable `inlineRequires` in `metro.config.js`.
 
 ### "Tried to modify key of an object which has been converted to a serializable"
 
@@ -245,4 +258,6 @@ The called function lacks a `'worklet';` directive. Either add `'worklet';` to m
 
 ## Compatibility
 
-Worklets supports at least the last three minor versions of React Native. Check the compatibility table in the official docs for exact version mappings.
+Worklets supports at least the last three minor versions of React Native. Latest patch of each minor; full table: https://docs.swmansion.com/react-native-worklets/docs/guides/compatibility.
+
+When Reanimated is installed it additionally pins a narrow worklets range — check both compatibility tables before upgrading.

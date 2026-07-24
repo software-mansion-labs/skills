@@ -64,6 +64,10 @@ Best practices for setting up and migrating to Detour, Software Mansion's deferr
 
 Guidance for building real-time video, audio, and livestreaming apps with [Fishjam](https://fishjam.io), Software Mansion's hosted WebRTC platform. Covers the platform fundamentals (rooms, peers, tracks, two-tier auth, notifications, REST API) and all four SDKs: the Node.js and Python server SDKs (including AI voice agents and Gemini Live integration), the React web client, and the React Native / Expo client (permissions, foreground service, CallKit, screen sharing, Picture-in-Picture).
 
+### [react-native-moq](./skills/react-native-moq/)
+
+Guidance for building sub-second-latency live streaming with react-native-moq, Software Mansion's Media over QUIC (MoQ) bindings for React Native. Covers video/audio playback and broadcast discovery, publishing from the camera, microphone, and screen, custom data and media tracks, the hook-free imperative API, and the optional `react-native-moq-ui` player chrome.
+
 ### [expo-horizon](./skills/expo-horizon/)
 
 Software Mansion's guide for migrating Expo SDK apps to Meta Quest using the [expo-horizon](https://github.com/software-mansion-labs/expo-horizon) packages. Covers build flavors for Quest, panel sizing, device detection, and migrating `expo-location` and `expo-notifications` to their Horizon counterparts, through Meta Horizon Store publishing.
@@ -153,6 +157,13 @@ skills/
 │   │   ├── view-network-logs.md
 │   │   ├── view-network-request-details.md
 │   │   └── view-screenshot.md
+│   └── SKILL.md
+├── react-native-moq/
+│   ├── references/
+│   │   ├── custom-tracks.md
+│   │   ├── imperative.md
+│   │   ├── playback.md
+│   │   └── publishing.md
 │   └── SKILL.md
 ├── rnrepo/
 │   ├── references/

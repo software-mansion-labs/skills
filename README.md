@@ -43,6 +43,10 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets |
 | **Audio** | Playback, recording, visualization, session management with React Native Audio API |
 
+### [pulsar-haptics](./skills/pulsar-haptics/)
+
+Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages.
+
 ### [radon-mcp](./skills/radon-mcp/)
 
 Best practices for using Radon IDE's MCP tools when developing, debugging, and inspecting React Native and Expo apps. Covers viewing screenshots, reading logs, inspecting the component tree, debugging network requests, reloading the app, and querying React Native documentation.
@@ -66,32 +70,7 @@ react-native-skills/
 └── skills/
     ├── expo-horizon/
     │   └── SKILL.md
-    ├── haptics/
-    │   ├── references/
-    │   │   ├── android/
-    │   │   │   ├── SKILL.md
-    │   │   │   ├── api-overview.md
-    │   │   │   ├── gesture-haptics.md
-    │   │   │   ├── pattern-composer.md
-    │   │   │   ├── presets-guide.md
-    │   │   │   └── types-reference.md
-    │   │   ├── common/
-    │   │   │   ├── design-principles.md
-    │   │   │   ├── gesture-haptics.md
-    │   │   │   ├── preset-tags.md
-    │   │   │   └── presets-guide.md
-    │   │   ├── ios/
-    │   │   │   ├── SKILL.md
-    │   │   │   ├── api-overview.md
-    │   │   │   ├── gesture-haptics.md
-    │   │   │   ├── pattern-composer.md
-    │   │   │   └── presets-guide.md
-    │   │   └── react-native/
-    │   │       ├── SKILL.md
-    │   │       ├── api-overview.md
-    │   │       ├── gesture-haptics.md
-    │   │       ├── migration.md
-    │   │       └── presets-guide.md
+    ├── pulsar-haptics/
     │   └── SKILL.md
     ├── radon-mcp/
     │   ├── references/
@@ -133,17 +112,6 @@ react-native-skills/
         │   │   ├── swipeable-and-drawer.md
         │   │   ├── tap-handling.md
         │   │   └── testing.md
-        │   ├── haptics/
-        │   │   ├── common/
-        │   │   │   ├── design-principles.md
-        │   │   │   ├── gesture-haptics.md
-        │   │   │   ├── preset-tags.md
-        │   │   │   └── presets-guide.md
-        │   │   ├── SKILL.md
-        │   │   ├── api-overview.md
-        │   │   ├── gesture-haptics.md
-        │   │   ├── migration.md
-        │   │   └── presets-guide.md
         │   ├── multithreading/
         │   │   ├── SKILL.md
         │   │   ├── setup-and-advanced.md

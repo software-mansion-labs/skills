@@ -27,7 +27,7 @@ platform and version index, then open the matching official page:
 - [Kotlin Multiplatform](https://docs.swmansion.com/pulsar/sdk/kmp/)
 - [Flutter](https://docs.swmansion.com/pulsar/sdk/flutter/)
 - [Web](https://docs.swmansion.com/pulsar/sdk/web/)
-- [React Native migration from `expo-haptics`](references/react-native-migration.md)
+- [React Native migration from `expo-haptics`](references/expo-haptics-to-pulsar-migration.md)
 
 Use the [official Pulsar source](https://github.com/software-mansion/pulsar), matching
 release tag, and installed package for version-specific evidence. Use the

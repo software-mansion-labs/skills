@@ -26,22 +26,21 @@ You can also install the skills using the [`skills` CLI](https://www.npmjs.com/p
 npx skills add software-mansion-labs/skills
 ```
 
-
 ## Available Skills
 
 ### [react-native-best-practices](./skills/react-native-best-practices/)
 
 Production patterns for React Native apps on the New Architecture, covering:
 
-| Topic | What it covers |
-|-------|---------------|
-| **Animations** | CSS transitions, CSS animations, shared value animations, canvas animations (Skia), GPU shader animations, layout animations, Reanimated 4, 120fps, performance tuning |
-| **Gestures** | Tap, pan, pinch, swipe, long press, drag with Gesture Handler |
-| **SVG** | Vector graphics, icons, charts, illustrations with React Native SVG |
-| **On-device AI** | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch |
-| **Rich Text** | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math |
-| **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets |
-| **Audio** | Playback, recording, visualization, session management with React Native Audio API |
+| Topic              | What it covers                                                                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Animations**     | CSS transitions, CSS animations, shared value animations, canvas animations (Skia), GPU shader animations, layout animations, Reanimated 4, 120fps, performance tuning           |
+| **Gestures**       | Tap, pan, pinch, swipe, long press, drag with Gesture Handler                                                                                                                    |
+| **SVG**            | Vector graphics, icons, charts, illustrations with React Native SVG                                                                                                              |
+| **On-device AI**   | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch                                                                                            |
+| **Rich Text**      | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math |
+| **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets                                                                                                       |
+| **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                               |
 
 ### [pulsar-haptics](./skills/pulsar-haptics/)
 
@@ -71,6 +70,8 @@ react-native-skills/
     ├── expo-horizon/
     │   └── SKILL.md
     ├── pulsar-haptics/
+    |   ├── references/
+    |   |   ├── expo-haptics-to-pulsar-migration.md
     │   └── SKILL.md
     ├── radon-mcp/
     │   ├── references/

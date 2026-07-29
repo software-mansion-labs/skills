@@ -39,7 +39,9 @@
         "voice-agents",
         "conversational-ai",
         "gemini-live",
-        "vapi"
+        "vapi",
+        "moq",
+        "moq-kit"
       ],
       "category": "react-native",
       "strict": false

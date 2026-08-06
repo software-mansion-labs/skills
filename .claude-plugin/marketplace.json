@@ -31,13 +31,16 @@
         "executorch",
         "audio-api",
         "worklets",
+        "bundle-mode",
         "radon-ide",
         "fishjam",
         "livestreaming",
         "voice-agents",
         "conversational-ai",
         "gemini-live",
-        "vapi"
+        "vapi",
+        "moq",
+        "moq-kit"
       ],
       "category": "react-native",
       "strict": false

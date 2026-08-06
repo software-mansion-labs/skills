@@ -40,6 +40,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **On-device AI**   | LLMs, computer vision, OCR, audio processing, embeddings with React Native ExecuTorch                                                                                                                |
 | **Rich Text**      | Rich text editing with react-native-enriched and Markdown rendering with react-native-enriched-markdown: formatting toolbar, mentions, links, GFM tables, task lists, LaTeX math                     |
 | **Multithreading** | Worker Runtimes, scheduling APIs, shared memory with React Native Worklets                                                                                                                           |
+| **Worklets Bundle Mode** | Enabling react-native-worklets Bundle Mode: imports inside worklets, third-party libraries on worklet runtimes, mandatory metro/metro-runtime patches, Fast Refresh for worklet code            |
 | **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
 | **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
@@ -62,6 +63,10 @@ Best practices for setting up and migrating to Detour, Software Mansion's deferr
 ### [fishjam](./skills/fishjam/)
 
 Guidance for building real-time video, audio, and livestreaming apps with [Fishjam](https://fishjam.io), Software Mansion's hosted WebRTC platform. Covers the platform fundamentals (rooms, peers, tracks, two-tier auth, notifications, REST API) and all four SDKs: the Node.js and Python server SDKs (including AI voice agents and Gemini Live integration), the React web client, and the React Native / Expo client (permissions, foreground service, CallKit, screen sharing, Picture-in-Picture).
+
+### [react-native-moq](./skills/react-native-moq/)
+
+Guidance for building sub-second-latency live streaming with react-native-moq, Software Mansion's Media over QUIC (MoQ) bindings for React Native. Covers video/audio playback and broadcast discovery, publishing from the camera, microphone, and screen, custom data and media tracks, the hook-free imperative API, and the optional `react-native-moq-ui` player chrome.
 
 ### [expo-horizon](./skills/expo-horizon/)
 
@@ -153,6 +158,13 @@ skills/
 │   │   ├── view-network-request-details.md
 │   │   └── view-screenshot.md
 │   └── SKILL.md
+├── react-native-moq/
+│   ├── references/
+│   │   ├── custom-tracks.md
+│   │   ├── imperative.md
+│   │   ├── playback.md
+│   │   └── publishing.md
+│   └── SKILL.md
 ├── rnrepo/
 │   ├── references/
 │   │   ├── configuration.md
@@ -208,6 +220,14 @@ skills/
     │   │   ├── recording.md
     │   │   ├── system-and-notifications.md
     │   │   └── worklets.md
+    │   ├── enable-worklets-bundle-mode/
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   │       ├── patching-bun.md
+    │   │       ├── patching-patch-package.md
+    │   │       ├── patching-pnpm.md
+    │   │       ├── patching-yarn-berry.md
+    │   │       └── uniwind-remap-workaround.md
     │   ├── gestures/
     │   │   ├── SKILL.md
     │   │   ├── continuous-gestures.md

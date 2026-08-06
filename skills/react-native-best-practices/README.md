@@ -14,6 +14,7 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 | [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, semantic/instance segmentation, style transfer, embeddings, text-to-image), speech (STT, TTS, VAD), VisionCamera real-time frame processing, model loading, resource management, error handling, custom models | Complete |
 | [Rich Text](./references/rich-text/) | Rich text editing with react-native-enriched, Markdown rendering with react-native-enriched-markdown | Complete |
 | [Multithreading](./references/multithreading/) | react-native-worklets: Worker Runtimes, scheduling APIs, shared memory, Serializable, Synchronizable | Complete |
+| [Enable Worklets Bundle Mode](./references/enable-worklets-bundle-mode/) | Step-by-step Bundle Mode enablement for react-native-worklets (Expo, RN CLI, brownfield): babel plugin options, metro config helpers, mandatory metro + metro-runtime patches for every package manager (Yarn berry, npm/Yarn classic, bun, pnpm), verification, uniwind/NativeWind resolver workaround | Complete |
 | [Audio](./references/audio/) | React Native Audio API: playback (buffer sources, oscillators, streaming, queued playback), recording (file, data callback, graph processing), effects (gain, filters, delay, convolver, panner, waveshaper), analysis and visualization, worklets (custom processing, synthesis, UIRuntime/AudioRuntime), system integration (sessions, interruptions, notifications, permissions), testing | Complete |
 | [JSI](./references/jsi/) | React Native JSI (JavaScript Interface): C++ API for interacting with the JS runtime — `jsi::Value`, `HostObject`, `HostFunction`, `NativeState`, `ArrayBuffer`, type casting, threading safety, calling JS from C++, `CallInvoker`/`invokeAsync`, performance (zero-copy, `PropNameID` caching, `Scope`), setup on Android/iOS, TurboModules vs Nitro Modules vs pure JSI, C++ memory patterns, crash debugging | Complete |
 **Complete** = full reference documentation with code examples.
@@ -60,6 +61,14 @@ react-native-best-practices/
     │   ├── threading-api.md              # Scheduling APIs, Worker Runtimes, sync/async
     │   ├── shared-memory.md              # Closures, Serializable, Synchronizable
     │   └── setup-and-advanced.md         # Installation, Babel config, Bundle Mode, Jest
+    ├── enable-worklets-bundle-mode/
+    │   ├── SKILL.md                      # State detection, babel plugin, metro config, patches, verification
+    │   └── references/
+    │       ├── patching-yarn-berry.md    # Metro patches via Yarn 2+ builtin patch: protocol
+    │       ├── patching-patch-package.md # Metro patches via patch-package (npm / Yarn 1 classic)
+    │       ├── patching-bun.md           # Metro patches via bun's native patching
+    │       ├── patching-pnpm.md          # Metro patches via pnpm patch
+    │       └── uniwind-remap-workaround.md # Guarded metro config when a library remaps react-native
     ├── audio/
     │   ├── SKILL.md                      # When to use, what references to read
     │   ├── audio.md                      # Decision tree, AudioContext lifecycle, singleton, audio graph, decoding

@@ -68,6 +68,10 @@ Guidance for building real-time video, audio, and livestreaming apps with [Fishj
 
 Guidance for building sub-second-latency live streaming with react-native-moq, Software Mansion's Media over QUIC (MoQ) bindings for React Native. Covers video/audio playback and broadcast discovery, publishing from the camera, microphone, and screen, custom data and media tracks, the hook-free imperative API, and the optional `react-native-moq-ui` player chrome.
 
+### [moq-kit](./skills/moq-kit/)
+
+Guidance for building sub-second-latency live streaming with moq-kit, Software Mansion's native Swift (iOS) and Kotlin (Android) SDKs for Media over QUIC (moq-lite). Covers relay sessions, broadcast discovery and catalog-driven playback, publishing from the camera, microphone, and screen, and realtime data tracks — with per-platform references for both SDKs. For React Native apps, use the react-native-moq skill instead.
+
 ### [expo-horizon](./skills/expo-horizon/)
 
 Software Mansion's guide for migrating Expo SDK apps to Meta Quest using the [expo-horizon](https://github.com/software-mansion-labs/expo-horizon) packages. Covers build flavors for Quest, panel sizing, device detection, and migrating `expo-location` and `expo-notifications` to their Horizon counterparts, through Meta Horizon Store publishing.
@@ -146,6 +150,17 @@ skills/
 │   │       ├── picture-in-picture.md
 │   │       ├── rtcview.md
 │   │       └── screen-sharing.md
+│   └── SKILL.md
+├── moq-kit/
+│   ├── references/
+│   │   ├── data-tracks-android.md
+│   │   ├── data-tracks-ios.md
+│   │   ├── playback-android.md
+│   │   ├── playback-ios.md
+│   │   ├── publishing-android.md
+│   │   ├── publishing-ios.md
+│   │   ├── screen-capture-android.md
+│   │   └── screen-capture-ios.md
 │   └── SKILL.md
 ├── radon-mcp/
 │   ├── references/

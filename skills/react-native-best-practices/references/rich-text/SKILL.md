@@ -199,13 +199,13 @@ Mentions support custom indicators (default: `@`). Set custom indicators via the
 />;
 
 // Complete the mention when user selects from picker
-ref.current?.setMention("@", "John Doe", { userId: "123" });
+ref.current?.setMention("@", "John Doe", { "data-user-id": "123" });
 
 // Or start a mention programmatically (e.g. from a toolbar button)
 ref.current?.startMention("@");
 ```
 
-Custom `attributes` passed to `setMention` are preserved through HTML parsing, so you can round-trip IDs. Use `onMentionDetected` to know when the cursor is near an existing mention.
+Custom `attributes` passed to `setMention` are preserved through HTML parsing, so you can round-trip IDs. Use `onMentionDetected` to know when the cursor is near an existing mention. Use `data-*` keys for custom metadata (e.g. `data-user-id`) - see [HTML sanitization](#html-sanitization).
 
 ### Inline images
 
@@ -281,15 +281,17 @@ import { EnrichedText } from "react-native-enriched-html";
   ellipsizeMode="tail"
   selectable
   onLinkPress={({ url }) => Linking.openURL(url)}
-  onMentionPress={({ text, indicator, attributes }) =>
-    openProfile(attributes.userId)
-  }
+  onMentionPress={({ attributes }) => openProfile(attributes["data-user-id"])}
 >
   {html}
 </EnrichedText>;
 ```
 
 Its `htmlStyle` extends the input's with press-state colors (`pressColor` on links, `pressColor`/`pressBackgroundColor` on mentions). Like the input, it normalizes external HTML by default (`useHtmlNormalizer`).
+
+### HTML sanitization
+
+Treat HTML from `getHTML()`, `setValue`, or other users as untrusted - `useHtmlNormalizer` is not a security sanitizer. Mention attributes round-trip as HTML element attributes and must be whitelisted/validated. Before implementing sanitization, link validation, or web-only `sanitizationConfig`, **webfetch** the upstream doc: [Web support - HTML sanitization](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/WEB.md#html-sanitization) (covers DOMPurify on web, native responsibility, `data-*` mention attributes, custom link protocols).
 
 ### Full API reference
 

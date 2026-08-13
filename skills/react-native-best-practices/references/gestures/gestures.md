@@ -17,9 +17,8 @@ Pick the gesture type based on the interaction you need.
 What touch interaction does the user perform?
 │
 ├── Tap / press on a UI element?
-│   ├── Inside a ScrollView/FlatList → RectButton (v2) / LegacyRectButton (v3)
-│   ├── Simple press outside scroll containers → RNGH Pressable
-│   ├── Needs UI-thread animation on press → GestureDetector + Tap gesture
+│   ├── Simple press with feedback → RectButton (v2) / Touchable (v3)
+│   ├── Needs UI-thread animation on press → Tap gesture
 │   └── Double-tap / multi-tap → Tap gesture with numberOfTaps
 │
 ├── Drag / pan movement?
@@ -140,11 +139,11 @@ const manual = useMemo(() =>
 []);
 ```
 
-The **only** code safe to call directly inside gesture callbacks is: shared value mutations (`offset.value = ...`), other worklet functions (with `'worklet'` directive), and `scheduleOnRN` itself.
+The **only** code safe to call directly inside gesture callbacks running on the UI theead is: shared value mutations (`offset.value = ...`), other worklet functions (with `'worklet'` directive), and `scheduleOnRN` itself.
 
-**Disabling Reanimated**: Set `disableReanimated: true` (v3) to run all callbacks on the JS thread without Reanimated overhead. Useful for gestures that only trigger JS-side logic and do not animate.
+**Disabling Reanimated**: Set `disableReanimated: true` (v3) to run all callbacks on the JS thread without Reanimated overhead. Useful for gestures that only trigger JS-side logic and do not animate. `disableReanimated` CANNOT be changed during runtime.
 
-**`runOnJS` property** (v3 only): Dynamically control per-gesture whether callbacks run on the JS or UI thread. Accepts a `SharedValue<boolean>` for runtime switching.
+**`runOnJS` property** (v3 only): Dynamically control per-gesture whether callbacks run on the JS or UI thread. Accepts a `SharedValue<boolean> | boolean` for runtime switching.
 
 ---
 

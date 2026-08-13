@@ -291,17 +291,17 @@ Its `htmlStyle` extends the input's with press-state colors (`pressColor` on lin
 
 ### HTML sanitization
 
-Treat HTML from `getHTML()`, `setValue`, or other users as untrusted - `useHtmlNormalizer` is not a security sanitizer. Mention attributes round-trip as HTML element attributes and must be whitelisted/validated. Before implementing sanitization, link validation, or web-only `sanitizationConfig`, **webfetch** the upstream doc: [Web support - HTML sanitization](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/WEB.md#html-sanitization) (covers DOMPurify on web, native responsibility, `data-*` mention attributes, custom link protocols).
+Treat HTML from `getHTML()`, `setValue`, or other users as untrusted - `useHtmlNormalizer` is not a security sanitizer. Mention attributes round-trip as HTML element attributes and must be whitelisted/validated. Before implementing sanitization, link validation, or web-only `sanitizationConfig`, **webfetch** the upstream doc: [Web support — HTML sanitization](https://docs.swmansion.com/react-native-enriched-html/core-functionalities/web-support#sanitization) (covers DOMPurify on web, native responsibility, `data-*` mention attributes, custom link protocols).
 
 ### Full API reference
 
-For the complete API, webfetch the relevant upstream doc:
+For the complete API, webfetch the relevant page from the [official docs](https://docs.swmansion.com/react-native-enriched-html/):
 
-- [README (usage, supported tags, conflict/blocking tables)](https://github.com/software-mansion/react-native-enriched-html/blob/main/README.md)
-- [EnrichedTextInput API Reference (all props, ref methods, events, HtmlStyle)](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/INPUT_API_REFERENCE.md)
-- [EnrichedText API Reference](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/TEXT_API_REFERENCE.md)
-- [EnrichedInputStyle (supported `style` prop properties)](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/ENRICHED_INPUT_STYLE.md)
-- [Web support](https://github.com/software-mansion/react-native-enriched-html/blob/main/docs/WEB.md)
+- [HTML format and supported tags (conflict/blocking tables)](https://docs.swmansion.com/react-native-enriched-html/fundamentals/html-format-and-supported-tags)
+- [EnrichedTextInput API reference](https://docs.swmansion.com/react-native-enriched-html/api-reference/enriched-text-input)
+- [EnrichedText API reference](https://docs.swmansion.com/react-native-enriched-html/api-reference/enriched-text)
+- [Styling the input](https://docs.swmansion.com/react-native-enriched-html/core-functionalities/styling-the-input)
+- [Web support](https://docs.swmansion.com/react-native-enriched-html/core-functionalities/web-support)
 
 ---
 

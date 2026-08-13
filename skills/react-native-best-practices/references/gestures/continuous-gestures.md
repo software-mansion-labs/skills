@@ -130,6 +130,17 @@ const pinch = useMemo(() =>
 []);
 ```
 
+Alternatively use `e.scaleChange` to get multiplicative delta:
+
+```tsx
+const pan = usePinchGesture({
+  onUpdate: (e) => { scale.value *= e.scaleChange; },
+  onDeactivate: () => { scale.value = withSpring(1); },
+});
+```
+
+In v2, `scaleChange` is available inside `onChange` callback.
+
 **Focal point**: `focalX`/`focalY` give the center point between the two fingers. Use them to zoom toward the pinch center. Only use focal coordinates after the gesture has activated -- using them in `onBegin` produces unexpected results.
 
 ### Pinch + Pan (Photo Viewer)
@@ -173,6 +184,17 @@ const rotationGesture = useMemo(() =>
     .onEnd(() => { savedRotation.value = rotation.value; }),
 []);
 ```
+
+Alternatively use `e.rotationChange` to get additive delta:
+
+```tsx
+const pan = useRotationGesture({
+  onUpdate: (e) => { rotation.value *= e.rotationChange; },
+  onDeactivate: () => { rotation.value = withSpring(0); },
+});
+```
+
+In v2, `rotationChange` is available inside `onChange` callback.
 
 ---
 

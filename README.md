@@ -44,6 +44,10 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
 | **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
+### [pulsar-haptics](./skills/pulsar-haptics/)
+
+Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages.
+
 ### [radon-mcp](./skills/radon-mcp/)
 
 Best practices for using Radon IDE's MCP tools when developing, debugging, and inspecting React Native and Expo apps. Covers viewing screenshots, reading logs, inspecting the component tree, debugging network requests, reloading the app, and querying React Native documentation.
@@ -93,234 +97,200 @@ task eval:grade -- /path/to/workspace   # grade a skill-creator workspace
 ```
 skills/
 ├── detour/
-│   ├── README.md
 │   ├── detour-onboarding/
-│   │   ├── SKILL.md
-│   │   └── references/
-│   │       ├── android.md
-│   │       ├── flutter.md
-│   │       ├── ios.md
-│   │       └── react-native.md
-│   └── migrate-to-detour/
-│       ├── SKILL.md
-│       └── references/
-│           ├── android.md
-│           ├── flutter.md
-│           ├── ios.md
-│           └── react-native.md
+│   │   ├── references/
+│   │   │   ├── android.md
+│   │   │   ├── flutter.md
+│   │   │   ├── ios.md
+│   │   │   └── react-native.md
+│   │   └── SKILL.md
+│   ├── migrate-to-detour/
+│   │   ├── references/
+│   │   │   ├── android.md
+│   │   │   ├── flutter.md
+│   │   │   ├── ios.md
+│   │   │   └── react-native.md
+│   │   └── SKILL.md
+│   └── README.md
 ├── expo-horizon/
 │   └── SKILL.md
 ├── fishjam/
-│   ├── SKILL.md
-│   └── references/
-│       ├── js-server-sdk/
-│       │   ├── SKILL.md
-│       │   ├── agent.md
-│       │   ├── client.md
-│       │   ├── express-fastify.md
-│       │   ├── gemini-integration.md
-│       │   ├── livestream-and-moq.md
-│       │   ├── selective-subscriptions.md
-│       │   ├── webhooks.md
-│       │   └── ws-notifier.md
-│       ├── platform/
-│       │   ├── SKILL.md
-│       │   ├── auth-model.md
-│       │   ├── glossary.md
-│       │   ├── lifecycle-flow.md
-│       │   ├── llms-and-docs.md
-│       │   ├── notifications-taxonomy.md
-│       │   ├── notifier-vs-webhook.md
-│       │   ├── rest-endpoints.md
-│       │   ├── room-types.md
-│       │   └── sandbox-vs-production.md
-│       ├── python-server-sdk/
-│       │   ├── SKILL.md
-│       │   ├── agent.md
-│       │   ├── client.md
-│       │   ├── fastapi.md
-│       │   ├── gemini-integration.md
-│       │   ├── livestream-and-moq.md
-│       │   ├── notifier.md
-│       │   ├── selective-subscriptions.md
-│       │   └── webhooks.md
-│       ├── react-client/
-│       │   ├── SKILL.md
-│       │   ├── connection.md
-│       │   ├── custom-sources.md
-│       │   ├── data-and-events.md
-│       │   ├── devices.md
-│       │   ├── livestream.md
-│       │   ├── peers-and-tracks.md
-│       │   ├── provider.md
-│       │   ├── simulcast-and-bandwidth.md
-│       │   └── ts-client-escape.md
-│       └── react-native-client/
-│           ├── SKILL.md
-│           ├── audio-output.md
-│           ├── callkit.md
-│           ├── example-projects.md
-│           ├── foreground-service.md
-│           ├── mobile-hook-overrides.md
-│           ├── native-setup.md
-│           ├── permissions.md
-│           ├── picture-in-picture.md
-│           ├── rtcview.md
-│           └── screen-sharing.md
-├── haptics/
-│   ├── SKILL.md
-│   └── references/
-│       ├── android/
-│       │   ├── SKILL.md
-│       │   ├── api-overview.md
-│       │   ├── gesture-haptics.md
-│       │   ├── pattern-composer.md
-│       │   ├── presets-guide.md
-│       │   └── types-reference.md
-│       ├── common/
-│       │   ├── design-principles.md
-│       │   ├── gesture-haptics.md
-│       │   ├── preset-tags.md
-│       │   └── presets-guide.md
-│       ├── ios/
-│       │   ├── SKILL.md
-│       │   ├── api-overview.md
-│       │   ├── gesture-haptics.md
-│       │   ├── pattern-composer.md
-│       │   └── presets-guide.md
-│       └── react-native/
-│           ├── SKILL.md
-│           ├── api-overview.md
-│           ├── gesture-haptics.md
-│           ├── migration.md
-│           └── presets-guide.md
+│   ├── references/
+│   │   ├── js-server-sdk/
+│   │   │   ├── agent.md
+│   │   │   ├── client.md
+│   │   │   ├── express-fastify.md
+│   │   │   ├── gemini-integration.md
+│   │   │   ├── livestream-and-moq.md
+│   │   │   ├── selective-subscriptions.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── webhooks.md
+│   │   │   └── ws-notifier.md
+│   │   ├── platform/
+│   │   │   ├── auth-model.md
+│   │   │   ├── glossary.md
+│   │   │   ├── lifecycle-flow.md
+│   │   │   ├── llms-and-docs.md
+│   │   │   ├── notifications-taxonomy.md
+│   │   │   ├── notifier-vs-webhook.md
+│   │   │   ├── rest-endpoints.md
+│   │   │   ├── room-types.md
+│   │   │   ├── sandbox-vs-production.md
+│   │   │   └── SKILL.md
+│   │   ├── python-server-sdk/
+│   │   │   ├── agent.md
+│   │   │   ├── client.md
+│   │   │   ├── fastapi.md
+│   │   │   ├── gemini-integration.md
+│   │   │   ├── livestream-and-moq.md
+│   │   │   ├── notifier.md
+│   │   │   ├── selective-subscriptions.md
+│   │   │   ├── SKILL.md
+│   │   │   └── webhooks.md
+│   │   ├── react-client/
+│   │   │   ├── connection.md
+│   │   │   ├── custom-sources.md
+│   │   │   ├── data-and-events.md
+│   │   │   ├── devices.md
+│   │   │   ├── livestream.md
+│   │   │   ├── peers-and-tracks.md
+│   │   │   ├── provider.md
+│   │   │   ├── simulcast-and-bandwidth.md
+│   │   │   ├── SKILL.md
+│   │   │   └── ts-client-escape.md
+│   │   └── react-native-client/
+│   │       ├── audio-output.md
+│   │       ├── callkit.md
+│   │       ├── example-projects.md
+│   │       ├── foreground-service.md
+│   │       ├── mobile-hook-overrides.md
+│   │       ├── native-setup.md
+│   │       ├── permissions.md
+│   │       ├── picture-in-picture.md
+│   │       ├── rtcview.md
+│   │       ├── screen-sharing.md
+│   │       └── SKILL.md
+│   └── SKILL.md
 ├── moq-kit/
-│   ├── SKILL.md
-│   └── references/
-│       ├── data-tracks-android.md
-│       ├── data-tracks-ios.md
-│       ├── playback-android.md
-│       ├── playback-ios.md
-│       ├── publishing-android.md
-│       ├── publishing-ios.md
-│       ├── screen-capture-android.md
-│       └── screen-capture-ios.md
+│   ├── references/
+│   │   ├── data-tracks-android.md
+│   │   ├── data-tracks-ios.md
+│   │   ├── playback-android.md
+│   │   ├── playback-ios.md
+│   │   ├── publishing-android.md
+│   │   ├── publishing-ios.md
+│   │   ├── screen-capture-android.md
+│   │   └── screen-capture-ios.md
+│   └── SKILL.md
+├── pulsar-haptics/
+│   ├── references/
+│   │   └── expo-haptics-to-pulsar-migration.md
+│   └── SKILL.md
 ├── radon-mcp/
-│   ├── SKILL.md
-│   └── references/
-│       ├── get-library-description.md
-│       ├── query-documentation.md
-│       ├── reload-application.md
-│       ├── view-application-logs.md
-│       ├── view-component-tree.md
-│       ├── view-network-logs.md
-│       ├── view-network-request-details.md
-│       └── view-screenshot.md
+│   ├── references/
+│   │   ├── get-library-description.md
+│   │   ├── query-documentation.md
+│   │   ├── reload-application.md
+│   │   ├── view-application-logs.md
+│   │   ├── view-component-tree.md
+│   │   ├── view-network-logs.md
+│   │   ├── view-network-request-details.md
+│   │   └── view-screenshot.md
+│   └── SKILL.md
 ├── react-native-best-practices/
+│   ├── references/
+│   │   ├── animations/
+│   │   │   ├── animation-functions.md
+│   │   │   ├── animations-performance.md
+│   │   │   ├── animations.md
+│   │   │   ├── canvas-animations.md
+│   │   │   ├── canvas-atlas.md
+│   │   │   ├── gpu-animations.md
+│   │   │   ├── layout-animations.md
+│   │   │   ├── scroll-and-events.md
+│   │   │   ├── SKILL.md
+│   │   │   └── svg-animations.md
+│   │   ├── audio/
+│   │   │   ├── audio.md
+│   │   │   ├── effects-and-analysis.md
+│   │   │   ├── playback.md
+│   │   │   ├── recording.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── system-and-notifications.md
+│   │   │   └── worklets.md
+│   │   ├── enable-worklets-bundle-mode/
+│   │   │   ├── references/
+│   │   │   │   ├── patching-bun.md
+│   │   │   │   ├── patching-patch-package.md
+│   │   │   │   ├── patching-pnpm.md
+│   │   │   │   ├── patching-yarn-berry.md
+│   │   │   │   └── uniwind-remap-workaround.md
+│   │   │   └── SKILL.md
+│   │   ├── gestures/
+│   │   │   ├── continuous-gestures.md
+│   │   │   ├── gesture-composition.md
+│   │   │   ├── gestures.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── swipeable-and-drawer.md
+│   │   │   ├── tap-handling.md
+│   │   │   ├── testing.md
+│   │   │   └── v2-to-v3-migration.md
+│   │   ├── jsi/
+│   │   │   ├── calling-js-and-async.md
+│   │   │   ├── casting-and-serialization.md
+│   │   │   ├── core-types.md
+│   │   │   ├── cpp-memory-patterns.md
+│   │   │   ├── debugging-and-pitfalls.md
+│   │   │   ├── module-approaches.md
+│   │   │   ├── overview.md
+│   │   │   ├── performance.md
+│   │   │   ├── setup-and-templates.md
+│   │   │   ├── SKILL.md
+│   │   │   └── threading-safety.md
+│   │   ├── multithreading/
+│   │   │   ├── setup-and-advanced.md
+│   │   │   ├── shared-memory.md
+│   │   │   ├── SKILL.md
+│   │   │   └── threading-api.md
+│   │   ├── on-device-ai/
+│   │   │   ├── llm.md
+│   │   │   ├── setup.md
+│   │   │   ├── SKILL.md
+│   │   │   ├── speech.md
+│   │   │   └── vision.md
+│   │   ├── rich-text/
+│   │   │   └── SKILL.md
+│   │   └── svg/
+│   │       ├── SKILL.md
+│   │       ├── svg.md
+│   │       └── when-to-use.md
 │   ├── README.md
-│   ├── SKILL.md
-│   └── references/
-│       ├── animations/
-│       │   ├── SKILL.md
-│       │   ├── animation-functions.md
-│       │   ├── animations-performance.md
-│       │   ├── animations.md
-│       │   ├── canvas-animations.md
-│       │   ├── canvas-atlas.md
-│       │   ├── gpu-animations.md
-│       │   ├── layout-animations.md
-│       │   ├── scroll-and-events.md
-│       │   └── svg-animations.md
-│       ├── audio/
-│       │   ├── SKILL.md
-│       │   ├── audio.md
-│       │   ├── effects-and-analysis.md
-│       │   ├── playback.md
-│       │   ├── recording.md
-│       │   ├── system-and-notifications.md
-│       │   └── worklets.md
-│       ├── enable-worklets-bundle-mode/
-│       │   ├── SKILL.md
-│       │   └── references/
-│       │       ├── patching-bun.md
-│       │       ├── patching-patch-package.md
-│       │       ├── patching-pnpm.md
-│       │       ├── patching-yarn-berry.md
-│       │       └── uniwind-remap-workaround.md
-│       ├── gestures/
-│       │   ├── SKILL.md
-│       │   ├── continuous-gestures.md
-│       │   ├── gesture-composition.md
-│       │   ├── gestures.md
-│       │   ├── swipeable-and-drawer.md
-│       │   ├── tap-handling.md
-│       │   ├── testing.md
-│       │   └── v2-to-v3-migration.md
-│       ├── haptics/
-│       │   ├── SKILL.md
-│       │   ├── api-overview.md
-│       │   ├── common/
-│       │   │   ├── design-principles.md
-│       │   │   ├── gesture-haptics.md
-│       │   │   ├── preset-tags.md
-│       │   │   └── presets-guide.md
-│       │   ├── gesture-haptics.md
-│       │   ├── migration.md
-│       │   └── presets-guide.md
-│       ├── jsi/
-│       │   ├── SKILL.md
-│       │   ├── calling-js-and-async.md
-│       │   ├── casting-and-serialization.md
-│       │   ├── core-types.md
-│       │   ├── cpp-memory-patterns.md
-│       │   ├── debugging-and-pitfalls.md
-│       │   ├── module-approaches.md
-│       │   ├── overview.md
-│       │   ├── performance.md
-│       │   ├── setup-and-templates.md
-│       │   └── threading-safety.md
-│       ├── multithreading/
-│       │   ├── SKILL.md
-│       │   ├── setup-and-advanced.md
-│       │   ├── shared-memory.md
-│       │   └── threading-api.md
-│       ├── on-device-ai/
-│       │   ├── SKILL.md
-│       │   ├── llm.md
-│       │   ├── setup.md
-│       │   ├── speech.md
-│       │   └── vision.md
-│       ├── rich-text/
-│       │   └── SKILL.md
-│       └── svg/
-│           ├── SKILL.md
-│           ├── svg.md
-│           └── when-to-use.md
+│   └── SKILL.md
 ├── react-native-moq/
-│   ├── SKILL.md
-│   └── references/
-│       ├── custom-tracks.md
-│       ├── imperative.md
-│       ├── playback.md
-│       └── publishing.md
+│   ├── references/
+│   │   ├── custom-tracks.md
+│   │   ├── imperative.md
+│   │   ├── playback.md
+│   │   └── publishing.md
+│   └── SKILL.md
 ├── rnrepo/
-│   ├── SKILL.md
-│   └── references/
-│       ├── configuration.md
-│       ├── installation.md
-│       └── troubleshooting.md
+│   ├── references/
+│   │   ├── configuration.md
+│   │   ├── installation.md
+│   │   └── troubleshooting.md
+│   └── SKILL.md
 └── typegpu/
-    ├── SKILL.md
-    └── references/
-        ├── advanced.md
-        ├── matrices.md
-        ├── noise.md
-        ├── pipelines.md
-        ├── sdf.md
-        ├── setup.md
-        ├── shaders.md
-        ├── textures.md
-        └── types.md
+    ├── references/
+    │   ├── advanced.md
+    │   ├── matrices.md
+    │   ├── noise.md
+    │   ├── pipelines.md
+    │   ├── sdf.md
+    │   ├── setup.md
+    │   ├── shaders.md
+    │   ├── textures.md
+    │   └── types.md
+    └── SKILL.md
 ```
 
 The top-level `SKILL.md` acts as a table of contents. Reference files load only when relevant to the current task, keeping the context window focused.

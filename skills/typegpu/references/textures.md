@@ -16,31 +16,40 @@ const tex = root.createTexture({
 ## Usage flags
 
 ```ts
-.$usage('sampled')  // TEXTURE_BINDING - read via textureSample/textureLoad
-.$usage('storage')  // STORAGE_BINDING - read/write as storage texture
-.$usage('render')   // RENDER_ATTACHMENT - render targets and resampling writes
+.$usage('sampled')   // TEXTURE_BINDING - read via textureSample/textureLoad
+.$usage('storage')   // STORAGE_BINDING - read/write as storage texture
+.$usage('render')    // RENDER_ATTACHMENT - render targets and image-source writes
+.$usage('transient') // TRANSIENT_ATTACHMENT | RENDER_ATTACHMENT - attachments never read back
+                     // (e.g. MSAA/depth intermediates); cannot combine with 'sampled'/'storage'
 ```
 
 Multiple: `.$usage('sampled', 'render')`.
+
+Escape hatch: `.$overrideFlags(GPUTextureUsage...)` replaces the inferred flags with raw WebGPU ones (don't call `$usage` after it).
 
 ---
 
 ## Writing data
 
 ```ts
-// Accepts: ImageBitmap, ImageData, HTMLCanvasElement, HTMLVideoElement,
-//          HTMLImageElement, or an array of them (for array textures).
-await texture.write(imageBitmap);
+// Image sources: ImageBitmap, ImageData, HTMLCanvasElement, HTMLVideoElement,
+// HTMLImageElement, OffscreenCanvas, VideoFrame - or an array of them
+// (one per layer for array/3D textures; each must match the layer size).
+// Image-source writes require 'render' usage.
+texture.write(imageBitmap);                     // source size must match - throws otherwise
+texture.write(imageBitmap, { fit: 'stretch' }); // resample the source to the texture size
 
-// If source size != texture size, 'render' usage is required (TypeGPU resamples).
-// If source size === texture size, 'render' is not needed.
+// Raw binary data: ArrayBuffer, TypedArray, or DataView ('render' not needed).
+// Bytes are copied verbatim in the texture's format layout (e.g. 4 bytes/pixel for rgba8unorm).
+texture.write(new Uint8Array([255, 0, 0, 255 /* ...one entry per pixel */]));
+texture.write(mipData, 1); // optional second arg: target mip level
 ```
 
 ---
 
 ## Mipmap generation
 
-Requires `mipLevelCount > 1` and `'render'` usage.
+2D textures only; requires `'render'` usage (throws without it). With `mipLevelCount: 1` the call is a warning + no-op.
 
 ```ts
 texture.generateMipmaps();           // all levels from level 0
@@ -56,6 +65,8 @@ texture.generateMipmaps(0, 4);       // levels 1, 2, 3 from level 0
 texture.clear();            // write zeros to all mip levels
 texture.clear(mipLevel);    // specific mip level
 ```
+
+**Cleanup:** `texture.destroy()`.
 
 ---
 
@@ -149,8 +160,13 @@ const sampler = root.createSampler({
   mipmapFilter?: 'nearest' | 'linear',
   lodMinClamp?:  number,
   lodMaxClamp?:  number,
-  compare?:      GPUCompareFunction,   // for comparison samplers
   maxAnisotropy?: number,              // 1-16
+});
+
+// Comparison sampler (shadow mapping) - separate constructor, `compare` required:
+const shadowSampler = root.createComparisonSampler({
+  compare: 'less',                     // GPUCompareFunction
+  magFilter: 'linear',
 });
 ```
 
@@ -192,3 +208,18 @@ const layout = tgpu.bindGroupLayout({
 });
 // Compute shader: std.textureStore(layout.$.output, coords, d.vec4f(r, g, b, 1));
 ```
+
+### Depth comparison (shadow mapping)
+
+```ts
+const layout = tgpu.bindGroupLayout({
+  shadowMap:     { texture: d.textureDepth2d() },
+  shadowSampler: { sampler: 'comparison' },
+});
+// Shader: std.textureSampleCompare(layout.$.shadowMap, layout.$.shadowSampler, uv, refDepth)
+// returns the comparison result in [0, 1]; textureSampleCompareLevel for explicit-LOD variants.
+```
+
+### External texture (video)
+
+Layout entry `{ frame: { externalTexture: d.textureExternal() } }`, bound to a `GPUExternalTexture` (`device.importExternalTexture({ source: video })`); sample with `std.textureSampleBaseClampToEdge`.

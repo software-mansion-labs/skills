@@ -6,25 +6,23 @@
 import { randf, perlin2d, perlin3d } from '@typegpu/noise';
 ```
 
-Works in TypeGPU shaders (auto-linked on pipeline resolve) and in raw WGSL via `tgpu.resolve({ template, externals: { randf } })`.
+Works in TypeGPU shaders (auto-linked on pipeline resolve) and in raw WGSL via `tgpu.resolve({ template, externals: { randf } })` - see `references/pipelines.md` for the full resolve API.
 
 ## PRNG (`randf`)
 
-`randf.sample()` returns a uniform `f32` in `[0, 1)`. Each thread has its own generator state - **seed each thread differently** or they all produce the same sequence (usually a bug). Seed once at the top from something thread-unique (pixel position, global invocation id, hashed instance index).
+`randf.sample()` returns a uniform `f32` in `[0, 1)`. The default generator is **xoroshiro64\*\*** (seeds are hashed internally, so seed magnitude doesn't matter). Each thread has its own generator state - **seed each thread differently** or they all produce the same sequence (usually a bug). Seed once at the top from something thread-unique (pixel position, global invocation id, hashed instance index).
 
 ```ts
 const main = tgpu.fragmentFn({
   in: { pos: d.builtin.position },
   out: d.vec4f,
 })(({ pos }) => {
-  randf.seed2(pos.xy.mul(0.001)); // unique per pixel; keep magnitude small
+  randf.seed2(pos.xy); // unique sequence per pixel
   const r = randf.sample();
   const g = randf.sample();
   return d.vec4f(r, g, 0, 1);
 });
 ```
-
-**Seed magnitude matters.** Float precision means large seeds repeat quickly. Keep seeds in `[-1000, 1000]`, ideally `[0, 1]`. For pixel coordinates, multiply by `~0.001`; for global invocation ids, divide by dispatch size.
 
 ### Seed functions
 
@@ -35,7 +33,11 @@ const main = tgpu.fragmentFn({
 | `randf.seed3(v)` | `d.v3f` |
 | `randf.seed4(v)` | `d.v4f` |
 
-Canonical compute-shader pattern: `seed2(globalInvocationId.xy / dispatchSize.xy)`.
+Canonical compute-shader pattern: `seed2(d.vec2f(gid.xy))`.
+
+A seed built only from thread-unique values makes every dispatch replay the identical sequence (fine for static noise, a bug for animation). For per-frame variation, mix a time or frame-count uniform into the seed: `randf.seed3(d.vec3f(pos.xy, time.$))`.
+
+The generator is swappable via `randomGeneratorSlot`: `root.with(randomGeneratorSlot, gen)`
 
 ## Distributions
 
@@ -87,7 +89,7 @@ const main = tgpu.fragmentFn({
   in: { pos: d.builtin.position },
   out: d.vec4f,
 })(({ pos }) => {
-  const n = perlin2d.sample(pos.xy.mul(0.05)); // "interesting" scale ~1 unit/cell
+  const n = perlin2d.sample(pos.xy * 0.05);   // "interesting" scale ~1 unit/cell
   return d.vec4f(n * 0.5 + 0.5, 0, 0, 1);     // remap [-1,1] to [0,1]
 });
 ```
@@ -108,6 +110,8 @@ const pipeline = root
   .pipe(cache.inject())
   .createComputePipeline({ compute: main });
 ```
+
+`root.pipe(transform)` applies a configuration function (a bundle of slot/accessor bindings, like `cache.inject()` returns) to the root's configuration chain - equivalent to the corresponding `.with(...)` calls.
 
 Inside `main`, `perlin3d.sample(pos)` reads from the cache automatically - no shader code change. Sampling wraps at the domain boundary. Use `perlin2d.staticCache({ root, size: d.vec2u(...) })` for 2D.
 

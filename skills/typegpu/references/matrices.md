@@ -35,6 +35,8 @@ vec3.normalize(dir, dir);        // in-place
 
 > Requires `wgpu-matrix >= 3.3.0`.
 
+For building matrices *inside shaders* (no CPU round-trip), `std` has `identity2/3/4`, `translation4`, `scaling4`, `rotationX4/Y4/Z4`, `transpose`, `determinant` — see `references/std.md`.
+
 Without `dst`, `wgpu-matrix` allocates a new `Float32Array` per call. In a render loop doing 3-6 matrix ops per frame, that's 200+ allocations/sec - enough for GC stutters, just like per-frame `createView`/`createBindGroup`. Allocate once at setup, reuse forever.
 
 ---
@@ -45,7 +47,7 @@ WGSL matrices are column-major in memory. Key implications:
 
 - **Constructor order.** `d.mat4x4f(c0, c1, c2, c3)` takes four columns. If you expected row-major (numpy/HLSL), you'll get a transpose.
 - **`mat * vec` is column x column.** `M * v` applies `M`'s transform. Composition: `projection * view * model * position`.
-- **Shader element access.** `mat[i]` is not allowed - use `mat.columns[i]` for the i-th column, `mat.columns[c][r]` for an element.
+- **Shader element access.** `mat[i]` is not allowed - use `mat.columns[i]` for the i-th column, `mat.columns[c][r]` for an element. (Flat `mat[i]` works only on CPU-side instances, which is what makes wgpu-matrix interop possible - not inside `'use gpu'`.)
 - **`Float32Array` layouts** (raw byte writes):
 
   | Schema | Floats | Layout |
@@ -123,9 +125,11 @@ function updateCamera(eye: Float32Array, target: Float32Array, up: Float32Array,
   mat4.invert(view, viewInv);
   mat4.perspective(Math.PI / 4, aspect, 0.1, 1000, proj);
   mat4.invert(proj, projInv);
-  cameraBuffer.write(raw); // bytes straight through - no serialization
+  cameraBuffer.write(raw.buffer); // bytes straight through - no serialization
 }
 ```
+
+For struct schemas, `.write()` accepts a record or an `ArrayBuffer` - pass `raw.buffer`, not the `Float32Array` view (vector/matrix/array schemas accept TypedArrays directly).
 
 Layout notes:
 - `mat4x4f` is 16 floats each, packed - subarrays `(0,16)`, `(16,32)`, etc. align cleanly.

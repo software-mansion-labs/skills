@@ -41,9 +41,11 @@ const sampleColor = (samp: d.sampler, tex: d.texture2d<d.F32>, uv: d.v2f) => {
   'use gpu';
   return std.textureSample(tex, samp, uv);
 };
+```
 
+```ts
 // tgpu.fn — factory calls in the schema array:
-const sampleColor = tgpu.fn([d.sampler(), d.texture2d(d.f32), d.vec2f], d.vec4f)(
+const sampleColorFn = tgpu.fn([d.sampler(), d.texture2d(d.f32), d.vec2f], d.vec4f)(
   (samp, tex, uv) => { 'use gpu'; return std.textureSample(tex, samp, uv); }
 );
 ```
@@ -81,6 +83,10 @@ const lut: TgpuReadonly<typeof LutArray> = root.createReadonly(LutArray);
 
 `typeof Schema` is the idiomatic generic argument — `Config`, `ParticleArray`, etc. are schema objects created with `d.struct(...)` or `d.arrayOf(...)`.
 
+These bindings are also accepted directly as `root.createBindGroup` entries (matching a `uniform`/`storage` layout entry with the right access) — no need to reach for the underlying buffer.
+
+The same binding types are reachable from a manually created buffer: `buffer.as('uniform' | 'readonly' | 'mutable')` returns a `TgpuUniform`/`TgpuReadonly`/`TgpuMutable` (requires the matching `$usage`) — the bridge when you hold a `TgpuBuffer` but need `.$` access in a shader. Runtime type guards: `isBufferBinding`, `isUniformBinding`, `isReadonlyBinding`, `isMutableBinding`.
+
 ### Function parameters
 
 Constrain only what you need:
@@ -97,6 +103,14 @@ function runSim(state: TgpuMutable<typeof SimState>) { ... }
 ```
 
 ---
+
+## Pointer schemas
+
+Wrap a schema in the pointer constructor for the target address space to declare pointer-typed `tgpu.fn` parameters (out-params, atomics helpers): `d.ptrFn(schema)` (function-local), `d.ptrPrivate`, `d.ptrWorkgroup`, `d.ptrStorage`, `d.ptrUniform`. Workgroup/storage/uniform pointers as function parameters need WGSL's `unrestricted_pointer_parameters` extension — enabled automatically when available.
+
+## Layout attribute schemas
+
+`d.align(n, schema)` and `d.size(n, schema)` override alignment/size to match an externally defined WGSL layout — they take effect only as struct field types, not on standalone schemas. `d.location(n, schema)` pins an IO location; `d.interpolate('flat', schema)` sets interpolation (required for integer inter-stage varyings); `d.invariant(schema)` marks the position builtin invariant.
 
 ## CPU-side texture types (`TgpuTexture<TProps>`)
 

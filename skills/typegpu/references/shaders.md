@@ -1,5 +1,25 @@
 # TypeGPU Shader Authoring
 
+## Contents
+
+- **`tgpu.fn` vs plain callback** — when to pin a signature; WGSL-implemented bodies as an escape hatch
+- **Polymorphism and branch pruning** — one function, many WGSL variants
+- **Syntax limitations inside `'use gpu'`** — unsupported TS features; ternaries; `&&` and `||`
+- **Register pressure** — why large locals cost occupancy
+- **Arithmetic operators** — `+ - * / %` on vectors/matrices, `tsover`, infix fallbacks
+- **Numeric literal gotcha** — when `1.0` degrades to `abstractInt`
+- **Do not assign textures or samplers to variables** — use them directly
+- **Iteration** — `for...of`, `std.range`, `tgpu.unroll` (numeric ranges, supported iterables)
+- **Arrays inside shaders**
+- **`tgpu.comptime`** — compile-time evaluation and pruning
+- **Shader entrypoints** — `tgpu.computeFn`, `tgpu.vertexFn`, `tgpu.fragmentFn`, with the builtin lists
+- **Outer-scope capture** — captured values are inlined as WGSL literals
+- **`std` standard library** — pointer to the full listing
+- **`console.log` in shaders**
+- **GPU-scoped variables** — `workgroupVar`, `privateVar`, `const`
+- **Values vs references** — the most common source of `ResolutionError`
+- **Idiomatic shader code** — vector ops, struct constructors
+
 ## `tgpu.fn` vs plain callback
 
 | | Plain callback | `tgpu.fn` |

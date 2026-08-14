@@ -1,5 +1,20 @@
 # TypeGPU Pipelines and Vertex Buffers
 
+## Contents
+
+- **Vertex layouts** — `tgpu.vertexLayout`, step modes, compact formats for `unstruct` / `disarrayOf`
+- **Wiring layouts into a render pipeline** — the `attribs` spread
+- **Binding vertex buffers**
+- **Loading 3D models** — `@loaders.gl`, scattering attributes with `common.writeSoA`
+- **Index buffers**
+- **Depth / stencil**
+- **Multiple render targets (MRT)** — named-record `out`, single-target shorthand, per-target blend and writeMask, custom `fragDepth` output, name-matching rules, why fragment output is always 4-component
+- **`common.fullScreenTriangle`**
+- **Pipeline initialization** — `initSync` / `initAsync` and moving cost to a loading screen
+- **GPU timing** — pointer to `timing.md`
+- **Multiple pipelines per pass / batched submission** — pointer to `encoders.md`
+- **Resolve API** — WGSL code generation
+
 ## Vertex layouts
 
 `tgpu.vertexLayout(schemaFn, stepMode?)` describes how a vertex buffer maps to shader `in` parameters.

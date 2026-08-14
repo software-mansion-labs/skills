@@ -15,7 +15,7 @@ This skill targets TypeGPU `0.12`. If the user's project is on an older release,
 ## When to read reference files
 
 **Read before writing virtually any shader or GPU function** — these two cover the rules that trip people up most:
-- `references/types.md` — abstract type resolution, exactly when `d.f32()` is required vs redundant, sampler/texture schemas for `tgpu.fn` signatures, CPU-side `TgpuBuffer`/`TgpuTexture` TypeScript types. **If you skip this, you'll hit type errors.**
+- `references/types.md` — abstract type resolution, exactly when `d.f32()` is required vs redundant, vector constructor overloads, sampler/texture schemas for `tgpu.fn` signatures, CPU-side `TgpuBuffer`/`TgpuTexture` TypeScript types. **If you skip this, you'll hit type errors.**
 - `references/shaders.md` — loops (`std.range`, `tgpu.unroll`), ternary/logical-operator semantics, `tgpu.comptime`, outer-scope capture rules, complete builtin reference for all three shader stages, `console.log`. **Read this for any non-trivial shader logic.**
 - `references/std.md` — full `std` function listing (math, comparison/boolean vectors, matrix builders, texture, atomics, packing, subgroups, environment probes). Consult before hand-rolling any math/utility function.
 
@@ -71,25 +71,7 @@ d.mat2x2f   d.mat3x3f   d.mat4x4f
 
 Instance types: `d.vec3f()` -> `d.v3f`, `d.mat4x4f()` -> `d.m4x4f`.
 
-**Vector constructors are richly overloaded - use them.** They compose from any mix of scalars and smaller vectors that adds up to the right component count:
-
-```ts
-d.vec3f()              // zero-init: (0, 0, 0)
-d.vec3f(1)             // broadcast:  (1, 1, 1)
-d.vec3f(1, 2, 3)       // individual components
-d.vec3f(someVec2, 1)   // vec2 + scalar
-d.vec3f(1, someVec2)   // scalar + vec2
-
-d.vec4f()              // zero-init: (0, 0, 0, 0)
-d.vec4f(0.5)           // broadcast:  (0.5, 0.5, 0.5, 0.5)
-d.vec4f(rgb, 1)        // vec3 + scalar (common: color + alpha)
-d.vec4f(v2a, v2b)      // two vec2s
-d.vec4f(1, uv, 0)      // scalar + vec2 + scalar
-```
-
-Swizzles (`.xy`, `.zw`, `.rgb`, `.ba`, etc.) return vector instances that work as constructor arguments: `d.vec4f(pos.xy, vel.zw)`.
-
-**Prefer these overloads over manual component decomposition.** Instead of `d.vec3f(v.x, v.y, newZ)`, write `d.vec3f(v.xy, newZ)`.
+**Vector constructors are richly overloaded** — they compose from any mix of scalars, smaller vectors, and swizzles that adds up to the right component count (`d.vec4f(rgb, 1)`, `d.vec3f(v.xy, newZ)`). Prefer them over manual component decomposition; full overload listing in `references/types.md`.
 
 ### Compound types
 ```ts
@@ -185,13 +167,7 @@ const myFragment = tgpu.fragmentFn({
 
 Vertex `in` may include builtins: `d.builtin.vertexIndex`, `d.builtin.instanceIndex`.
 
-Full shader syntax, branch pruning, the `std` library, and type inference: see `references/shaders.md`.
-
----
-
-**Values vs references** — the most common source of `ResolutionError`. See `references/shaders.md`.
-
-**Idiomatic patterns** (vector ops, struct constructors, register pressure): see `references/shaders.md`.
+Full shader syntax, branch pruning, the `std` library, type inference, and idiomatic patterns (vector ops, struct constructors, register pressure): see `references/shaders.md`. Read it before any non-trivial shader — values-vs-references handling lives there and is the most common source of `ResolutionError`.
 
 ---
 

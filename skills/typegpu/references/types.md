@@ -23,6 +23,28 @@ So `d.f32(0.88)` as an arithmetic operand is always redundant — write `0.88`. 
 
 Type annotations are stripped before transpilation. WGSL type comes from the runtime value — the constructor called, the buffer schema, or the abstract literal type. `let x: d.v3f` still errors; the annotation does nothing.
 
+## Vector constructors are richly overloaded — use them
+
+They compose from any mix of scalars and smaller vectors that adds up to the right component count:
+
+```ts
+d.vec3f()              // zero-init: (0, 0, 0)
+d.vec3f(1)             // broadcast:  (1, 1, 1)
+d.vec3f(1, 2, 3)       // individual components
+d.vec3f(someVec2, 1)   // vec2 + scalar
+d.vec3f(1, someVec2)   // scalar + vec2
+
+d.vec4f()              // zero-init: (0, 0, 0, 0)
+d.vec4f(0.5)           // broadcast:  (0.5, 0.5, 0.5, 0.5)
+d.vec4f(rgb, 1)        // vec3 + scalar (common: color + alpha)
+d.vec4f(v2a, v2b)      // two vec2s
+d.vec4f(1, uv, 0)      // scalar + vec2 + scalar
+```
+
+Swizzles (`.xy`, `.zw`, `.rgb`, `.ba`, etc.) return vector instances that work as constructor arguments: `d.vec4f(pos.xy, vel.zw)`.
+
+**Prefer these overloads over manual component decomposition.** Instead of `d.vec3f(v.x, v.y, newZ)`, write `d.vec3f(v.xy, newZ)`.
+
 ---
 
 ## Samplers and textures — three contexts, different syntax

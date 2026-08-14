@@ -58,7 +58,7 @@ const root = await tgpu.init({
 root.enabledFeatures.has('timestamp-query'); // ReadonlySet<GPUFeatureName>
 ```
 
-**Every `requiredFeatures` entry shrinks the set of devices the app runs on** — init fails outright on hardware without it. Require a feature only when that trade-off is deliberate. Otherwise request it via `optionalFeatures` and write both paths, branching on a captured `root.enabledFeatures.has(...)` result — it's comptime-known, so branch pruning emits only the taken path in the generated WGSL:
+**Every `requiredFeatures` entry shrinks the set of devices the app runs on** — init fails outright on hardware without it. Require a feature only when that trade-off is deliberate. Otherwise request it via `optionalFeatures` and write both paths, branching on a captured `root.enabledFeatures.has(...)` result. The result is comptime-known, so branch pruning emits only reachable statements for the selected path:
 
 ```ts
 const hasF16 = root.enabledFeatures.has('shader-f16');
@@ -67,10 +67,9 @@ const process = (x: number) => {
   'use gpu';
   if (hasF16) {
     return fastF16Path(x);   // only the taken branch survives in WGSL
-  } else {
-    return f32Path(x);       // keep the fallback in `else` - code after the
-  }                          // `if` is not part of the pruned branch and
-};                           // would be emitted (unreachably) either way
+  }
+  return f32Path(x);         // emitted only when this path remains reachable
+};
 ```
 
 ---

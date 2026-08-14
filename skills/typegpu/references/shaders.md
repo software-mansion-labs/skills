@@ -56,7 +56,7 @@ area(d.vec3f(3, 4, 5)); // fn area_vec3f(shape: vec3f) -> f32 { return shape.x *
 
 Branch pruning also applies to compile-time-known captured values - `if` (and ternary) conditions resolvable at compile time, including inequality comparisons, keep only the winning branch in WGSL. This is how you write configurable shaders with no runtime overhead.
 
-Pruning removes only the dead *branch* - statements after the `if` are emitted regardless. For a comptime two-path split, put the fallback in an explicit `else` rather than after an early return, or the untaken path lands in WGSL as unreachable code.
+Pruning follows terminating control flow. When a compile-time-selected branch returns, statements after the `if` are emitted only for specializations where they remain reachable. This makes both an explicit `if`/`else` and an early-return form valid for comptime two-path splits.
 
 > **Caution:** each unique type combination generates a new WGSL function. Calling the same polymorphic function with many signatures bloats output. Use `tgpu.fn` to pin the signature when polymorphism isn't needed.
 

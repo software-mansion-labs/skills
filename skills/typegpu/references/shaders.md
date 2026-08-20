@@ -1,5 +1,25 @@
 # TypeGPU Shader Authoring
 
+## Contents
+
+- **`tgpu.fn` vs plain callback** — when to pin a signature; WGSL-implemented bodies as an escape hatch
+- **Polymorphism and branch pruning** — one function, many WGSL variants
+- **Syntax limitations inside `'use gpu'`** — unsupported TS features; ternaries; `&&` and `||`
+- **Register pressure** — why large locals cost occupancy
+- **Arithmetic operators** — `+ - * / %` on vectors/matrices, `tsover`, infix fallbacks
+- **Numeric literal gotcha** — when `1.0` degrades to `abstractInt`
+- **Do not assign textures or samplers to variables** — use them directly
+- **Iteration** — `for...of`, `std.range`, `tgpu.unroll` (numeric ranges, supported iterables)
+- **Arrays inside shaders**
+- **`tgpu.comptime`** — compile-time evaluation and pruning
+- **Shader entrypoints** — `tgpu.computeFn`, `tgpu.vertexFn`, `tgpu.fragmentFn`, with the builtin lists
+- **Outer-scope capture** — captured values are inlined as WGSL literals
+- **`std` standard library** — pointer to the full listing
+- **`console.log` in shaders**
+- **GPU-scoped variables** — `workgroupVar`, `privateVar`, `const`
+- **Values vs references** — the most common source of `ResolutionError`
+- **Idiomatic shader code** — vector ops, struct constructors
+
 ## `tgpu.fn` vs plain callback
 
 | | Plain callback | `tgpu.fn` |
@@ -23,6 +43,16 @@ const scale2D = tgpu.fn([d.vec2f, d.f32], d.vec2f)((v, factor) => {
 });
 ```
 
+### WGSL-implemented functions (escape hatch — prefer TS bodies)
+
+`tgpu.fn` also accepts a WGSL body as a template literal. **Write function bodies in TypeScript by default**; the WGSL form is only for edge cases — a WGSL builtin `std` doesn't expose, or dropping in existing WGSL verbatim. External TypeGPU objects referenced in the body are wired in with `.$uses({...})` (callable at most once per function):
+
+```ts
+const getGradient = tgpu.fn([d.f32], d.vec3f)`(t) {
+  return mix(startColor, endColor, t);
+}`.$uses({ startColor, endColor });
+```
+
 ---
 
 ## Polymorphism and branch pruning
@@ -44,7 +74,9 @@ area(d.vec2f(3, 4));    // fn area_vec2f(shape: vec2f) -> f32 { return shape.x *
 area(d.vec3f(3, 4, 5)); // fn area_vec3f(shape: vec3f) -> f32 { return shape.x * shape.y * shape.z; }
 ```
 
-Branch pruning also applies to compile-time-known captured values - `if` conditions resolvable at compile time keep only the winning branch in WGSL. This is how you write configurable shaders with no runtime overhead.
+Branch pruning also applies to compile-time-known captured values - `if` (and ternary) conditions resolvable at compile time, including inequality comparisons, keep only the winning branch in WGSL. This is how you write configurable shaders with no runtime overhead.
+
+Pruning follows terminating control flow. When a compile-time-selected branch returns, statements after the `if` are emitted only for specializations where they remain reachable. This makes both an explicit `if`/`else` and an early-return form valid for comptime two-path splits.
 
 > **Caution:** each unique type combination generates a new WGSL function. Calling the same polymorphic function with many signatures bloats output. Use `tgpu.fn` to pin the signature when polymorphism isn't needed.
 
@@ -54,7 +86,6 @@ Branch pruning also applies to compile-time-known captured values - `if` conditi
 
 | Unsupported | Alternative |
 |---|---|
-| `a ? b : c` (runtime ternary) | `std.select(falseVal, trueVal, condition)` |
 | Object/array spreading (`{...obj}`) | Build the result manually |
 | Inline functions / arrow fns | Define outside and capture |
 | Most Web APIs | Compile-time constants only (`Math.PI` is fine) |
@@ -62,22 +93,30 @@ Branch pruning also applies to compile-time-known captured values - `if` conditi
 | `async`/`await`, `Promise` | Not supported |
 | `try`/`catch` | Not supported |
 | `let x;` without initializer | `let x = d.f32(0)` - type must be inferrable |
+| Update as expression (`const a = i++`) | Split into two statements |
+| `$uses()` called more than once | Merge into a single call |
+
+### Ternaries
+
+- **Comptime-known condition** (captured JS value, slot, `comptime` result - equality *and* inequality comparisons): the dead branch is pruned from WGSL entirely.
+- **Runtime condition**: lowered to WGSL `select(falseVal, trueVal, cond)`. `select` evaluates **both** branches, so branches must be side-effect-free (no assignments, increments, effectful calls) and produce scalar or vector values - no structs, arrays, or matrices. Use `if`/`else` for anything heavier.
+- `std.select(falseVal, trueVal, cond)` is the explicit equivalent: branches are limited to scalars/vectors, and both arguments always evaluate.
+
+### `&&` and `||`
+
+When the left-hand side is comptime-known (a slot, simple accessor, or captured external), the expression is evaluated at compile time - JS short-circuit semantics apply and the dead side is pruned from WGSL. Otherwise both operands must be booleans and the operators compile to WGSL's strictly-boolean `&&`/`||` - value-returning JS idioms like `maybeVec || fallback` don't work at runtime; use `std.select` or `if`.
 
 ---
 
 ## Register pressure
 
-When the GPU runs out of registers per thread it spills to slow memory, which can crater performance. Modern shader compilers (LLVM, SPIR-V, DXC) are smart — SSA optimisation means naming an intermediate `const` costs nothing, and aggressive inlining erases function-call boundaries before register allocation. Don't contort your code trying to outsmart them.
-
-The one thing compilers can't fix: **variable liveness**. A `mat4x4f` holds 16 registers for its entire live range. If you compute it at the top of a function and only use it at the bottom, those registers are locked out for everything in between. Compute large values close to where they're consumed.
-
-Vector ops and swizzles are still the right style — not because they pack registers differently (modern GPU hardware is scalar underneath), but because they express the math directly and let the compiler see the whole operation at once.
+When the GPU runs out of registers per thread it spills to slow memory, which can crater performance. Modern shader compilers are smart — naming an intermediate `const` costs nothing (SSA), and inlining erases call boundaries before register allocation — so don't contort your code to outsmart them. The one thing they can't fix is **variable liveness**: a `mat4x4f` holds 16 registers for its entire live range, so compute large values close to where they're consumed. Vector ops and swizzles are the right style because they express the math directly.
 
 ---
 
 ## Arithmetic operators
 
-With `tsover`, `+ - * / %` work on scalars, vectors, and matrices. Infix methods (`.add()`, `.mul()`) and `std` functions (`std.dot`, `std.mod`) are alternatives.
+`+ - * / %` on scalars, vectors, and matrices are the idiomatic TypeGPU style, used throughout this skill. Inside `'use gpu'` they always work at runtime (the build plugin handles them); `tsover` is what makes the IDE/typechecker accept them and enables them CPU-side — set it up by default (see `references/setup.md`). Infix methods (`.add()`, `.mul()`) and `std` functions (`std.dot`, `std.mod`) are the fallback for projects that genuinely can't use `tsover`.
 
 ```ts
 const a = d.vec3f(1, 2, 3);
@@ -89,17 +128,13 @@ const dot  = std.dot(a, b); // 32
 
 Division on primitives defaults to `f32`. Integer division: `d.i32(10 / 3)`.
 
+Bitwise and shift operators (`& | ^ << >> >>>`) work on integer scalars and vectors; `>>>` requires a `u32` left-hand side (where it's the same as `>>`).
+
 ---
 
 ## Numeric literal gotcha
 
-`.0` suffixes may be stripped by bundlers before transpilation:
-
-```ts
-let x = 1.0;       // BAD: "1.0" may become "1" -> abstract integer / i32
-let x = d.f32(1);  // OK
-let y = 1.1;       // OK - fractional part prevents integer interpretation
-```
+`.0` suffixes may be stripped by bundlers before transpilation: `let x = 1.0` can become `1` → abstract integer. Use `let x = d.f32(1)` (a fractional part like `1.1` is safe). Details in `references/types.md`.
 
 ---
 
@@ -128,6 +163,8 @@ for (const item of items.$) {
 }
 ```
 
+Classic C-style loops also work, and are the tool for runtime bounds: `for (let i = d.u32(0); i < count; i++) { ... }` (`std.range` below is comptime-only).
+
 ### `std.range` - numeric ranges for loops
 
 Generates a sequence of integers. Three forms:
@@ -144,7 +181,7 @@ Used directly in `for...of`, compiles to a WGSL `for` loop:
 for (const i of std.range(0, 8, 2)) {
   result += data.$[i];
 }
-// -> for (var i = 0i; i < 8i; i += 2i) { ... }
+// -> for (var i = 0u; i < 8u; i += 2u) { ... }  (i32 when any bound/step is negative)
 ```
 
 Descending ranges work with negative step: `std.range(10, -10, -1)`.
@@ -161,9 +198,9 @@ for (const dy of tgpu.unroll([-1, 0, 1])) {
 }
 ```
 
-Hard rules: **no `continue` or `break` inside an unrolled loop**, and the length must be known at compile time.
+Hard rules: **no `continue` or `break` targeting the unrolled loop itself** (a nested runtime loop inside the body may use them), and the length must be known at compile time.
 
-**Warning — register spill.** Unrolling generates straight-line code, and the GPU register file is finite. Too many iterations means the compiler spills registers to slow memory, which can tank performance worse than the loop overhead you were avoiding. As a rough ceiling: **keep unrolled counts under ~8–16 for anything inside a hot shader; ~27 is an upper bound.** If you find yourself unrolling more than that, a regular `for...of` with `std.range` is almost certainly the better call.
+**Warning — register spill.** Unrolled code is straight-line and the register file is finite. Keep unrolled counts roughly under ~8–16 in hot shaders (~27 as an upper bound); beyond that, a regular `for...of` with `std.range` is almost certainly better.
 
 #### Unrolling a numeric range
 
@@ -191,17 +228,7 @@ for (const i of tgpu.unroll(std.range(FBM_OCTAVES))) {
 | Iterable in a variable | `const arr = [1,2,3]; tgpu.unroll(arr)` | Indexed access into WGSL `array<...>` - still unrolled |
 | Buffers / accessors / `const` / `comptime` | `tgpu.unroll(acc.$)` | Works whenever length is known at compile time |
 
-#### Conditional unrolling
-
-Branch on a JS-side flag to pick between unrolled and regular - both branches are statically resolved, only one survives in WGSL:
-
-```ts
-const shouldUnroll = true;
-
-for (const x of shouldUnroll ? tgpu.unroll(arr) : arr) {
-  r += x;
-}
-```
+Conditional unrolling: `for (const x of shouldUnroll ? tgpu.unroll(arr) : arr)` - the JS-side flag is statically resolved, only one form survives in WGSL.
 
 ---
 
@@ -241,6 +268,8 @@ const material = tgpu.fn([d.vec3f], d.vec3f)((diffuse) => {
 
 The function passed to `tgpu.comptime` runs in JS - any JS APIs are fair game, but the return value must be a schema-typed value TypeGPU can embed. Comptime calls are not cached - each call is evaluated separately.
 
+Related: `tgpu.lazy(fn)` also runs JS at resolution time, but wraps a single deferred value (accessed via `.$`) instead of a callable - use it when a captured value isn't known at module-eval time.
+
 ---
 
 ## Shader entrypoints
@@ -256,6 +285,8 @@ tgpu.computeFn({
     wgid: d.builtin.workgroupId,          // vec3u
     lidx: d.builtin.localInvocationIndex, // u32
     nwg:  d.builtin.numWorkgroups,        // vec3u
+    gidx: d.builtin.globalInvocationIndex, // u32 - flat global thread index
+    wgidx: d.builtin.workgroupIndex,      // u32 - flat workgroup index
   },
 })((input) => { 'use gpu'; });
 ```
@@ -305,81 +336,13 @@ const check = (x: number) => { 'use gpu'; return x > threshold; };
 
 Anything that changes at runtime must go through a buffer, uniform, slot, or accessor.
 
+Captures aren't limited to plain identifiers - nested member access resolves too: `matrix.columns[0]`, `Math.sin`, `config.colors[2]`, and private class fields (`this.#field`) in class-owned functions.
+
 ---
 
 ## `std` standard library
 
-`std` wraps WGSL built-in functions ([WGSL spec section 16](https://www.w3.org/TR/WGSL/#builtin-functions)) plus some TypeGPU additions. The WGSL documentation applies.
-
-```ts
-import { std } from 'typegpu';
-```
-
-**Math**
-```ts
-std.abs   std.sign   std.floor   std.ceil   std.round   std.fract   std.trunc
-std.sqrt  std.inverseSqrt
-std.exp   std.exp2   std.log   std.log2   std.pow
-std.min   std.max   std.clamp(x, lo, hi)
-std.mix(a, b, t)              // linear interpolation
-std.smoothstep(edge0, edge1, x)
-std.step(edge, x)
-std.select(falseVal, trueVal, cond)
-```
-
-**Trig**
-```ts
-std.sin  std.cos  std.tan  std.asin  std.acos  std.atan  std.atan2
-std.sinh std.cosh std.tanh  std.degrees  std.radians
-```
-
-**Vector / matrix**
-```ts
-std.dot(a, b)         std.cross(a, b)      std.length(v)
-std.normalize(v)      std.distance(a, b)
-std.reflect(i, n)     std.refract(i, n, eta)
-std.faceForward(n, i, nRef)
-std.mul(mat, vec)     // matrix-vector multiply
-```
-
-**Texture** (see sampling rules below)
-```ts
-std.textureSample(view.$, sampler.$, uv)
-std.textureSampleLevel(view.$, sampler.$, uv, mipLevel)
-std.textureSampleGrad(view.$, sampler.$, uv, ddx, ddy)
-std.textureLoad(view.$, coords, mipLevel)
-std.textureStore(storageView.$, coords, value)
-std.textureDimensions(view.$)
-```
-
-**Atomic**
-```ts
-std.atomicLoad(ptr)         std.atomicStore(ptr, val)
-std.atomicAdd(ptr, val)     std.atomicSub(ptr, val)
-std.atomicMin(ptr, val)     std.atomicMax(ptr, val)
-std.atomicAnd(ptr, val)     std.atomicOr(ptr, val)     std.atomicXor(ptr, val)
-std.atomicExchange(ptr, val)
-std.atomicCompareExchangeWeak(ptr, cmp, val)
-```
-
-**Packing**
-```ts
-std.pack4x8snorm(v)   std.unpack4x8snorm(x)
-std.pack4x8unorm(v)   std.unpack4x8unorm(x)
-std.pack2x16snorm(v)  std.unpack2x16snorm(x)
-std.pack2x16unorm(v)  std.unpack2x16unorm(x)
-std.pack2x16float(v)  std.unpack2x16float(x)
-```
-
----
-
-## Texture sampling rules
-
-Sampling function reference table: see `references/textures.md`.
-
-- `textureSample` fails with a WGSL validation error if called inside a branch/loop whose condition depends on per-pixel data (fragment-only, must be uniform).
-- `textureSampleLevel` does **not** use implicit derivatives — pass `0` for single-mip textures, or the level you want. Any stage, non-uniform OK.
-- `textureSampleGrad` is the way to get auto-LOD in compute or non-uniform branches.
+`std` (`import { std } from 'typegpu'`) wraps WGSL built-in functions plus TypeGPU additions (environment probes, `std.copy`, `std.bitcast`, comparison/boolean vector helpers, in-shader matrix builders). Full function listing: `references/std.md`. Texture sampling stage/uniformity rules: `references/textures.md`.
 
 ---
 

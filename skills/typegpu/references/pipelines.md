@@ -1,5 +1,20 @@
 # TypeGPU Pipelines and Vertex Buffers
 
+## Contents
+
+- **Vertex layouts** — `tgpu.vertexLayout`, step modes, compact formats for `unstruct` / `disarrayOf`
+- **Wiring layouts into a render pipeline** — the `attribs` spread
+- **Binding vertex buffers**
+- **Loading 3D models** — `@loaders.gl`, scattering attributes with `common.writeSoA`
+- **Index buffers**
+- **Depth / stencil**
+- **Multiple render targets (MRT)** — named-record `out`, single-target shorthand, per-target blend and writeMask, custom `fragDepth` output, name-matching rules, why fragment output is always 4-component
+- **`common.fullScreenTriangle`**
+- **Pipeline initialization** — `initSync` / `initAsync` and moving cost to a loading screen
+- **GPU timing** — pointer to `timing.md`
+- **Multiple pipelines per pass / batched submission** — pointer to `encoders.md`
+- **Resolve API** — WGSL code generation
+
 ## Vertex layouts
 
 `tgpu.vertexLayout(schemaFn, stepMode?)` describes how a vertex buffer maps to shader `in` parameters.
@@ -141,7 +156,7 @@ pipeline
   .drawIndexed(6);
 ```
 
-Only `d.u16` and `d.u32` schemas are valid.
+Only arrays of `d.u16` or `d.u32` are valid.
 
 ---
 
@@ -297,9 +312,9 @@ pipeline
 - Keys in `withColorAttachment` must match `targets`. TypeScript rejects missing/extra entries.
 - Shaders authored with explicit `d.location(0, ...)` respect your manual indices (as long as they don't conflict with vertex-side locations).
 
-### Fragment output is always `d.vec4f`
+### Fragment output is always 4-component
 
-Even for formats with fewer than 4 channels (`r8unorm`, `rg16float`), the output is still `d.vec4f`. WebGPU drops unused channels.
+Even for formats with fewer than 4 channels (`r8unorm`, `rg16float`), the output is still `d.vec4f` (`d.vec4i`/`d.vec4u` for integer formats). WebGPU drops unused channels.
 
 ```ts
 const luminanceFrag = tgpu.fragmentFn({
@@ -313,7 +328,7 @@ root.createRenderPipeline({
 });
 ```
 
-This is a WebGPU rule, not a TypeGPU one - but it surprises people used to frameworks that derive output types from texture formats.
+TypeGPU's fragment `out` accepts only 4-component vectors (plus builtins) - it does not derive narrower output types from texture formats.
 
 ---
 
@@ -338,13 +353,46 @@ pipeline.withColorAttachment({ view: context }).draw(3);
 
 ---
 
-## Resolve API (WGSL code generation)
+## Pipeline initialization
 
-Generate the complete WGSL for a set of functions/pipelines - useful for debugging or integrating with other tools:
+Pipelines are lazy: shader resolution, module creation, and WebGPU pipeline creation all happen on the first `draw`/`dispatchWorkgroups`. To move that cost to a moment you control (e.g. a loading screen):
 
 ```ts
-const wgsl = tgpu.resolve([pipeline]);
-console.log(wgsl);
+pipeline.initSync();          // start initialization now (JS side + issue device work)
+await pipeline.initAsync();   // additionally wait until the device finishes - fully
+                              // avoids the first-use stall
 ```
 
-All transitive dependencies (helpers, layouts, buffers, constants) are included automatically.
+For small/medium shaders this makes no noticeable difference - use it only for large or numerous shaders.
+
+---
+
+## GPU timing
+
+`pipeline.withPerformanceCallback((start: bigint, end: bigint) => ...)` for quick one-off measurement; `root.createQuerySet('timestamp', n)` + `pipeline.withTimestampWrites(...)` for durable multi-pass timing. Requires the `timestamp-query` device feature; without it a warning is logged and timing is skipped. Allocation behavior, the `available` guard, and how to interpret overlapping pass timings: `references/timing.md`.
+
+---
+
+## Multiple pipelines per pass / batched submission
+
+`draw()` and `dispatchWorkgroups()` each record and submit their own single-pipeline pass. To batch several pipelines into one render/compute pass, or several passes into one submission, use the typed command encoder API (`root['~unstable'].createCommandEncoder()`) - see `references/encoders.md`. Render bundles and raw-WebGPU encoder interop live there too.
+
+---
+
+## Resolve API (WGSL code generation)
+
+`tgpu.resolve` generates complete WGSL, with all transitive dependencies (helpers, layouts, buffers, constants) included and deduplicated automatically:
+
+```ts
+const wgsl = tgpu.resolve([pipeline]); // debugging, tooling, shader inspection
+```
+
+Several pipelines can be resolved in one call; all items must originate from the same root (mixing roots throws).
+
+There's also a raw-WGSL interop form, `tgpu.resolve({ template, externals })` - each `externals` entry (even objects with member access, e.g. `randf.sample`) becomes available inside the WGSL `template` string. Niche; only for injecting TypeGPU objects into existing hand-written WGSL.
+
+Options: `names: 'strict'` (default - generated names closely match JS identifiers, sanitized and suffixed on conflict; override per-object with `.$name('...')`) or `'random'`.
+
+Related, for advanced integration (see `references/advanced.md` for namespaces):
+- `tgpu.resolveWithContext(...)` additionally returns `usedBindGroupLayouts` and a `catchall` bind group.
+- `tgpu['~unstable'].namespace()` shares one naming/declaration scope across multiple resolve calls.

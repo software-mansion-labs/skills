@@ -282,13 +282,17 @@ skills/
 └── typegpu/
     ├── references/
     │   ├── advanced.md
+    │   ├── encoders.md
     │   ├── matrices.md
     │   ├── noise.md
     │   ├── pipelines.md
+    │   ├── react.md
     │   ├── sdf.md
     │   ├── setup.md
     │   ├── shaders.md
+    │   ├── std.md
     │   ├── textures.md
+    │   ├── timing.md
     │   └── types.md
     └── SKILL.md
 ```

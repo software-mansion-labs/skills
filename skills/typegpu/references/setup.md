@@ -1,5 +1,20 @@
 # TypeGPU Project Setup
 
+## Fastest path: TypeGPU CLI
+
+For a **new project** or when **adding TypeGPU to an existing one**, prefer the CLI over the manual steps below - it handles the install, build plugin, and types in one go:
+
+```sh
+npx typegpu@latest                 # scaffold a new project (interactive)
+npx typegpu@latest my-app --yes    # non-interactive, defaults
+npx typegpu@latest my-app --yes --template vite-react --addons @typegpu/sdf,@typegpu/noise
+npx typegpu@latest --enhance       # retrofit TypeGPU into the current project
+```
+
+Templates: `vite-bare`, `vite-complex`, `vite-react`, `expo-bare`. `--enhance` installs `typegpu`, wires up the build plugin, adds `@webgpu/types`, and can install the TypeGPU AI skill.
+
+The manual steps below are useful for understanding what the CLI sets up, and for repairing a broken setup.
+
 ## 1. Install TypeGPU
 
 ```sh
@@ -23,6 +38,38 @@ Add to `tsconfig.json`:
     "types": ["@webgpu/types"]
   }
 }
+```
+
+---
+
+## GPU features (`tgpu.init` options)
+
+Optional device capabilities are requested at init; `d.f16`/`vec*h` need `shader-f16`, subgroup ops need `subgroups`, GPU timing needs `timestamp-query`:
+
+```ts
+const root = await tgpu.init({
+  adapter: { powerPreference: 'high-performance' },  // GPURequestAdapterOptions
+  device: {
+    requiredFeatures: ['shader-f16'],       // init throws if unavailable
+    optionalFeatures: ['timestamp-query'],  // requested when available
+  },
+});
+
+root.enabledFeatures.has('timestamp-query'); // ReadonlySet<GPUFeatureName>
+```
+
+**Every `requiredFeatures` entry shrinks the set of devices the app runs on** — init fails outright on hardware without it. Require a feature only when that trade-off is deliberate. Otherwise request it via `optionalFeatures` and write both paths, branching on a captured `root.enabledFeatures.has(...)` result. The result is comptime-known, so branch pruning emits only reachable statements for the selected path:
+
+```ts
+const hasF16 = root.enabledFeatures.has('shader-f16');
+
+const process = (x: number) => {
+  'use gpu';
+  if (hasF16) {
+    return fastF16Path(x);   // only the taken branch survives in WGSL
+  }
+  return f32Path(x);         // emitted only when this path remains reachable
+};
 ```
 
 ---
@@ -77,9 +124,9 @@ The plugin also auto-names TypeGPU resources from variable names, improving debu
 
 ---
 
-## 4. Operator overloading - `tsover` (highly recommended)
+## 4. Operator overloading - `tsover` (the default TypeGPU way)
 
-`tsover` is a drop-in TypeScript replacement adding operator overloading (`+ - * / %` on vectors and matrices). Without it, the IDE treats `d.vec3f() * 2` as a type error, even though it compiles and runs.
+`tsover` is a drop-in TypeScript replacement adding operator overloading (`+ - * / %` on vectors and matrices). It is technically optional — without it the code still compiles and runs, but the IDE treats `d.vec3f() * 2` as a type error. **Treat it as part of the standard setup**: operators are the idiomatic TypeGPU style, so install `tsover` unless the user explicitly declines or the project has concrete TypeScript language-server constraints that rule it out; only then fall back to infix methods (`.add()`, `.mul()`).
 
 **Note:** `unplugin-typegpu` already handles runtime operator overloads inside `'use gpu'` functions — no bundler plugin needed for shader code. `tsover` adds IDE type-checking support and enables operators outside `'use gpu'` blocks (CPU-side vector math).
 
@@ -107,17 +154,13 @@ For monorepos, add overrides:
 
 Match major.minor: if your project uses `typescript@5.8.x`, use `tsover@5.8.x`.
 
-### Configure
+### Enable in code
 
-Add `"tsover"` to `lib` in `tsconfig.json`:
+No `tsconfig.json` changes. Operators typecheck inside `'use gpu'` functions as-is once tsover is the project's TypeScript. For CPU-side code outside `'use gpu'`, add a `'use tsover'` directive at file or function scope:
 
-```json
-{
-  "compilerOptions": {
-    "types": ["@webgpu/types"],
-    "lib": ["tsover", "DOM", "ES2022"]
-  }
-}
+```ts
+'use tsover'; // file-level; or place inside a single function
+const c = a + b; // d.v2f + d.v2f
 ```
 
 ### Bundler plugin (only for CPU-side operators)
@@ -145,35 +188,21 @@ Zed: set `tsdk` in `.zed/settings.json` for `vtsls` or `typescript-language-serv
 
 ---
 
-## Minimal `vite.config.js`
+## Troubleshooting
 
-```js
-import { defineConfig } from 'vite';
-import typegpu from 'unplugin-typegpu/vite';
+**`'use gpu'` silently does nothing / `ResolutionError` about an untranspiled function** - the build plugin isn't running on that file. This is the #1 setup failure. Check, in order:
+1. The plugin is in the right config for your bundler (`unplugin-typegpu/vite` in `vite.config.js` vs `'unplugin-typegpu/babel'` in `babel.config.js`).
+2. The file matches the plugin's `include` pattern (default `[/\.m?[jt]sx?$/]`).
+3. The dev server was restarted after adding the plugin; on React Native, clear the Metro cache (`npx expo start --clear`).
+4. If the `tgpu` import is aliased unusually, set `forceTgpuAlias`.
 
-export default defineConfig({
-  plugins: [typegpu()],
-});
-```
+**IDE flags `vec * scalar` as a type error while the code runs fine** - `tsover` isn't active in the editor: select the workspace TypeScript version (see above); for CPU-side code also check the `'use tsover'` directive is present.
 
-## Minimal `tsconfig.json`
-
-```json
-{
-  "compilerOptions": {
-    "types": ["@webgpu/types"],
-    "lib": ["tsover", "DOM", "ES2022"],
-    "strict": true
-  }
-}
-```
+---
 
 ## Lint plugin - `eslint-plugin-typegpu`
 
-Highlights common pitfalls and unsupported syntax in `'use gpu'` functions. 
-Optional, but highly recommended. 
-Use unless told otherwise, or unless the project uses incompatible linter.
-Include a `lint` script in `package.json`.
+Highlights common pitfalls and unsupported syntax in `'use gpu'` functions. Optional but highly recommended - use it unless told otherwise or the project's linter is incompatible, and include a `lint` script in `package.json`.
 
 ```sh
 npm install --save-dev eslint-plugin-typegpu

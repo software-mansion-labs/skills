@@ -99,18 +99,56 @@ Notes:
 - **Pack extra channels.** `rgba16float` can hold `(dist, progressAlongCurve, normalX, normalY)`.
 - **Re-bake only when source geometry changes.** Static fields: bake once at startup.
 
+## Jump flooding — SDF texture from raster content
+
+When the source is pixels rather than an analytic SDF (painted strokes, glyphs, a rendered mask), `createJumpFlood` builds the distance field with the Jump Flood Algorithm. You supply shader callbacks; the executor owns the ping-pong textures and compute passes:
+
+```ts
+import { createJumpFlood } from '@typegpu/sdf';
+
+const runner = createJumpFlood({
+  root,
+  size: { width: 512, height: 512 },
+  classify: (coord, size) => {          // true = inside the shape
+    'use gpu';
+    return std.textureLoad(srcLayout.$.source, coord, 0).w > 0.5;
+  },
+  getSdf: (coord, size, signedDist) => { // signedDist in pixels, negative inside
+    'use gpu';
+    return signedDist / d.f32(std.min(size.x, size.y)); // e.g. normalize
+  },
+  getColor: (coord, size, signedDist, insidePx, outsidePx) => {
+    'use gpu';
+    return std.textureLoad(srcLayout.$.source, insidePx, 0); // nearest inside pixel
+  },
+}).with(sourceBindGroup); // .with(bindGroup) supplies resources the callbacks read
+
+runner.run();
+runner.sdfOutput;   // rgba16float texture (distance in .x), 'storage' + 'sampled'
+runner.colorOutput; // rgba8unorm texture from getColor
+```
+
+`runner.initSync()`/`await runner.initAsync()` pre-initialize the pipelines; `runner.destroy()` frees the executor's textures. This is the input format `@typegpu/radiance-cascades` consumes for 2D global illumination.
+
 ## Bounding shapes for early-out
 
 For unions over many sources (particles, agents, instanced obstacles), reject with a cheap bounding distance before expensive per-source calculation:
 
 ```ts
-for (let i = d.u32(0); i < activeCount; i++) {
-  const src = sources.$[i];
-  const rough = std.length(point - src.center) - src.radius;
-  if (rough * k > 7) { continue; } // exp(-k * rough) < 1e-3 past this
-  const exact = expensiveSourceSDF(point, src);
-  accum += std.exp(-k * exact);
-}
+// Given: sources = root.createReadonly(d.arrayOf(Source, MAX)) where Source has
+// center/radius fields, count = active source count, k = smooth-blend sharpness.
+const fieldAt = tgpu.fn([d.vec3f, d.u32], d.f32)((point, count) => {
+  'use gpu';
+  let accum = d.f32(0);
+  for (let i = d.u32(0); i < count; i++) {  // classic for: runtime bound
+    const src = sources.$[i];
+    const rough = std.length(point - src.center) - src.radius;
+    if (rough * K > 7) { continue; } // exp(-k * rough) < 1e-3 past this
+    const exact = expensiveSourceSDF(point, src);
+    accum += std.exp(-K * exact);
+  }
+  return accum;
+});
 ```
 
 Two common forms:

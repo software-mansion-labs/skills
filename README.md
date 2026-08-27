@@ -46,7 +46,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 
 ### [pulsar-haptics](./skills/pulsar-haptics/)
 
-Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages. Also covers the Figma hand-off: presets a designer bound with the Pulsar Figma plugin are invisible to the Figma MCP's design tools, so the skill points at [the documented read](https://docs.swmansion.com/pulsar/skills/figma-mcp/) that turns each binding into an SDK call.
+Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages. Also covers the Figma MCP integration.
 
 ### [radon-mcp](./skills/radon-mcp/)
 

@@ -6,9 +6,10 @@ description: >
   Web. Use when the user names Pulsar; a Pulsar package such as react-native-pulsar,
   com.swmansion:pulsar, com.swmansion:pulsar-kmp, pulsar_haptics, or pulsar-haptics;
   a Pulsar import, preset, composer, setting, installation, migration, or runtime
-  problem; or explicitly requests migration to Pulsar. Do not use for generic haptics,
-  vibration, Core Haptics, browser Vibration API, expo-haptics, animation, audio,
-  motion, or UI-polish work without Pulsar evidence or explicit Pulsar intent.
+  problem; a Figma design carrying Pulsar haptic bindings; or explicitly requests
+  migration to Pulsar. Do not use for generic haptics, vibration, Core Haptics, browser
+  Vibration API, expo-haptics, animation, audio, motion, or UI-polish work without
+  Pulsar evidence or explicit Pulsar intent.
 ---
 
 # Pulsar Haptics
@@ -28,6 +29,7 @@ platform and version index, then open the matching official page:
 - [Flutter](https://docs.swmansion.com/pulsar/sdk/flutter/)
 - [Web](https://docs.swmansion.com/pulsar/sdk/web/)
 - [React Native migration from `expo-haptics`](references/expo-haptics-to-pulsar-migration.md)
+- [Figma MCP: reading bound presets out of a design](https://docs.swmansion.com/pulsar/skills/figma-mcp/)
 
 Use the [official Pulsar source](https://github.com/software-mansion/pulsar), matching
 release tag, and installed package for version-specific evidence. Use the
@@ -91,6 +93,10 @@ contract, emit actionable syntax instead of withholding it merely because declar
 were not attached. Keep pseudocode conceptual; do not invent method-like placeholders.
 
 ### 4. Choose feedback
+
+When the work implements a Figma design, check whether the designer already chose:
+a bound node carries its preset in the file, and that binding outranks your own
+selection. See [Figma-sourced designs](#figma-sourced-designs).
 
 Prefer a named or system preset when it matches the event:
 
@@ -162,6 +168,17 @@ Report the detected platform, package, resolved version, evidence used, selected
 preset or composer, setup and fallback behavior, automated checks, physical-hardware
 result, and any unverified limitation. Never report hardware validation that was not
 performed.
+
+## Figma-sourced designs
+
+Haptics bound with the Pulsar Figma plugin never reach the Figma MCP's design tools:
+`get_design_context` and `get_metadata` return visuals, layout, and text only, so a
+screen can look fully implemented and be missing every haptic the designer chose.
+
+Read [Figma MCP](https://docs.swmansion.com/pulsar/skills/figma-mcp/) before
+implementing such a design. None of it is inferable from the design context — where
+the bindings live, how to read them, which nodes to skip, how one becomes a call —
+and guessing silently drops or misassigns haptics.
 
 ## Stop conditions
 

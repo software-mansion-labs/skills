@@ -46,7 +46,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 
 ### [pulsar-haptics](./skills/pulsar-haptics/)
 
-Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages.
+Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages. Also covers the Figma MCP integration.
 
 ### [radon-mcp](./skills/radon-mcp/)
 

@@ -83,3 +83,5 @@ Detail: `notifier-vs-webhook.md` and `notifications-taxonomy.md`.
 | `rest-endpoints.md`         | Raw HTTP surface — flat endpoint list, auth header, deprecation header.         |
 | `lifecycle-flow.md`         | End-to-end client↔backend↔Fishjam sequence.                                     |
 | `llms-and-docs.md`          | Pointers to upstream docs, llms.txt, OpenAPI spec, protobuf, dashboard.         |
+
+Mixing several streams into one composed output (a call as a broadcast, restreaming, overlays) is covered in `../composition/SKILL.md`.

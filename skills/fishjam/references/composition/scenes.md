@@ -32,7 +32,7 @@ Colors are `#RRGGBBAA` strings. For every field and layout rule, see **Smelter r
 
 ## Example: picture in picture
 
-A main input filling the frame, a second input in a rounded corner box, a logo, and the main input's audio ducked under the host's voice. Calling the same function with the inputs swapped, then `updateOutput`, swaps them with an animation.
+A main input filling the frame, a second input in a rounded corner box, a logo, and the main input's audio ducked under the host's voice. Calling the same function with the inputs swapped, then `updateOutput`, swaps which input is where. The corner box has an `id` and a `transition`, so a later update that moves or resizes it animates the change.
 
 ```ts
 import type { AudioScene, InputId, OutputId, RendererId, VideoScene } from '@fishjam-cloud/js-server-sdk';
@@ -111,7 +111,7 @@ Scenes are first given at output registration, under `video.initial` and `audio.
 `updateOutput(compositionId, outputId, { video, audio })` replaces the output's scene while it streams.
 
 - **Pass whole scenes.** An update is not a patch; send the complete `{ root }` and the complete audio `inputs`. There is no `initial` wrapper here.
-- **Mirror the registration.** An output registered with both video and audio needs both in every update; one registered with only video accepts only video. A mismatch is rejected with 400.
+- **Mirror the registration.** An output registered with both video and audio needs both in every update; one registered with only video accepts only video. A mismatched update is rejected.
 - **Animate with `id` + `transition`.** When a `view` or `rescaler` keeps the same `id` between the old and new scene and has a `transition`, its size and position change smoothly over `durationMs`. See <https://smelter.dev/http-api/guides/transitions>.
 - **Schedule instead of timing it yourself.** `scheduleTimeMs` applies the update at a moment measured in milliseconds from when the composition started, so several changes can be lined up in one go. `unregisterInput`, `unregisterOutput`, and `unregisterImage` accept the same option.
 - **Template outputs are not updated this way.** A template owns its scene; see `templates.md`.

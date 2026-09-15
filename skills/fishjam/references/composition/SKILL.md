@@ -1,6 +1,6 @@
 ---
 name: fishjam-composition
-description: "Fishjam compositions: server-side, real-time mixing of several live streams (room peers, WHIP, RTMP, MP4) into new output streams with layouts, overlays, captions, and audio mixes, built on Smelter. Covers lifecycle and billing, static scenes, React templates, composing a room, recording, and the raw Composition API. Use when building a grid or picture-in-picture of a call, restreaming a room to a livestream or to YouTube / Twitch over RTMP, adding overlays or captions driven from a backend, or recording a composed layout. Trigger on: 'Fishjam composition', 'compose a room', 'CompositionClient', 'createComposition', 'create_composition', 'registerWhipOutput', 'register_whip_output', 'registerTemplateOutput', 'register_template_output', 'updateOutput', 'update_output', 'forwardRoomTracks', 'forward_room_tracks', 'track_forwardings', 'sendEvent', 'send_event', '@fishjam-cloud/composition', '@fishjam-cloud/composition-cli', 'usePeers', 'eventBus', 'rtc.fishjam.io', 'createRecording', 'Smelter'."
+description: "Fishjam compositions: server-side, real-time mixing of several live streams (room peers, WHIP, RTMP, MP4) into new output streams with layouts, overlays, captions, and audio mixes, built on Smelter. Covers lifecycle and billing, static scenes, React templates, composing a room, and the raw Composition API. Use when building a grid or picture-in-picture of a call, restreaming a room to a livestream or to YouTube / Twitch over RTMP, or adding overlays or captions driven from a backend. Trigger on: 'Fishjam composition', 'compose a room', 'CompositionClient', 'createComposition', 'create_composition', 'registerWhipOutput', 'register_whip_output', 'registerTemplateOutput', 'register_template_output', 'updateOutput', 'update_output', 'forwardRoomTracks', 'forward_room_tracks', 'track_forwardings', 'sendEvent', 'send_event', '@fishjam-cloud/composition', '@fishjam-cloud/composition-cli', 'usePeers', 'eventBus', 'rtc.fishjam.io', 'Smelter'."
 license: MIT
 ---
 
@@ -18,15 +18,14 @@ Because the layout is rendered once on the server, every viewer receives one rea
 - **Restreaming.** A call, an OBS feed, or any other input sent to YouTube, Twitch, or another RTMP platform.
 - **Broadcast graphics driven by your backend.** A LIVE badge, captions, lower thirds, sponsor banners, or a score bug, toggled as things happen in your product.
 - **A standby or placeholder channel.** Graphics only, or a looping video, switched to the live layout when the show starts. An output shows one scene at a time; events or updates switch it.
-- **The show as a file.** A recording captures one output exactly as viewers see it, including every layout change, so recording a live show takes one extra call.
 
 ## Mental model
 
 ```
 inputs                       composition                 outputs
 room tracks (forwarded) ──┐                            ┌─▶ WHIP → Fishjam livestream → viewers
-WHIP publisher ───────────┼─▶ scene per output ────────┼─▶ RTMP → YouTube / Twitch / other
-RTMP encoder ─────────────┤   video tree + audio mix   └─▶ recording of an output
+WHIP publisher ───────────┼─▶ scene per output ────────┤
+RTMP encoder ─────────────┤   video tree + audio mix   └─▶ RTMP → YouTube / Twitch / other
 MP4 file URL ─────────────┘
 ```
 
@@ -38,7 +37,6 @@ MP4 file URL ─────────────┘
 | **Template** | A React component, built into a JS bundle and uploaded with an output, that renders the output's scene and re-renders when room peers change or your backend sends an event. |
 | **Static scene** | The alternative to a template: a JSON component tree (`view`, `tiles`, `rescaler`, `input_stream`, `text`, `image`) plus an audio mix, sent by your backend. |
 | **Assets** | Images (registered by URL) and fonts (uploaded), usable from templates and scenes. |
-| **Recording** | A file capture of one output, managed through the Fishjam Server API, not the Composition API. |
 
 **A composition produces video; it does not serve it.** There is no URL a player can open. Every output must push to a destination that viewers can reach.
 
@@ -62,7 +60,6 @@ Answer three questions: where the streams come from, where the result goes, and 
 |---|---|---|
 | Your own web or mobile app | WHIP output into a Fishjam livestream room. Your app's users join that room as livestream viewers with the client SDK (`../react-client/livestream.md`, same hooks in React Native). | `inputs-and-outputs.md` |
 | YouTube, Twitch, or another streaming platform | RTMP output to the platform's ingest URL and stream key | `inputs-and-outputs.md` |
-| A file to download later | Recording of any output | `recording.md` |
 
 ### What draws the layout?
 
@@ -131,22 +128,22 @@ Between registering the output and deleting, viewers watch `livestream.id` like 
 
 ## Lifecycle and billing
 
-- **Billed per minute for each registered input and output**, whether media flows or anyone watches. Inputs created by forwarding a Fishjam room are not billed. Recordings are billed separately. Rates: <https://fishjam.swmansion.com/pricing>.
+- **Billed per minute for each registered input and output**, whether media flows or anyone watches. Inputs created by forwarding a Fishjam room are not billed. Rates: <https://fishjam.swmansion.com/pricing>.
 - **Unregister inputs and outputs you no longer need**; they bill for as long as they stay registered.
 - **Starts automatically** by default. Create with `autostart: false` when inputs arrive later (room forwarding), then call start.
 - **Idle cleanup:** by default a composition is removed after about 5 minutes in which none of its inputs carry media. A composition with no inputs at all counts as idle.
 - **`cleanup_without_inputs: false`** makes cleanup wait for inputs *and* outputs to go silent. Needed for late-joining room peers or input-less templates (captions only). An output that keeps publishing is then never cleaned up for you.
-- **Delete explicitly** when finished, even after a test. Deleting removes all inputs and outputs and finalizes recordings.
+- **Delete explicitly** when finished, even after a test. Deleting removes all its inputs and outputs.
 
 ## Key rules
 
 - **Destinations must exist before you register.** An output connects to its endpoint during registration, and an MP4 URL is fetched during registration. Unreachable targets fail the register call, not later.
-- **One output per livestream room.** A Fishjam livestream accepts one streamer (`../platform/room-types.md`); a second output into the same room fails with 400.
+- **One output per livestream room.** A Fishjam livestream accepts one streamer (`../platform/room-types.md`); push each output to its own livestream room.
 - **`updateOutput` mirrors registration.** An output registered with video and audio needs both in every update; one registered with only video accepts only video.
 - **Template outputs sound like what they render.** Give the output an `audio` config, or it has no audio track. The mix is every `<InputStream>` currently rendered; an input that is not rendered, such as a peer with no tile, is silent. Detail: `templates.md`.
 - **Resolution** must be even on both sides.
 - **Composed rooms use H.264.** Create them with `videoCodec: "h264"` explicitly, even though it is the default, so a changed default cannot break the composition.
-- **Casing differs by API.** Composition API bodies are snake_case and closed (unknown fields return 422). Server API bodies are camelCase (`compositionURL`, `outputId`). The SDKs handle both.
+- **Casing differs by API.** Composition API bodies are snake_case and reject unknown fields. Server API bodies are camelCase (`compositionURL`, `outputId`). The SDKs handle both.
 
 ## References
 
@@ -156,5 +153,4 @@ Between registering the output and deleting, viewers watch `livestream.id` like 
 | `scenes.md` | Component tree, audio mix, updating static scenes live, transitions, scheduled changes. |
 | `inputs-and-outputs.md` | Every input and output type, publishing into WHIP / RTMP inputs, reaching viewers. |
 | `room-composition.md` | Composing a Fishjam room end to end with `forwardRoomTracks`. |
-| `recording.md` | Recording an output, statuses, fetching files. |
 | `rest-endpoints.md` | Raw Composition API over HTTP, without an SDK. |

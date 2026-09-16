@@ -225,5 +225,6 @@ Modes:
 | `withSequence` | Only start children with `reduceMotion: Never` |
 | Entering / keyframe / layout animations | Jump to endpoint immediately |
 | Exiting / shared element transitions | Omitted entirely |
+| CSS transitions and CSS animations | Not affected: they ignore the setting. Shorten them yourself from `useReducedMotion()` (`animations.md`, Reduced motion) |
 
 Higher-order animations pass their `reduceMotion` config to children unless a child has its own explicit config.

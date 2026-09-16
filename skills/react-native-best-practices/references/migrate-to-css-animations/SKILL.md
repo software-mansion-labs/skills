@@ -7,7 +7,7 @@ description: "Migrates React Native Reanimated hook animations (useAnimatedStyle
 
 Convert only where behavior stays identical; coverage is not the goal. A wrong conversion is silent: it typechecks, passes tests and looks right in a diff.
 
-"Hook animations" here means what `../animations/animations.md` calls shared value animations. For the CSS API itself read `../animations/animations.md` (feature availability by version, transitions, animations, timing functions) and, from 4.5.0, `../animations/css-pseudo-selectors-and-callbacks.md`. Load `references/mapping.md` when converting a site and `references/examples.md` to calibrate output.
+"Hook animations" here means what `../animations/animations.md` calls shared value animations. For the CSS API itself read `../animations/animations.md` (feature availability by version, transitions, animations, timing functions, callbacks) and, from 4.5.0, `../animations/css-pseudo-selectors.md`. Load `references/mapping.md` when converting a site and `references/examples.md` to calibrate output.
 
 ## 0. Detect version and platforms
 

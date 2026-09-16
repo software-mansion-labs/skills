@@ -23,13 +23,13 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 />
 ```
 
-Selector keys go inside each property; a top-level `':active': { ... }` block is not valid. Which element to style (the pressed one, its descendants, the `Pressable` itself or an ancestor) and the `Pressable` alternatives: `animations.md`, Simple gesture feedback.
+Selector keys go inside each property; a top-level `':active': { ... }` block is not valid. Pseudo-selectors style the pressed element itself. To style its descendants, the `Pressable` itself below 4.5.0, or an ancestor, use the `Pressable`-based approaches described under Simple gesture feedback in `animations.md`.
 
 ### Rules
 
-- A pseudo-styled property animates only when it is transitioned like any other property (`transitionProperty`, `animations.md`); otherwise it switches instantly.
-- Always write `default`. A pseudo object replaces any earlier value of that property in the style array, so without `default` the element rests at the property's built-in default (transparent for a color, `1` for `opacity`).
-- While a selector matches, the properties in its object are locked: a re-render or another transition cannot change them until it stops matching, so do not set the same property from elsewhere (state, an animated style) at the same time.
+- A selector only switches the value. The switch animates when the property has a transition (`transitionProperty` and a duration, as for any transition); without one it snaps.
+- Always write `default`. A pseudo object does not pick up the value of the same property from an earlier entry in the style array: without `default` the selector transitions back to the property's built-in default (transparent for a color, `1` for `opacity`).
+- While a selector matches, its values win over re-renders and regular transitions of the same property. A CSS animation or an animated style targeting that property still overrides it.
 - When several selectors match at once, the one further right in this fixed order wins, whatever the order of keys in the object: `:focus-within < :focus < :hover < :active < :active-deepest`.
 - The transition callbacks (`onCSSTransition*`, `animations.md`) fire for selector-driven transitions too.
 

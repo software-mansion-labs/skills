@@ -75,7 +75,7 @@ The generic `Layout` transition from older Reanimated versions is deprecated. Us
 For complex multi-step entering/exiting animations beyond what presets offer:
 
 ```tsx
-import Animated, { Easing, Keyframe } from 'react-native-reanimated';
+import { Keyframe } from 'react-native-reanimated';
 
 const enteringAnimation = new Keyframe({
   0: { opacity: 0, transform: [{ scale: 0.5 }, { rotate: '-45deg' }] },

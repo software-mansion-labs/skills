@@ -22,7 +22,7 @@ GPU shaders are the right choice when:
 - 3D rendering is required (meshes, lighting, skeletal animation via Three.js)
 - Animation state is computed from math that benefits from GPU parallelism
 
-For high element counts without per-pixel computation (hundreds of 2D shapes, sprites, tiles), prefer `react-native-skia` with the Atlas API instead (see `canvas-animations.md`). Skia renders to a single canvas with lower setup cost than WebGPU.
+For high element counts without per-pixel computation (hundreds of 2D shapes, sprites, tiles), prefer `react-native-skia` with the Atlas API instead (see `canvas-atlas.md`). Skia renders to a single canvas with lower setup cost than WebGPU.
 
 Stick with Reanimated when animating standard UI components (opacity, transforms, layout changes) or responding to gestures. GPU shaders render into a `Canvas` element, separate from the React Native view hierarchy.
 
@@ -84,6 +84,7 @@ On the iOS simulator, disable Metal Validation in Edit Scheme to avoid crashes.
 The `Canvas` component provides the WebGPU surface. Use `useDevice` and `useCanvasRef` hooks from `react-native-wgpu`:
 
 ```tsx
+import { useEffect } from 'react';
 import { Canvas, useDevice, useCanvasRef } from 'react-native-wgpu';
 import tgpu, { d } from 'typegpu';
 

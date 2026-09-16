@@ -8,9 +8,10 @@ react-native-svg implements the SVG standard as a React component tree, giving y
 
 Use `Animated.createAnimatedComponent` to make any SVG element animatable.
 
-Do all value conversions directly inside the `useAnimatedStyle` or `useAnimatedProps` callback. Do **not** use `SVGAdapter` — handle conversions (string formatting, color processing, unit calculations) in place within the callback:
+SVG attributes (`cx`, `r`, `d`, `fill`, ...) are component props, not `style` keys, so drive them with `useAnimatedProps` or an inline shared value (`<AnimatedCircle r={r} />`), never `useAnimatedStyle`. CSS transitions and animations reach SVG props on iOS and Android from 4.4.0 (opt-in through the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` flag since 4.1.0) and on web from 4.5.0: put the CSS declarations in `animatedProps`, not `style`. Do value conversions (string formatting, color processing, unit calculations) inside the `useAnimatedProps` callback; `SVGAdapter` no longer ships, and an adapter passed as the third argument must be a worklet (`animation-functions.md`):
 
 ```tsx
+import { useEffect } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -24,7 +25,9 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 export default function PulsingCircle() {
   const radius = useSharedValue(30);
 
-  radius.value = withRepeat(withTiming(50, { duration: 600 }), -1, true);
+  useEffect(() => {
+    radius.value = withRepeat(withTiming(50, { duration: 600 }), -1, true);
+  }, [radius]);
 
   const animatedProps = useAnimatedProps(() => ({
     r: radius.value,
@@ -43,6 +46,7 @@ export default function PulsingCircle() {
 ## Animating SVG Path (e.g. Progress Arc)
 
 ```tsx
+import { useEffect } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -54,7 +58,9 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 export default function ProgressArc({ progress }: { progress: number }) {
   const animatedProgress = useSharedValue(0);
-  animatedProgress.value = withTiming(progress, { duration: 800 });
+  useEffect(() => {
+    animatedProgress.value = withTiming(progress, { duration: 800 });
+  }, [progress, animatedProgress]);
 
   const animatedProps = useAnimatedProps(() => {
     const angle = animatedProgress.value * 2 * Math.PI;

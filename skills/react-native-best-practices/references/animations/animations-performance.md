@@ -13,30 +13,71 @@ Enable ProMotion display support on iOS by adding to `Info.plist`:
 <true/>
 ```
 
-Without this flag, iOS caps animations at 60fps even on ProMotion devices.
+Without this flag, iOS caps animations at 60fps even on ProMotion devices. The React Native app template sets it from React Native 0.82; check `Info.plist` before adding it.
 
 ---
 
 ## Feature Flags
 
-Reanimated 4 exposes feature flags to opt into fixes for known New Architecture issues. Enable them early in your app entry point, before any Reanimated code runs.
+Reanimated 4 exposes feature flags to opt into fixes for known New Architecture issues. Every flag below is *static*: it resolves at compile time and cannot be changed at runtime. Set it in your app's `package.json`, run `pod install` (iOS), and rebuild the native app.
+
+```json
+{
+  "reanimated": {
+    "staticFeatureFlags": {
+      "DISABLE_COMMIT_PAUSING_MECHANISM": true
+    }
+  }
+}
+```
+
+Static flags cannot be changed where Reanimated ships prebuilt (Expo Go, RNRepo). Read one back with `getStaticFeatureFlag(name)` from `react-native-reanimated`.
+
+### Platform-Driven CSS Transitions
+
+Run CSS transitions on the platform's own animation API instead of Reanimated's animation loop, so Reanimated stops recomputing and committing the value every frame.
+
+- `IOS_CSS_CORE_ANIMATION` (4.4.0): a Core Animation animation on the view's layer
+- `ANDROID_CSS_PLATFORM_TRANSITIONS` (4.6.0): an `ObjectAnimator` writing straight to the platform view
+
+Both experimental, both default `false`. CSS *animations* always stay on the loop.
+
+Routing is per property. On 4.4.x iOS routes `opacity` only; from 4.5.0 it routes `opacity`, `backgroundColor`, `borderColor`, `borderRadius`, `borderWidth`, `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`. Android routes `opacity` only. A property falls back to the loop if the component uses any `onCSSTransition*` prop (4.6.0), or, on iOS, if its timing function is `steps` or `linear()` with stops.
+
+iOS caveat: `backgroundColor`, `borderColor`, `borderWidth` and `borderRadius` are routed even when React Native draws them on separate layers, where the routed animation never arrives and the value jumps. That happens on any view with a visible border and the default `overflow`, or with per-side border or per-corner radius differences.
+
+### Animation Backend
+
+`USE_ANIMATION_BACKEND` (4.4.0, default `false`) hands applying animated changes to React Native's Animation Backend. Requires React Native 0.85.2+ with its `useSharedAnimatedBackend` flag on, overridden per app like `preventShadowTreeCommitExhaustion` below.
+
+It cannot be enabled alongside `FORCE_REACT_RENDER_FOR_SETTLED_ANIMATIONS`, which is on by default since 4.3.0; turn that off in the same block:
+
+```json
+{
+  "reanimated": {
+    "staticFeatureFlags": {
+      "USE_ANIMATION_BACKEND": true,
+      "FORCE_REACT_RENDER_FOR_SETTLED_ANIMATIONS": false
+    }
+  }
+}
+```
 
 ### Flickering / Jittering While Scrolling
 
 Animated components like sticky headers flicker during `FlatList` or `ScrollView` scrolling on the New Architecture.
 
 **Fix:** Upgrade to React Native 0.81+ and enable:
-- `preventShadowTreeCommitExhaustion` (experimental release-level flag in RN)
+- `preventShadowTreeCommitExhaustion` (React Native). Override it per app through React Native's feature-flag override API before the host starts (Android: `ReactNativeFeatureFlags.override(object : ReactNativeFeatureFlagsDefaults() { override fun preventShadowTreeCommitExhaustion() = true })`; iOS: `ReactNativeFeatureFlags::override(...)` in `AppDelegate.mm`) rather than switching RN to the experimental release level, which enables unrelated flags too.
 - `DISABLE_COMMIT_PAUSING_MECHANISM` (Reanimated feature flag)
 
 ### FPS Drops During Scrolling
 
 FPS drops when many animated components are visible during scroll.
 
-**Fix:** Upgrade to React Native 0.80+ and Reanimated 4.2.0+, then enable:
-- `USE_COMMIT_HOOK_ONLY_FOR_REACT_COMMITS`
+**Fix:** Upgrade to React Native 0.80+. `USE_COMMIT_HOOK_ONLY_FOR_REACT_COMMITS` (added 4.2.0) is on by default since 4.3.0; set it explicitly on 4.2.x.
 
-Alternative: Enable `enableCppPropsIteratorSetter` (experimental).
+Alternative: `enableCppPropsIteratorSetter`, a React Native flag. Experimental, and it requires patching React Native's source files and building React Native from source.
 
 ### Low FPS with Many Simultaneous Animations
 
@@ -57,7 +98,7 @@ Reanimated can handle many animated components, but performance degrades at scal
 | iOS            | ~500 components |
 | Low-end Android | ~100 components |
 
-For lists with many animated items, consider reducing animation complexity on low-end devices using `useReducedMotion`. For highly complex animation scenes (hundreds of elements), consider Reanimated + `react-native-skia` instead of animating native views.
+For lists with many animated items, consider reducing animation complexity on low-end devices (by device class, not `useReducedMotion`, which reflects the accessibility setting). For highly complex animation scenes (hundreds of elements), consider Reanimated + `react-native-skia` instead of animating native views.
 
 ---
 
@@ -65,10 +106,9 @@ For lists with many animated items, consider reducing animation complexity on lo
 
 Animating layout properties (`top`, `left`, `width`, `height`, `margin`, `padding`) forces a layout pass on every frame.
 
-Prefer properties that use the fast path:
-- `transform` (`translateX`, `translateY`, `scale`, `rotate`)
-- `opacity`
-- `backgroundColor`
+Prefer non-layout properties: `transform` (all transforms), `opacity`, `backgroundColor`.
+
+The synchronous fast path is a separate mechanism that exists only with `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` / `IOS_SYNCHRONOUSLY_UPDATE_UI_PROPS` enabled (incompatible with `ENABLE_SHARED_ELEMENT_TRANSITIONS`, `layout-animations.md`): it carries `opacity`, `transform`, `zIndex`, `elevation`, `borderRadius`, `outline*` and the color props (`backgroundColor`, `borderColor`, `shadowColor`, `tintColor`, `placeholderTextColor`; not `PlatformColor` values on Android), plus `shadowOffset`/`shadowOpacity`/`shadowRadius` on iOS. Everything else goes through a shadow tree commit.
 
 If a design requires a size change, consider `scale` transforms for the same visual effect without triggering layout.
 
@@ -137,7 +177,7 @@ Always profile animations in a release build. Debug builds add significant JS ov
 npx react-native run-android --mode=release
 ```
 
-On Android, use `debugOptimized` build variant for a better dev experience with closer-to-production performance.
+On Android, use the `debugOptimized` build variant (React Native 0.82, backported to 0.81.2) for a better dev experience with closer-to-production performance.
 
 ---
 

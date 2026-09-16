@@ -178,7 +178,6 @@ export const CircleTrail = () => {
   }, [progress]);
 
   const picture = useDerivedValue(() => {
-    'worklet';
     const canvas = recorder.beginRecording(Skia.XYWHRect(0, 0, size, size));
     const count = Math.floor(progress.value * 20);
     for (let i = 0; i < count; i++) {

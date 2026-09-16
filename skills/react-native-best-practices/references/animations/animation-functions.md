@@ -59,6 +59,8 @@ function AnimatedCounter() {
 }
 ```
 
+- Pass a function when the initial value is expensive: `useSharedValue(() => buildTable())`. It runs once on mount. Reanimated >= 4.4.0.
+
 ### [useAnimatedStyle](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedStyle)
 
 ```tsx
@@ -74,11 +76,11 @@ const animatedStyle = useAnimatedStyle(() => ({
 - Animated styles override static styles in the style array.
 - Removing an animated style does not unset its values. Manually set properties to `undefined` to clear them.
 - Never mutate shared values inside the updater (e.g., `sv.value = withTiming(1)` in the callback). This causes infinite loops.
-- The callback runs on the JS thread first, then immediately on the UI thread. Use `global._WORKLET` to guard thread-specific code.
+- The callback runs on the JS thread first, then immediately on the UI thread. Guard thread-specific code with `isUIRuntime()` / `isRNRuntime()` from `react-native-worklets` (Reanimated 4.3.0+; `getRuntimeKind()` from 4.1.0).
 
 ### [useAnimatedProps](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedProps)
 
-For animating component properties (not styles). Do all value conversions directly inside the `useAnimatedProps` callback instead of using adapters like `SVGAdapter`:
+For animating component properties (not styles). Prefer doing value conversions inside the `useAnimatedProps` callback. Adapters are still its third argument: write them with `'worklet'` and pass them directly. `createAnimatedPropAdapter` is a deprecated pass-through that only adds that directive for you; `SVGAdapter` no longer ships.
 
 ```tsx
 const animatedProps = useAnimatedProps(() => ({
@@ -103,7 +105,7 @@ Built-in animated components: `Animated.View`, `Animated.Text`, `Animated.Image`
 
 ### [useAnimatedRef](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedRef)
 
-The ref value (`current`) is `null` until the component mounts. It is only accessible from the JS thread, so do not read it inside worklets.
+The ref value (`current`) is `null` until the component mounts, and `.current` is JS-thread only. The ref itself is made for worklets - `measure()`, `scrollTo()`, `dispatchCommand()` and `setNativeProps()` all call it on the UI runtime. `measure()` returns `null` when called on the JS thread, so call it inside a worklet.
 
 ---
 
@@ -118,6 +120,10 @@ Two configuration modes (cannot mix):
 `dampingRatio` values: `< 1` = underdamped (bouncy), `1` = critically damped (no bounce, fastest settle), `> 1` = overdamped (slow, no bounce).
 
 If both physics-based and duration-based configs are provided, duration-based overrides.
+
+Default config is `GentleSpringConfig` (`mass: 4`, `damping: 120`, `stiffness: 900`), not Reanimated 3's `mass: 1, damping: 10, stiffness: 100` - pass `Reanimated3DefaultSpringConfig` to get the old feel. Other presets: `WigglySpringConfig`, `SnappySpringConfig`, each with a `...WithDuration` duration-based twin.
+
+Rest is decided by `energyThreshold` (default `6e-9`). `restDisplacementThreshold` and `restSpeedThreshold` no longer exist on `withSpring`.
 
 ### [withDecay](https://docs.swmansion.com/react-native-reanimated/docs/animations/withDecay)
 
@@ -135,7 +141,7 @@ If both physics-based and duration-based configs are provided, duration-based ov
 
 ### [withClamp](https://docs.swmansion.com/react-native-reanimated/docs/animations/withClamp)
 
-Limits the animated value range. Designed for `withSpring` to prevent overshoot beyond boundaries. When the spring hits a clamped boundary, its dampingRatio is automatically reduced.
+Clamps the animated value to `[min, max]` every frame - it truncates the output, it does not change the animation's parameters. Different from `withSpring`'s own `clamp` config, which rescales the spring's damping ratio so bounces stay inside the bounds, and which is only valid alongside the duration-based config (`duration` / `dampingRatio`).
 
 ---
 

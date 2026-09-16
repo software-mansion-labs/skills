@@ -78,7 +78,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
              clamp() or Math.min/Math.max around the driver, or interpolateColor
 
 3. Does CSS animate the property on every platform the project targets, at the
-   installed version?                                     references/properties.md
+   installed version?               references/properties.md, SVG: references/svg.md
    |-- NO, the property is a keyword flipped at a state change -> render it
    |   conditionally, leave it out of transitionProperty; continue
    |-- NO, a keyword flipped at > 0.5 of a 0..1 numeric driver -> note Needs approval
@@ -91,7 +91,8 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    `-- YES -> continue
 
 4. Is each animated value a straight line between its two endpoints
-   (a * driver + b, both endpoints the same kind of value)?  references/value-functions.md
+   (a * driver + b, both endpoints the same kind of value)?
+                                references/value-functions.md, colors: references/colors.md
    |-- YES, a number, length or percentage -> continue
    |-- YES, a color -> the swing decides (continue; wide swings note Needs approval:
    |   CSS lerps sRGB, the shared value interpolated gamma-corrected)
@@ -244,4 +245,4 @@ Migrated 14 sites across 9 files. 6 need approval. 17 stay on shared values:
   9 track continuous input, 5 use withSpring, 3 have other readers.
 ```
 
-Then ask what to expand. Offer: the applied sites (one row each: file, what it animates, transition or animation, and every behavior delta or `exact`), the sites that need approval, or the kept sites. Show the applied rows in pages of ten; walk the Needs approval sites one at a time with the open question and the proposed diff, and apply each on a yes. Leave out recipes, memoization advice and per-site prose.
+Then ask what to expand. Offer: the applied sites (one row each: file, what it animates, transition or animation, and every behavior delta or `exact`, including a color midpoint that moved), the sites that need approval, or the kept sites. Show the applied rows in pages of ten; walk the Needs approval sites one at a time with the open question and the proposed diff, and apply each on a yes. Leave out recipes, memoization advice and per-site prose.

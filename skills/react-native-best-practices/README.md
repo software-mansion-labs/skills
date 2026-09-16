@@ -28,7 +28,7 @@ react-native-best-practices/
     ├── animations/
     │   ├── SKILL.md                      # When to use, what references to read
     │   ├── animations.md                 # Decision tree, CSS transitions/animations, shared values
-    │   ├── css-pseudo-selectors-and-callbacks.md  # :hover/:active/:focus without React state, onCSS* callbacks
+    │   ├── css-pseudo-selectors.md       # :hover/:active/:focus without React state
     │   ├── animation-functions.md        # Core hooks, withSpring, withTiming, withDecay, composition
     │   ├── layout-animations.md          # Entering/exiting, transitions, keyframes
     │   ├── scroll-and-events.md          # Scroll-driven animations, useAnimatedReaction, useFrameCallback

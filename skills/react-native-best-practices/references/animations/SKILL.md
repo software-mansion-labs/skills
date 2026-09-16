@@ -21,8 +21,8 @@ Read the installed Reanimated version before writing animation code: `node_modul
 
 | File | When to read |
 |------|-------------|
-| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS feature availability by Reanimated version; CSS transition and CSS animation patterns and rules; animating text; infinite animation cleanup; `scheduleOnRN` |
-| `css-pseudo-selectors-and-callbacks.md` | Interaction state without React state: `:hover`, `:active`, `:active-deepest`, `:focus`, `:focus-within` (4.5.0+), selector precedence, the property lock, per-platform press traps; CSS animation and transition callbacks (`onCSS*`, 4.6.0+) |
+| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS feature availability by Reanimated version; CSS transition and CSS animation patterns and rules; CSS callbacks (`onCSS*`, 4.6.0+); animating text; infinite animation cleanup; `scheduleOnRN` |
+| `css-pseudo-selectors.md` | Interaction state without React state: `:hover`, `:active`, `:active-deepest`, `:focus`, `:focus-within` (4.5.0+), selector precedence, the property lock, per-platform press traps |
 | `animation-functions.md` | Gotchas and rules for core hooks (`useSharedValue`, `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue`); `withSpring` config modes; `withRepeat` and `withClamp` caveats; composing animations |
 | `layout-animations.md` | Entering/exiting animation gotchas (`nativeID` conflict, view flattening); layout transitions; keyframe animation rules; list item animations (`itemLayoutAnimation`); shared element transitions |
 | `scroll-and-events.md` | Scroll-driven animation patterns (`useAnimatedScrollHandler`, `scrollTo`, `useScrollOffset`); `useAnimatedReaction` patterns; `useFrameCallback`; `measure` rules |

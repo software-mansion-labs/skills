@@ -1,10 +1,6 @@
-# CSS Pseudo-Selectors and Callbacks
+# CSS Pseudo-Selectors
 
-Pseudo-selectors drive interaction state without React state; callbacks report animation lifecycle events.
-
----
-
-## Pseudo-Selectors
+Pseudo-selectors drive interaction state (press, hover, focus) from inside the style, without React state.
 
 **Requires Reanimated 4.5.0.** Below that a pseudo object is not understood and breaks the property it sits on (a color throws at mount). Use `Pressable` + React state instead (`animations.md`, Simple gesture feedback). For the selector table and types, webfetch the [pseudo-selectors docs](https://docs.swmansion.com/react-native-reanimated/docs/css-transitions/pseudo-selectors).
 
@@ -64,24 +60,3 @@ When the styled element is a descendant the finger may not land on, or the press
   )}
 </Pressable>
 ```
-
----
-
-## CSS Callbacks
-
-**Requires Reanimated 4.6.0**: `onCSSAnimationStart`, `onCSSAnimationEnd`, `onCSSAnimationIteration`, `onCSSAnimationCancel`, `onCSSTransitionRun`, `onCSSTransitionStart`, `onCSSTransitionEnd`, `onCSSTransitionCancel`. They are **props on the animated component, never style keys**; one placed in `style` or `animatedProps` never fires.
-
-On 4.5.x only four transition callbacks exist, `onTransitionRun`, `onTransitionStart`, `onTransitionEnd` and `onTransitionCancel`, written as keys inside the style object. They typecheck on every platform but fire only on web, and there is no animation callback at all. Below 4.6.0 say so instead of emitting one for native.
-
-```tsx
-<Animated.View
-  style={{ opacity: visible ? 1 : 0, transitionProperty: 'opacity', transitionDuration: 300 }}
-  onCSSTransitionEnd={(e) => done(e.elapsedTime)}
-  onCSSTransitionCancel={() => cleanup()}
-/>
-```
-
-### Rules
-
-- The event carries `elapsedTime` in seconds (`transitionDuration: 300` reports `0.3`) plus `animationName` (animations) or `propertyName` (transitions). Transition callbacks fire once per transitioning property. `Run` fires when the transition is triggered, before any delay; `Start` after the delay; `End` on completion; `Cancel` on interruption (unmount, or a transition retargeted mid-flight). There is no `finished` flag.
-- An infinite animation never reaches `onCSSAnimationEnd`; its only terminal event is `onCSSAnimationCancel` (`Start` and `Iteration` still fire).

@@ -60,9 +60,24 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 - **Values must be the same kind on both sides**: `height: open ? 300 : 'auto'` cannot animate between a number and a keyword, so it jumps to the target. Declare the property in both states, or in both keyframes, with the same kind of value.
 - **Colors** interpolate as straight sRGB. `withTiming` and `interpolateColor` gamma-correct, so the same two endpoints produce a visibly different midpoint on wide swings (black to white, red to cyan). Alpha and `opacity` fades match exactly.
 
+### Callbacks
+
+From 4.6.0 the animated component takes lifecycle callbacks as props: `onCSSAnimationStart`, `onCSSAnimationEnd`, `onCSSAnimationIteration`, `onCSSAnimationCancel`, `onCSSTransitionRun`, `onCSSTransitionStart`, `onCSSTransitionEnd`, `onCSSTransitionCancel`. They are **props, never style keys**; one placed in `style` or `animatedProps` never fires. On 4.5.x only four transition callbacks exist (`onTransitionRun`, `onTransitionStart`, `onTransitionEnd`, `onTransitionCancel`), written inside the style object, and they fire only on web; there is no animation callback at all. Below 4.6.0 say so instead of emitting one for native.
+
+```tsx
+<Animated.View
+  style={{ opacity: visible ? 1 : 0, transitionProperty: 'opacity', transitionDuration: 300 }}
+  onCSSTransitionEnd={(e) => done(e.elapsedTime)}
+  onCSSTransitionCancel={() => cleanup()}
+/>
+```
+
+- The event carries `elapsedTime` in seconds (`transitionDuration: 300` reports `0.3`) plus `animationName` (animations) or `propertyName` (transitions). Transition callbacks fire once per transitioning property. `Run` fires when the transition is triggered, before any delay; `Start` after the delay; `End` on completion; `Cancel` on interruption (unmount, or a transition retargeted mid-flight). There is no `finished` flag.
+- An infinite animation never reaches `onCSSAnimationEnd`; its only terminal event is `onCSSAnimationCancel` (`Start` and `Iteration` still fire).
+
 ### Reduced motion
 
-CSS transitions and animations have no reduced-motion option. Unlike `with*` animations (`withTiming`, `withSpring`, ...), which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too.
+CSS transitions and animations have no reduced-motion option. Unlike `with*` animations (`withTiming`, `withSpring`, ...), which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the callbacks above, whereas dropping `animationName` discards the fill mode too.
 
 ```tsx
 const reduced = useReducedMotion();
@@ -115,7 +130,7 @@ transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 
 ### Simple gesture feedback
 
-Press feedback is a transition too. Which element gets the style decides the mechanism; the selector rules live in `css-pseudo-selectors-and-callbacks.md`.
+Press feedback is a transition too. Which element gets the style decides the mechanism: a pseudo-selector on the pressed element, or `Pressable`'s state for anything else. `:hover`, `:focus` and the selector rules are in `css-pseudo-selectors.md`.
 
 **The pressed element styles itself.** From 4.5.0 write the pressed value inline with the `:active` pseudo-selector. Pseudo-selectors work on any `Animated` component (and on `react-native-svg` elements from 4.6.0); the `Pressable` here only provides `onPress`. Nothing re-renders.
 

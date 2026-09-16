@@ -6,7 +6,7 @@ Pseudo-selectors drive interaction state without React state; callbacks report a
 
 ## Pseudo-Selectors
 
-**Requires Reanimated 4.5.0.** Below that the pseudo object is not understood: a color pseudo object throws `Invalid color value` at mount once a transition is declared, other values reach React Native as plain styles. Nothing warns about the version. Use `Pressable` + React state instead (`animations.md`). For the selector table and types, webfetch the [pseudo-selectors docs](https://docs.swmansion.com/react-native-reanimated/docs/css-transitions/pseudo-selectors).
+**Requires Reanimated 4.5.0.** Below that the pseudo object is not understood: a color pseudo object throws `Invalid color value` at mount once a transition is declared, and other values reach React Native as plain styles. Use `Pressable` + React state instead (`animations.md`, Simple gesture feedback). For the selector table and types, webfetch the [pseudo-selectors docs](https://docs.swmansion.com/react-native-reanimated/docs/css-transitions/pseudo-selectors).
 
 Native selectors are `:hover`, `:active`, `:active-deepest`, `:focus` and `:focus-within`. Every other selector (`:focus-visible`, `:disabled`, `:checked`, ...) is web-only; on native its value is dropped with a dev-only warning. Use one only when the code targets web exclusively.
 
@@ -31,7 +31,7 @@ Selector keys go inside each property; a top-level `':active': { ... }` block is
 
 ### Rules
 
-- Include every pseudo-styled property in `transitionProperty`. One styled by a selector but missing from the list gets duration 0 and snaps.
+- Include every pseudo-styled property in `transitionProperty`. One styled by a selector but missing from the list changes instantly.
 - Write `default` unless the resting value is the property's own default. The pseudo object owns the property, so an omitted `default` falls back to that default, never to `StyleSheet.create` or an earlier style in the array.
 - Leave no other writer on a property you moved into a pseudo object. From 4.6.0 the property is locked while its selector matches (a re-render or an ordinary transition cannot change it); on 4.5.x a re-render overwrites the matched value.
 - Later selector wins: `:focus-within < :focus < :hover < :active < :active-deepest`.

@@ -42,7 +42,7 @@ function Spinner() {
 }
 ```
 
-A JS-thread write in `useEffect`, and `cancelAnimation` only in the cleanup, so the tree reaches Migrate. Under reduced motion the loop runs once for 1ms and snaps back to the static style, which is where a non-`reverse` loop rests (`360deg` is `0deg`).
+A JS-thread write in `useEffect`, and `cancelAnimation` only in the cleanup, so the tree reaches Migrate. Under reduced motion the loop runs once for 1ms and snaps back to the static style; a non-`reverse` loop rests at its target, which here renders the same as the start (`360deg` is `0deg`), so `animationFillMode` can stay `'none'`.
 
 ## Migrate: play once on mount
 
@@ -81,11 +81,11 @@ useEffect(() => { if (uploadComplete) sv.value = true; }, [uploadComplete]);
 />
 ```
 
-A JS effect drives it and an upload completes once, so nothing reverses mid-flight. Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row (the transition is a color under 300ms, so no reduced-motion guard).
+A JS effect drives it and an upload completes once, so nothing reverses mid-flight. Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row; the transition is a color under 300ms, so the row also says `reduced-motion guard dropped`.
 
 ## Needs approval: the toggle that can reverse
 
-Expand/collapse, show/hide, a switch: the user can flip back inside the duration, and the reversal question in the tree stops there.
+Expand/collapse, show/hide, a switch: the user can flip back inside the duration, so the reversal question notes Needs approval.
 
 ```tsx
 // Before: leave exactly as is until the user accepts

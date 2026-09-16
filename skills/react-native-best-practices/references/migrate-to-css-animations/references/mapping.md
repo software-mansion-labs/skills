@@ -11,23 +11,25 @@ Choose per property and per edge, never once for the whole site; one element may
 
 ## Properties
 
-CSS animates a property only when Reanimated has an interpolator for it. Check the [supported properties](https://docs.swmansion.com/react-native-reanimated/docs/guides/supported-properties) table, never memory; it describes the latest release, so on an older installed version also check the feature floors in `../animations/animations.md` (filter 4.2.0, SVG 4.4.0, pseudo-selectors 4.5.0, callbacks 4.6.0). React Native does not render the property on a platform either: fine, it was inert there (iOS `shadow*` on Android, `elevation` on iOS). React Native renders it and CSS cannot animate it: Keep on hooks. Discrete (keyword) properties change at the transition midpoint only with `transitionBehavior: 'allow-discrete'` (`../animations/animations.md`, Discrete properties); propose it as Needs approval, and Keep when the flip breaks layout.
+CSS animates a property only when Reanimated has an interpolator for it. Check the [supported properties](https://docs.swmansion.com/react-native-reanimated/docs/guides/supported-properties) table, never memory; it describes the latest release, so on an older installed version also check the feature floors in `../animations/animations.md` (filter 4.2.0, SVG 4.4.0, pseudo-selectors 4.5.0, callbacks 4.6.0). React Native does not render the property on a platform either: fine, it was inert there (iOS `shadow*` on Android, `elevation` on iOS). React Native renders it and CSS cannot animate it: Keep on hooks. Discrete (keyword) properties change at the transition midpoint only with `transitionBehavior: 'allow-discrete'` (`../animations/animations.md`, Discrete properties). Route by where the hook flipped the value: a boolean or state driver flipped at the state change, so render the keyword conditionally and leave it out of `transitionProperty`; a `> 0.5` threshold on a 0..1 numeric driver matches the midpoint, so propose `allow-discrete` as Needs approval; any other threshold, or a flip that breaks layout: Keep on hooks.
 
 ## Value functions
 
-A transition tweens the property between two endpoints, so the hook's style must be an affine function of the driver (`a * driver + b`, or `interpolate` with fixed stops evaluated at the endpoints). Anything else (trigonometry, `Math.pow` of the driver, modulo, `interpolate` past its stops without `Extrapolation.CLAMP`) gives different intermediate frames: Keep on hooks for a transition. An animation may instead sample the function into keyframes (every 5 to 10 percent, linear between them); that is an approximation, so Needs approval with the sampling step stated. `interpolateColor` in `'HSV'` or `'LAB'`: Keep on hooks, CSS lerps sRGB. A ternary on the driver whose result is not wrapped in a `with*` is a step, not a tween: render it conditionally and leave it out of `transitionProperty`.
+A transition tweens the property between two endpoints, so between those endpoints the hook's style must be an affine function of the driver: `a * driver + b`, or `interpolate` with no input stop strictly between the two endpoint values (`interpolate(p, [0, 0.5, 1], [0, 100, 0])` passes through 100 where a transition from 0 to 0 stays put). Anything else gives different intermediate frames (`Math.sin(driver)` is one example): Keep on hooks for a transition. An animation may instead put a keyframe at every `interpolate` stop, exact with `'linear'` easing, or sample any other function every 5 to 10 percent; both are approximations of the eased curve, so Needs approval with the step stated. `interpolateColor` in `'HSV'` or `'LAB'`: Keep on hooks, CSS lerps sRGB. A ternary on the driver whose result is not wrapped in a `with*` is a step, not a tween: render it conditionally and leave it out of `transitionProperty` (keywords: see Properties above).
 
 ## `with*`
 
 | Source | CSS | Notes |
 |---|---|---|
 | `withTiming(v, { duration, easing })` | `transitionDuration` + `transitionTimingFunction`, or a two-keyframe animation | mechanism per the section above |
-| `withDelay(ms, anim)` at the top level | `transitionDelay` or `animationDelay` | |
+| `withDelay(ms, anim)` at the top level | `transitionDelay` or `animationDelay` | retargeting mid-flight differs: the hook keeps the running animation going during the delay, a delayed transition cancels it and holds the current value; a site that retargets while running: Needs approval |
 | `withDelay(ms, x)` inside `withSequence` or `withRepeat` | a hold before `x`: repeat the previous keyframe value at `x`'s offset, add `ms` to the total; inside `withRepeat` the hold starts every cycle, never `animationDelay` | not a leading delay |
-| `withTiming(v, { duration: 0 })` inside `withSequence` | an instant step: the new value on the next offset, `'50%': { x: a }, '50.01%': { x: b }` (keyframes sharing an offset merge) | `steps(1, 'jump-end')` when every step is instant |
+| `withTiming(v, { duration: 0 })` inside `withSequence` | an instant step: the new value on the next offset, `'50%': { x: a }, '50.01%': { x: b }` (keyframes sharing an offset merge) | a sequence of holds ending in instant changes: one keyframe per hold with `animationTimingFunction: steps(1, 'jump-end')` on it |
 | `withRepeat(anim)`, count omitted | `animationIterationCount: 2` | `numberOfReps` defaults to 2, `animationIterationCount` to 1: always write the count |
 | `withRepeat(anim, n)`, `n <= 0` | `animationIterationCount: 'infinite'` | |
-| `withRepeat(withTiming(...), n, true)` | plus `animationDirection: 'alternate'`, exact only for a symmetric easing (`linear`, `inOut(f)`, `'ease-in-out'`); CSS mirrors the easing on the return leg, the hook plays it forward. Asymmetric easing: write the ping-pong as `0%`/`50%`/`100%` keyframes with the easing on both intervals, double the duration, halve the count | an even `n` rests at the start value, odd at the target. `withRepeat(withSequence(...), n, true)`: the hook ignores `reverse`, emit `'normal'` |
+| `withRepeat(withTiming(...), n, true)` | plus `animationDirection: 'alternate'`, exact only for a symmetric easing (`linear`, `inOut(f)`, `'ease-in-out'`); CSS mirrors the easing on the return leg, the hook plays it forward. Asymmetric easing: write the ping-pong as `0%`/`50%`/`100%` keyframes with the easing on both intervals, double the duration, halve the count | an even `n` rests at the start value, odd at the target |
+| `withRepeat(withSequence(...), n, true)` | `animationDirection: 'normal'` when the sequence ends where it starts; otherwise Needs approval, with keyframes for cycles 2+ that start at the sequence's last value | the hook does not reverse a sequence, but each later cycle continues from the sequence's last value instead of jumping back to the start |
+| `withRepeat(withDelay(ms, withTiming(v)), n, true)` | none | the hook holds `v` from the second cycle on (the delay ignores the reversed target); Needs approval, or Keep on hooks |
 | `withSequence(a, b, c)` | one animation, `animationDuration` = sum of the children, each keyframe at its cumulative fraction | 100ms then 300ms: stops at `0%`, `25%`, `100%`. Finite animations need `animationFillMode: 'forwards'` unless the static style already equals the resting value |
 | `withClamp({ min, max }, withTiming(v))` | drop the clamp when the start value and `v` both lie inside `[min, max]` (the clamp never triggers) | an endpoint outside the bounds: Keep on hooks, CSS cannot clamp |
 | `withSpring`, `withDecay`, `withClamp` around either | none | Keep on hooks: no CSS spring or velocity-driven timeline; never hand-sample a spring into `linear()` |
@@ -53,10 +55,10 @@ Map the `Easing.*` expression written in the source to a CSS timing function; th
 
 Every other curve (`Easing.inOut(f)`, `poly(n)` for `n` above 3, `sin`, `circle`, `exp`, `elastic`, `bounce`, and the `in`/`out`/`inOut` forms of those) has no cubic-bezier form. Two ways to migrate it, both to be offered as Needs approval, exact first:
 
-- Exact: sample the function into `linear()` (`react-native-reanimated`, available since 4.0.0): `linear(0, f(1/n), f(2/n), ..., 1)` with evenly spaced stops. 20 stops hold a smooth curve within 0.005; `bounce` and `elastic` need about 50. Verbose, so state the stop count.
+- Sampled: `linear()` (`react-native-reanimated`, available since 4.0.0) with the function's values at evenly spaced stops, `linear(0, f(1/n), f(2/n), ..., 1)`. Compute the max error for the stop count you emit and state it. 20 stops hold `inOut(quad|cubic|sin)`, `sin`, `poly(4)`, `back` and `elastic` within 0.005; `exp` and `poly(5)` need 50; `bounce` needs stops at its three kinks (`linear()` accepts `[value, 'pct%']` positions) and `circle` has a vertical tangent at the end, so even stops stay above 0.03 for both: place stops there or treat them as approximations.
 - Approximate: the nearest named curve or cubic-bezier with its max error, which the user may prefer for readability. `'ease-in-out'` stands in for `inOut(quad)` (the `withTiming` default) with a max error of 0.012, for `inOut(sin)` with 0.019, for `inOut(ease)` with 0.029; `inOut(cubic)` (0.084) and `inOut(circle)` (0.136) are visibly different.
 
-Ask which the user wants when the first such site comes up, then apply the answer to every site. Do not sample a spring: its curve depends on the distance and velocity of each run.
+The single question after the inventory (`SKILL.md`, step 1) decides which form every such site gets. Do not sample a spring: its curve depends on the distance and velocity of each run.
 
 ## Imperative control
 
@@ -67,7 +69,7 @@ Ask which the user wants when the first such site comes up, then apply the answe
 | `cancelAnimation(sv)` then `sv.value = withTiming(sameTarget)` | the hook restarts at full duration; a transition to a target already in flight changes nothing | Needs approval |
 | pausing and resuming (`animationPlayState` has no hook twin, the hook cancels and re-animates from the current value) | `animationPlayState: 'paused'` on an animation | Needs approval |
 | reversing mid-flight from code (`cancelAnimation` then `withTiming` back to the start) | a transition back to the start value, which takes the shortened return leg (`../animations/animations.md`, CSS Transitions, Rules) | Needs approval |
-| restarting a finished animation (`sv.value = 0; sv.value = withTiming(1)`) | remount the element or change its `key` | Needs approval: a visible structural change |
+| restarting a finished animation (`sv.value = 0; sv.value = withTiming(1)`) | a new keyframes rule restarts the animation: `animationName: useMemo(() => css.keyframes(frames), [replayCount])` (`../animations/animations.md`, Defining keyframes); a remount or `key` change also works but changes the element tree | Needs approval |
 
 ## Callbacks
 
@@ -78,9 +80,11 @@ Ask which the user wants when the first such site comes up, then apply the answe
 | `withTiming(v, cfg, cb)` on a transitioned property | `onCSSTransitionEnd` for `cb(true)`, `onCSSTransitionCancel` for `cb(false)`; the payload carries `propertyName`, so one handler serves several properties |
 | `withTiming(v, cfg, cb)` on a keyframe animation, `withSequence(...)` completion | `onCSSAnimationEnd` for `cb(true)`, `onCSSAnimationCancel` for `cb(false)` |
 | `withRepeat(withTiming(v, cfg, innerCb), n)` | `innerCb` fires after every repetition: `onCSSAnimationIteration` (not after the last one, which is `onCSSAnimationEnd`) |
-| `withRepeat(anim, n, reverse, outerCb)` | `outerCb` fires once after the last repetition: `onCSSAnimationEnd`; with `n <= 0` it never fires, and the CSS animation only ever reaches `onCSSAnimationCancel` |
+| `withRepeat(anim, n, reverse, outerCb)` | `outerCb` fires once after the last repetition: `onCSSAnimationEnd`; with `n <= 0` it fires `false` on cancel only (`onCSSAnimationCancel`), and `true` under reduced motion, which the `animationIterationCount: reduced ? 1 : 'infinite'` form also reaches as `onCSSAnimationEnd` |
 | a callback on a step inside `withSequence` | no per-keyframe event; Needs approval, proposing a timer at the step's offset, else Keep on hooks |
 | a callback that relies on `finished: true` when the target already equals the current value | CSS fires nothing when nothing changes; call the handler directly in that branch (`if (next === current) onDone(); else setValue(next)`) and say so in the row |
+| the same target written again mid-flight | the hook fired the first callback with `false` and the second with `true`; CSS fires nothing for an unchanged target: Needs approval when the site counts on either call |
+| a callback that writes another shared value | the `onCSS*` handler runs on the JS thread: set state when the chained site migrates too, else assign the shared value from JS (one frame later) |
 
 Callbacks fire for pseudo-selector driven transitions too, and a transition removed by a zero effective duration (4.3.0+) fires nothing.
 
@@ -106,7 +110,7 @@ A driver behind a timer longer than the duration, or a rare event (rotation, nav
 | `ReduceMotion.Always`, or `<ReducedMotionConfig mode={ReduceMotion.Always}>` | the reduced form for everyone, no guard |
 | `<ReducedMotionConfig>` whose `mode` changes at runtime | Keep on hooks |
 
-Where the hook rests: `withTiming(TO)`, `withSequence` and a non-reverse `withRepeat` rest at `TO`; `withRepeat(anim, n, true)` with `n <= 0` or even `n` rests at the start, unless `anim` is a `withSequence`, whose `reverse` is ignored, so it rests at the sequence's last value. Evaluate the style body at that driver value to know which end the fill mode must hold.
+Where the hook rests: `withTiming(TO)`, `withSequence` and a non-reverse `withRepeat` rest at `TO`; `withRepeat(anim, n, true)` with `n <= 0` or even `n` rests at the start whatever `anim` is (a reversed sequence included). Evaluate the style body at that driver value to know which end the fill mode must hold.
 
 ## Colors
 
@@ -120,4 +124,4 @@ Where the hook rests: `withTiming(TO)`, `withSequence` and a non-reverse `withRe
 
 ## SVG
 
-From 4.4.0 (web 4.5.0; on 4.1.0 to 4.3.x only with the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` static flag, a native rebuild) CSS declarations go in `animatedProps`, never `style` (`../animations/svg-animations.md`). The driver becomes state and the attribute a plain prop: `r={grown ? 50 : 20}` beside `animatedProps={{ transitionProperty: 'r', transitionDuration: 300 }}`. Values from a separate `useAnimatedProps` hook you are not migrating can stay in the same `animatedProps` array. Which attributes animate varies per component; check the component's row in [Animating SVG](https://docs.swmansion.com/react-native-reanimated/docs/guides/animating-svg) before converting. Keep on hooks: SVG below the floors above, SVG `transform` arrays, `mask`, `filter`, `marker*` and `pointerEvents` (listed in that table but they throw `No interpolator factory found`), and `fill`/`stroke` written as `currentColor` or `url(#...)`.
+From 4.4.0 (web 4.5.0; on 4.1.0 to 4.3.x only with the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` static flag, a native rebuild; from 4.4.0 the flag is on unless the app's `package.json` sets it to `false`) CSS declarations go in `animatedProps`, never `style` (`../animations/svg-animations.md`). The driver becomes state and the attribute a plain prop: `r={grown ? 50 : 20}` beside `animatedProps={{ transitionProperty: 'r', transitionDuration: 300 }}`. Values from a separate `useAnimatedProps` hook you are not migrating can stay in the same `animatedProps` array. Which attributes animate varies per component; check the component's row in [Animating SVG](https://docs.swmansion.com/react-native-reanimated/docs/guides/animating-svg) before converting. Keep on hooks: SVG below the floors above, SVG `transform` arrays, `mask`, `filter`, `marker*` and `pointerEvents` (listed in that table but they throw `No interpolator factory found`), and `fill`/`stroke` written as `currentColor` or `url(#...)`.

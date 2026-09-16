@@ -11,7 +11,7 @@ Load at most one reference file per question. For API signatures and config opti
 
 ## Version Check
 
-Read the installed Reanimated version before writing animation code: `node_modules/react-native-reanimated/package.json` or the lockfile, not the `package.json` range. Reanimated 3.x has no CSS transitions or animations; use shared values there. On 4.x, a feature used below the version that added it (table in `animations.md`) does not work and nothing warns: do not emit it, tell the user which version adds it.
+Read the installed Reanimated version before writing animation code: `node_modules/react-native-reanimated/package.json` or the lockfile, not the `package.json` range. Reanimated 3.x has no CSS transitions or animations; use shared values there. On 4.x, a feature used below the version that added it (table in `animations.md`) is silently ignored or throws: do not emit it, and if the user asked for that feature, say which version adds it.
 
 ## Critical Rules
 

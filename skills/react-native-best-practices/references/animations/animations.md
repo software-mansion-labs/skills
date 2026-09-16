@@ -21,32 +21,32 @@ Does the effect require per-pixel GPU computation?
 ├── YES → Use GPU Shaders (react-native-wgpu + TypeGPU)   → see gpu-animations.md
 └── NO  → Does it animate more than ~100 elements (low-end Android) or ~500 (iOS)?
     ├── YES → Use Reanimated + react-native-skia           → see canvas-animations.md
-    └── NO  → What drives the animation?
-        ├── A gesture, scroll offset, sensor, or a value that changes every frame
-        │   → Shared Value Animation (useSharedValue + useAnimatedStyle)
-        ├── Per-frame math, trig, or layout reads (measure)
-        │   → Shared Value Animation
-        ├── Press feedback
-        │   → CSS Transition with `:active` (4.5.0+), else Pressable + React state
-        ├── A React state or prop change on an element that stays mounted
-        │   → CSS Transition (transitionProperty)
-        └── Plays by itself once started: mount, loop, keyframe sequence
-            → CSS Animation (animationName + keyframes)
+    └── NO  → Is the animation driven by a state change (not a gesture or continuous input)?
+        ├── YES → Can it be expressed as a simple A→B property transition?
+        │   ├── YES → Use CSS Transition (transitionProperty)
+        │   └── NO  → Does it need a defined keyframe sequence, or play on mount?
+        │       ├── YES → Use CSS Animation (animationName + keyframes)
+        │       └── NO  → Use CSS Transition with multiple properties
+        └── NO  → Is it gesture-driven, or does it need math / trig / layout reads?
+            ├── Simple feedback (press/release, toggle)?
+            │   └── YES → Use CSS Transition with `:active` (4.5.0+), else Pressable + React state
+            └── Continuous tracking, math, or layout reads?
+                └── YES → Use Shared Value Animation (useSharedValue + useAnimatedStyle)
 ```
 
-Default to CSS transitions and CSS animations: declarative, no worklets, no thread bridging. A transition needs a previously rendered value, so anything that must move on first render is an animation, whatever triggered it. Shared values are for continuous input, per-frame math and layout reads; Skia renders many elements to a single canvas; GPU shaders run outside the React Native view hierarchy.
+Default to CSS transitions and CSS animations. They are declarative, easier to read, and remove the overhead of worklet execution. This includes simple gesture feedback like button presses: from 4.5.0 use a CSS transition with the `:active` pseudo-selector, and below that a CSS transition driven by `Pressable` + React state; either way you avoid shared values, worklets and thread bridging. Reach for shared values when the animation requires continuous tracking (pan, pinch, scroll), per-frame math, or layout reads. When the scene animates more than ~100 elements on low-end Android or ~500 on iOS, switch to Reanimated + `react-native-skia`, which renders to a single canvas and avoids per-view overhead. Reach for GPU shaders (`react-native-wgpu` + TypeGPU) when the animation involves per-pixel computation, physics simulations, or 3D rendering that operates outside the React Native view hierarchy.
 
 ---
 
 ## CSS feature availability
 
-Check the installed version first (see `SKILL.md`). Everything below works from Reanimated 4.0.0 unless a row says otherwise. Under its floor a feature does not work: the value is dropped, or passed through unparsed and thrown on by Reanimated or React Native. Nothing warns about the version.
+Check the installed version first (see `SKILL.md`). Everything below works from Reanimated 4.0.0 unless a row says otherwise; a feature used on an older version is silently ignored or throws.
 
 | Feature | From |
 |---|---|
-| CSS transitions and animations, every `animation*`/`transition*` longhand, `cubicBezier`, `steps`, `linear` | 4.0.0 |
+| CSS transitions and CSS animations: all `transition*` and `animation*` properties, keyframes, and every timing function (the named ones like `'ease-in-out'`, plus `cubicBezier()`, `steps()` and `linear()`) | 4.0.0 |
 | `filter` and its functions (`blur`, `brightness`, `dropShadow`, ...) on iOS and Android; web has it from 4.0.0 | 4.2.0 |
-| CSS on `react-native-svg` components, iOS and Android (declarations go in `animatedProps`, see `svg-animations.md`; 4.1.0-4.3.x behind the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` static flag) | 4.4.0 |
+| CSS on `react-native-svg` components, iOS and Android (declarations go in `animatedProps`, see `svg-animations.md`). Enabled by default from 4.4.0 and still labeled experimental (`EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS`, opt-in on 4.1.0-4.3.x) | 4.4.0 |
 | CSS on `react-native-svg` components, web | 4.5.0 |
 | Pseudo-selectors (`:hover`, `:active`, `:active-deepest`, `:focus`, `:focus-within`) | 4.5.0 |
 | CSS animation and transition callbacks (`onCSSAnimation*`, `onCSSTransition*`) | 4.6.0 |
@@ -68,7 +68,9 @@ Use when a style property should animate whenever a state-driven value changes. 
 />
 ```
 
-A transition runs when the property's value differs from the previously rendered one: the driver is React state, a prop, or from 4.5.0 a pseudo-selector. It never runs on mount, and a shared value written on the UI thread does not re-render, so it never triggers one. Bare numbers in every `transition*` and `animation*` duration or delay are milliseconds.
+`transitionDuration: 300` is 300ms: bare numbers are milliseconds in every `transition*` and `animation*` duration or delay, and strings such as `'300ms'` or `'0.3s'` work too.
+
+A transition runs when the property's value differs from the previously rendered one: the driver is React state, a prop, or from 4.5.0 a pseudo-selector. It never runs on mount, and a shared value written on the UI thread does not re-render, so it never triggers one.
 
 When using arrays, the order must match the `transitionProperty` array:
 
@@ -80,10 +82,18 @@ transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 
 ### Simple gesture feedback
 
-Press feedback is a transition too. From 4.5.0 write the pressed value inline with the `:active` pseudo-selector; nothing re-renders:
+Press feedback is a transition too. Two cases:
+
+**The pressed element styles itself.** From 4.5.0 write the pressed value inline with the `:active` pseudo-selector. Pseudo-selectors work on any `Animated` component (and on `react-native-svg` elements from 4.6.0); the `Pressable` here only provides `onPress`. Nothing re-renders.
 
 ```tsx
-<Animated.View
+import { Pressable } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+<AnimatedPressable
+  onPress={onPress}
   style={{
     transform: { default: [{ scale: 1 }], ':active': [{ scale: 0.96 }] },
     transitionProperty: 'transform',
@@ -92,7 +102,9 @@ Press feedback is a transition too. From 4.5.0 write the pressed value inline wi
 />
 ```
 
-Below 4.5.0 drive the same transition from `Pressable`'s render prop:
+`:active` fires on the element under the finger and on every ancestor that declares `:active`; put `:active-deepest` on an ancestor that must stay quiet while a pressed descendant handles the feedback.
+
+**A child of the pressed element styles itself.** A child the finger does not land on never matches `:active`, so drive it from `Pressable`'s render prop instead. This form also works below 4.5.0:
 
 ```tsx
 import { Text } from 'react-native';
@@ -117,31 +129,52 @@ function PressableButton({ label, onPress }: { label: string; onPress: () => voi
 }
 ```
 
+Below 4.5.0, when the `Pressable` itself carries the style, keep a `useState` set from `onPressIn`/`onPressOut` on the animated `Pressable`.
+
+Reserve shared value animations for continuous gesture tracking (pan, pinch, scroll-driven) where the animation must follow finger position on every frame without a JS thread round-trip.
+
 ### Discrete properties
 
-Keyword-valued properties such as `flexDirection`, `justifyContent`, `alignItems` and `display` cannot tween. A transition skips them unless you set:
+Properties like `flexDirection`, `justifyContent`, and `alignItems` cannot be smoothly animated. In a transition they change instantly by default. To make them flip at the transition midpoint instead, set:
 
 ```tsx
 transitionBehavior: 'allow-discrete',
 ```
 
-They then flip at the midpoint. `display` is the exception: leaving `none` flips at the start, going to `none` holds the visible value until the end, so it works for enter/exit. Boolean and enum-like props (`includeFontPadding`, SVG `fillRule`, `strokeLinecap`) always flip at the midpoint, with or without `allow-discrete`. To animate the layout change a keyword flip causes, put a layout transition on the affected views instead (`layout-animations.md`).
+In a CSS animation they always flip halfway between the two keyframes. The `display` property is special-cased around `none`: leaving `none` it flips at the start, and going to `none` it holds the visible value until the end, which is what makes it usable for enter/exit. To animate the layout change a keyword flip causes, put a layout transition on the affected views instead (`layout-animations.md`).
 
 ### Rules
 
-- Always list `transitionProperty` explicitly. Setting any other `transition*` value without it defaults to `'all'`, which transitions whatever happens to change, including properties you never meant to animate.
+- `transitionProperty` defaults to `'all'` when omitted, which transitions every property that changes. List the properties explicitly when only some of them should animate.
 - Always set `transitionDuration`. The default is `0`, which discards the motion. The default timing function is `'ease'`.
-- Both endpoints must be the same kind of value. `height: open ? 300 : 'auto'` jumps to the target on the first frame (from 4.2.0; 4.0.x and 4.1.x flip at the midpoint), and `allow-discrete` only moves that jump to the midpoint. A property declared in one state only transitions from its default, which is `'auto'` for every dimension and inset (`width`, `height`, `minWidth`, `top`, `left`, ...), `flexBasis` and `aspectRatio`, so declare those in both states.
-- Reversing a running transition shortens the return leg in proportion to the eased progress, like a browser; `withTiming` restarts at full duration on a retarget.
+- Both values must be the same kind: `height: open ? 300 : 'auto'` cannot animate between a number and a keyword, so it jumps to the target. Declare the property in both states with the same kind of value.
+- Reversing a running transition (a press released while the press-in transition is still running) returns over the remaining distance in proportionally less time, like a browser: reversed 100ms into a 300ms linear transition, the way back takes about 100ms. `withTiming` would restart at the full 300ms.
 - Colors interpolate as straight sRGB. `withTiming` and `interpolateColor` gamma-correct, so the same two endpoints produce a visibly different midpoint on wide swings (black to white, red to cyan). Alpha and `opacity` fades match exactly.
 - Negative delays start the transition partway through (e.g., `'-5s'` on a 10s transition starts at 50%).
-- Respect reduced motion by shortening: `transitionDuration: reduced ? 1 : 300` from `useReducedMotion()`. Never `0`: from 4.3.0 a transition whose duration plus delay is `<= 0` is removed, so no callback fires.
+
+### Reduced motion
+
+CSS transitions do not react to the system reduce-motion setting on their own (`withTiming` does). Read `useReducedMotion()` and shorten the transition rather than removing it, so the end state and any callbacks still arrive:
+
+```tsx
+const reduced = useReducedMotion();
+
+<Animated.View
+  style={{
+    opacity: visible ? 1 : 0,
+    transitionProperty: 'opacity',
+    transitionDuration: reduced ? 1 : 300,
+  }}
+/>
+```
+
+Use `1` (1ms), never `0`: a transition whose duration plus delay is `0` is dropped entirely, so nothing fires.
 
 ---
 
 ## CSS Animations
 
-Use when the animation follows a predefined keyframe sequence independent of external state: loaders, pulse effects, entrance choreography. For the full property list, webfetch the [CSS Animations docs](https://docs.swmansion.com/react-native-reanimated/docs/category/css-animations).
+Use when the animation follows a predefined keyframe sequence independent of external state — loaders, pulse effects, entrance choreography. For the full property list, webfetch the [CSS Animations docs](https://docs.swmansion.com/react-native-reanimated/docs/category/css-animations).
 
 ```tsx
 const pulse = {
@@ -153,7 +186,7 @@ const pulse = {
 <Animated.View
   style={{
     animationName: pulse,
-    animationDuration: 1200,
+    animationDuration: '1200ms',
     animationIterationCount: 'infinite',
     animationTimingFunction: 'ease-in-out',
   }}
@@ -164,7 +197,7 @@ Keyframe offsets are percentages, `from`/`to`, or numbers in 0..1. The element's
 
 ### Mount animations
 
-CSS attaches after the first paint, so a mount animation needs its start value in the static style too, or the first frame shows the resting value. Add `animationFillMode: 'forwards'` to stay at the end; the default `'none'` snaps back when the animation finishes.
+CSS attaches after the first paint, so a mount animation needs its start value in the static style too, or the first frame shows the resting value. Add `animationFillMode: 'forwards'` to stay at the end; with the default `'none'` the element snaps back to its static style when the animation finishes.
 
 ```tsx
 <Animated.View
@@ -186,26 +219,66 @@ const moveLeft = { '100%': { transform: [{ translateX: -100 }] } };
 <Animated.View
   style={{
     animationName: [fadeInOut, moveLeft],
-    animationDuration: [2500, 5000],
+    animationDuration: ['2.5s', '5s'],
     animationIterationCount: ['infinite', 1],
   }}
 />
 ```
 
-Every `animation*` setting takes a parallel array, one entry per animation. If two animations target the same property, the later one wins.
+Every `animation*` setting takes a parallel array, one entry per animation. If multiple animations target the same property, the later animation in the array wins.
+
+### Defining keyframes
+
+Prefer `css.keyframes()` (`css` imported from `react-native-reanimated`) called once outside the component: the keyframes are processed once and every component that uses the rule shares it.
+
+```tsx
+// Best: processed once, shared, never restarts on re-render
+const pulse = css.keyframes({ '50%': { opacity: 0.4 } });
+
+// Fine: a plain object is matched by content, so it does not restart on re-render,
+// but it is re-checked on every render
+const pulseInline = { '50%': { opacity: 0.4 } };
+
+function Dot() {
+  // Restarts the animation on EVERY render: `css.keyframes()` inside a component
+  // creates a new rule each time. Use this only to re-trigger the animation on purpose.
+  const restarting = css.keyframes({ '50%': { opacity: 0.4 } });
+
+  return <Animated.View style={{ animationName: pulse, animationDuration: '1200ms' }} />;
+}
+```
+
+A plain keyframes object behaves the same inline or outside the component: matched by content, no restart. Only an inline `css.keyframes()` call restarts the animation each render.
 
 ### Rules
 
-- Define keyframes outside render. A plain keyframes object is compared by content; a `css.keyframes()` rule (`css` from `react-native-reanimated`) by identity, so one created inside render restarts the animation on every re-render.
-- A keyframe's own `animationTimingFunction` governs only the interval that starts there. There is no carry-over: an interval whose keyframe declares none uses the animation-level function. The one on the last keyframe is ignored.
-- Keep the `transform` array in the same order across all keyframes. Reordered operations, or a `matrix` entry, silently fall back to interpolating the composed matrices, which paces and paths differently.
+- `animationTimingFunction` at the top level eases every interval between two consecutive keyframes of a property. A keyframe can carry its own `animationTimingFunction` to override it for the interval that starts there, up to the next keyframe that sets the same property; one on the last keyframe has no interval and is ignored.
 - Avoid `animationFillMode: 'forwards'` or `'both'` with fractional `animationIterationCount` and relative units (percentages). If the parent resizes after the animation, the child retains stale dimensions.
-- `animationIterationCount: 'infinite'` stops automatically on unmount, no manual cleanup needed. Negative delays start the animation partway through its cycle. Pause and resume with `animationPlayState: 'paused'` / `'running'`.
-- Respect reduced motion by removing the animation: drop `animationName` and render the value the animation rests at. Never shorten it; a 1ms infinite animation strobes.
+- `animationIterationCount: 'infinite'` runs until the component unmounts; nothing to clean up.
+- Negative delays start the animation partway through its cycle.
+- Pause and resume with `animationPlayState: 'paused'` / `'running'`.
 
 ### Timing functions
 
 `cubicBezier`, `steps` and `linear` are exported from `react-native-reanimated` and work in transitions and animations alike. Passing an `Easing.*` value throws. Write the `steps` modifier explicitly, `steps(4, 'jump-start')`: the default is `'jump-end'`, the opposite of `Easing.steps`. Modifiers: `'jump-start'`, `'jump-end'`, `'jump-none'`, `'jump-both'`, `'start'`, `'end'`.
+
+### Reduced motion
+
+CSS animations do not react to the system reduce-motion setting on their own either. Shorten the animation instead of removing it, and cap the iteration count so a loop does not strobe; a 1ms run still reaches its end state, keeps `animationFillMode` and fires the end callback:
+
+```tsx
+const reduced = useReducedMotion();
+
+<Animated.View
+  style={{
+    animationName: pulse,
+    animationDuration: reduced ? 1 : '1200ms',
+    animationIterationCount: reduced ? 1 : 'infinite',
+  }}
+/>
+```
+
+Do not remove `animationName` instead: that discards the fill mode too, so an element whose static style is `opacity: 0` never appears. When the motion carries meaning (a slide-in), replace it rather than shorten it: `animationName: reduced ? fadeIn : slideIn`.
 
 ---
 

@@ -30,16 +30,19 @@ function Spinner() {
     <Animated.View
       style={[
         styles.box,
-        reduced
-          ? { transform: [{ rotateZ: '360deg' }] }
-          : { animationName: rotate, animationDuration: 2000, animationIterationCount: 'infinite', animationTimingFunction: 'linear' },
+        {
+          animationName: rotate,
+          animationDuration: reduced ? 1 : 2000,
+          animationIterationCount: reduced ? 1 : 'infinite',
+          animationTimingFunction: 'linear',
+        },
       ]}
     />
   );
 }
 ```
 
-Permitted by check 1 (one write in `useEffect`) and check 5 (`cancelAnimation` only in the cleanup). The reduced branch renders `360deg`: no `reverse`, so the loop rests at the target.
+Permitted by check 1 (one write in `useEffect`) and check 5 (`cancelAnimation` only in the cleanup). Under reduced motion the loop runs once for 1ms and snaps back to the static style, which is where a non-`reverse` loop rests (`360deg` is `0deg`).
 
 ## Migrate: play once on mount
 
@@ -52,12 +55,10 @@ useEffect(() => { opacity.value = withTiming(1, { duration: 300 }); }, []);
 // After: keep opacity: 0 so the first painted frame matches the hook
 const fadeIn: CSSAnimationKeyframes = { from: { opacity: 0 }, to: { opacity: 1 } };
 // on the element
-reduced
-  ? { opacity: 1 }
-  : { opacity: 0, animationName: fadeIn, animationDuration: 300, animationTimingFunction: 'ease-in-out', animationFillMode: 'forwards' }
+{ opacity: 0, animationName: fadeIn, animationDuration: reduced ? 1 : 300, animationTimingFunction: 'ease-in-out', animationFillMode: 'forwards' }
 ```
 
-The reduced branch renders the resting value. The report notes `inOut(quad)` to `'ease-in-out'`, max error 0.012.
+Under reduced motion the 1ms run lands on `opacity: 1` through the fill mode, as `withTiming` jumps to its target. The report notes `inOut(quad)` to `'ease-in-out'`, max error 0.012.
 
 ## Migrate: one-way state change
 
@@ -104,4 +105,4 @@ useEffect(() => { progress.value = withRepeat(withTiming(1, { duration: 600 }), 
 const style = useAnimatedStyle(() => ({ transform: [{ scaleY: interpolate(progress.value, [0, 1], [0.35, 1]) }] }));
 ```
 
-Reduced motion never advances `progress`, so the style rests at `interpolate(0, ...)` = `0.35`. The reduced branch is `{ transform: [{ scaleY: 0.35 }] }`; copying the `to` keyframe parks the element nearly three times too tall. Evaluate the style body at the driver's resting value, never read it off the keyframes you wrote.
+Reduced motion never advances `progress`, so the hook rests at `interpolate(0, ...)` = `0.35`, the start. The shortened animation must rest there too: static style `scaleY: 0.35` and `animationFillMode: 'none'`, so the 1ms run snaps back to it. `'forwards'` would park the element at the `to` keyframe, nearly three times too tall. Evaluate the style body at the driver's resting value, never read it off the keyframes you wrote.

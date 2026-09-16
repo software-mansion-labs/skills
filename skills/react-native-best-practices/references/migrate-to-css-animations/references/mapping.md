@@ -58,12 +58,12 @@ Every `with*` without `ReduceMotion.Never` jumps under reduced motion, so an ung
 
 | Kind | Form |
 |---|---|
-| Transition | `transitionDuration: reduced ? 1 : D`, never `0` (`../animations/animations.md`, CSS Transitions, Rules) |
-| Animation | drop `animationName`, render the resting value, never shorten (`../animations/animations.md`, CSS Animations, Rules) |
+| Transition | `transitionDuration: reduced ? 1 : D`, never `0` (`../animations/animations.md`, CSS Transitions, Reduced motion) |
+| Animation | `animationDuration: reduced ? 1 : D` and `animationIterationCount: reduced ? 1 : N`; keep `animationName` so the fill mode and callbacks survive, and pick `animationFillMode` so it rests where the hook rests: `'forwards'` when the hook rests at the target, `'none'` (snapping back to the static style) when it rests at the start (`../animations/animations.md`, CSS Animations, Reduced motion) |
 | `ReduceMotion.Never` in the source | no guard |
 | `ReduceMotion.Always` | the reduced form for everyone, no guard |
 
-The resting value comes from the source: `withTiming(TO)`, `withSequence` and a non-reverse `withRepeat` rest at `TO`; `withRepeat(anim, n, true)` with `n <= 0` or even `n` rests at the start, unless `anim` is a `withSequence`, whose `reverse` is ignored, so it rests at the sequence's last value; then evaluate the style body at that driver value.
+Where the hook rests: `withTiming(TO)`, `withSequence` and a non-reverse `withRepeat` rest at `TO`; `withRepeat(anim, n, true)` with `n <= 0` or even `n` rests at the start, unless `anim` is a `withSequence`, whose `reverse` is ignored, so it rests at the sequence's last value. Evaluate the style body at that driver value to know which end the fill mode must hold.
 
 ## Colors
 

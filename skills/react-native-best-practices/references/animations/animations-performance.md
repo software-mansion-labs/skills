@@ -106,7 +106,10 @@ For lists with many animated items, consider reducing animation complexity on lo
 
 Animating layout properties (`top`, `left`, `width`, `height`, `margin`, `padding`) forces a layout pass on every frame.
 
-Prefer non-layout properties: `transform` (all transforms), `opacity`, `backgroundColor`.
+Prefer non-layout properties:
+- `transform` (`translateX`, `translateY`, `scale`, `rotate`, ...)
+- `opacity`
+- `backgroundColor`
 
 The synchronous fast path is a separate mechanism that exists only with `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` / `IOS_SYNCHRONOUSLY_UPDATE_UI_PROPS` enabled (incompatible with `ENABLE_SHARED_ELEMENT_TRANSITIONS`, `layout-animations.md`): it carries `opacity`, `transform`, `zIndex`, `elevation`, `borderRadius`, `outline*` and the color props (`backgroundColor`, `borderColor`, `shadowColor`, `tintColor`, `placeholderTextColor`; not `PlatformColor` values on Android), plus `shadowOffset`/`shadowOpacity`/`shadowRadius` on iOS. Everything else goes through a shadow tree commit.
 

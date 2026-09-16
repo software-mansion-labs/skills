@@ -401,7 +401,19 @@ This updates the native text node directly on the UI thread, bypassing React and
 
 ## Infinite Animations
 
-CSS animations stop on unmount by themselves, and `useSharedValue` cancels a running animation when its component unmounts. Call `cancelAnimation(sv)` only to stop a loop early, or for values created with `makeMutable`. Never start infinite animations outside the component lifecycle (module scope, global timers): nothing stops them.
+CSS animations with `animationIterationCount: 'infinite'` clean up automatically on unmount, and so does a shared value animation: `useSharedValue` cancels it when the component unmounts. Cancel explicitly to stop a loop early, or for values created with `makeMutable`:
+
+```tsx
+useEffect(() => {
+  offset.value = withRepeat(withTiming(1, { duration: 800 }), -1, true);
+
+  return () => {
+    cancelAnimation(offset);
+  };
+}, []);
+```
+
+Never start infinite animations outside the component lifecycle (module scope, global timers). They cannot be cleaned up and will leak.
 
 ---
 

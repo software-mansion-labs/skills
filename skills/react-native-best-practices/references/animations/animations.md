@@ -62,7 +62,7 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 
 ### Reduced motion
 
-CSS transitions and animations have no reduced-motion option. Unlike `with*` animations, which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too (an element whose static style is `opacity: 0` then never appears).
+CSS transitions and animations have no reduced-motion option. Unlike `with*` animations (`withTiming`, `withSpring`, ...), which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too (an element whose static style is `opacity: 0` then never appears).
 
 ```tsx
 const reduced = useReducedMotion();

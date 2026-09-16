@@ -62,18 +62,27 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 
 ### Callbacks
 
-From 4.6.0 the animated component takes lifecycle callbacks as props: `onCSSAnimationStart`, `onCSSAnimationEnd`, `onCSSAnimationIteration`, `onCSSAnimationCancel`, `onCSSTransitionRun`, `onCSSTransitionStart`, `onCSSTransitionEnd`, `onCSSTransitionCancel`. They are **props, never style keys**; one placed in `style` or `animatedProps` never fires. On 4.5.x only four transition callbacks exist (`onTransitionRun`, `onTransitionStart`, `onTransitionEnd`, `onTransitionCancel`), written inside the style object, and they fire only on web; there is no animation callback at all. Below 4.6.0 say so instead of emitting one for native.
+From 4.6.0 the animated component takes lifecycle callbacks as props, never as style keys. Transitions report per transitioning property, animations per animation; the event carries `elapsedTime` in seconds (`transitionDuration: 300` reports `0.3`) plus `propertyName` for a transition or `animationName` for an animation. There is no `finished` flag: `End` is completion, `Cancel` is interruption.
 
 ```tsx
 <Animated.View
   style={{ opacity: visible ? 1 : 0, transitionProperty: 'opacity', transitionDuration: 300 }}
-  onCSSTransitionEnd={(e) => done(e.elapsedTime)}
-  onCSSTransitionCancel={() => cleanup()}
+  onCSSTransitionRun={(e) => console.log('triggered, before any delay', e.propertyName)}
+  onCSSTransitionStart={(e) => console.log('started, after the delay', e.propertyName)}
+  onCSSTransitionEnd={(e) => console.log('finished', e.propertyName, e.elapsedTime)}
+  onCSSTransitionCancel={(e) => console.log('interrupted: retargeted mid-flight or unmounted', e.propertyName)}
+/>
+
+<Animated.View
+  style={{ animationName: pulse, animationDuration: '1200ms', animationIterationCount: 3 }}
+  onCSSAnimationStart={(e) => console.log('started, after animationDelay', e.animationName)}
+  onCSSAnimationIteration={(e) => console.log('an iteration ended, except the last', e.animationName)}
+  onCSSAnimationEnd={(e) => console.log('finished', e.animationName, e.elapsedTime)}
+  onCSSAnimationCancel={(e) => console.log('interrupted or unmounted', e.animationName)}
 />
 ```
 
-- The event carries `elapsedTime` in seconds (`transitionDuration: 300` reports `0.3`) plus `animationName` (animations) or `propertyName` (transitions). Transition callbacks fire once per transitioning property. `Run` fires when the transition is triggered, before any delay; `Start` after the delay; `End` on completion; `Cancel` on interruption (unmount, or a transition retargeted mid-flight). There is no `finished` flag.
-- An infinite animation never reaches `onCSSAnimationEnd`; its only terminal event is `onCSSAnimationCancel` (`Start` and `Iteration` still fire).
+An infinite animation never reaches `onCSSAnimationEnd`; its only terminal event is `onCSSAnimationCancel`. Transition callbacks fire for pseudo-selector-driven transitions too.
 
 ### Reduced motion
 

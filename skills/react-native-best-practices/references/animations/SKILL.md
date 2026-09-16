@@ -9,6 +9,10 @@ Software Mansion's production animation patterns for React Native on Reanimated 
 
 Load at most one reference file per question. For API signatures and config options, webfetch the documentation pages linked in each reference file.
 
+## Version Check
+
+Read the installed Reanimated version before writing animation code: `node_modules/react-native-reanimated/package.json` or the lockfile, not the `package.json` range. Reanimated 3.x has no CSS transitions or animations; use shared values there. On 4.x, a feature used below the version that added it (table in `animations.md`) does not work and nothing warns: do not emit it, tell the user which version adds it.
+
 ## Critical Rules
 
 - **NEVER use `runOnJS`**. It is removed in Reanimated 4. Use `scheduleOnRN(fn, ...args)` from `react-native-worklets` instead. This applies everywhere: scroll handlers, gesture callbacks, `useAnimatedReaction`, `useFrameCallback`, and any other worklet context.
@@ -17,7 +21,7 @@ Load at most one reference file per question. For API signatures and config opti
 
 | File | When to read |
 |------|-------------|
-| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS transition and CSS animation patterns and rules; animating text; infinite animation cleanup; `scheduleOnRN` |
+| `animations.md` | Choosing between CSS transitions, CSS animations, and shared value animations; CSS feature availability by Reanimated version; CSS transition and CSS animation patterns and rules; animating text; infinite animation cleanup; `scheduleOnRN` |
 | `animation-functions.md` | Gotchas and rules for core hooks (`useSharedValue`, `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue`); `withSpring` config modes; `withRepeat` and `withClamp` caveats; composing animations |
 | `layout-animations.md` | Entering/exiting animation gotchas (`nativeID` conflict, view flattening); layout transitions; keyframe animation rules; list item animations (`itemLayoutAnimation`); shared element transitions |
 | `scroll-and-events.md` | Scroll-driven animation patterns (`useAnimatedScrollHandler`, `scrollTo`, `useScrollOffset`); `useAnimatedReaction` patterns; `useFrameCallback`; `measure` rules |

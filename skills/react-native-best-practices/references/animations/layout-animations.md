@@ -25,10 +25,10 @@ Predefined animation families include Fade, Slide, Zoom, Bounce, Flip, Stretch, 
 Chain modifiers on any predefined animation:
 
 ```tsx
-entering={FadeIn.duration(500).delay(200).springify().damping(15)}
+entering={FadeIn.delay(200).springify().damping(15)}
 ```
 
-Time-based modifiers (`.duration()`, `.easing()`) are incompatible with spring-based modifiers (`.springify()`, `.damping()`, `.mass()`, `.stiffness()`).
+`.easing()` has no effect once `.springify()` is used. A spring is duration-based (`.springify().duration(550).dampingRatio(0.75)`) or physics-based (`.springify().damping(30).stiffness(900)`); `.mass()` applies to both. When both kinds of modifier are present, `duration` and `dampingRatio` win and `damping` and `stiffness` are ignored.
 
 ### Gotchas
 
@@ -36,6 +36,15 @@ Time-based modifiers (`.duration()`, `.easing()`) are incompatible with spring-b
 - **View flattening**: Removing a non-animated parent triggers exiting animations in its children, but the parent will not wait for children to finish. Add `collapsable={false}` to the parent to prevent this.
 - **Spring-based animations**: Not yet available on the web platform.
 - **Performance**: Define animation builders outside of components or wrap with `useMemo`.
+- `.energyThreshold()` (default `6e-9`) decides when a spring rests (4.1.0+); `.restDisplacementThreshold()` and `.restSpeedThreshold()` are no-ops since 4.1.0.
+
+Override a preset's start and end state (entering/exiting only, not layout transitions):
+
+```tsx
+entering={FadeInDown.withInitialValues({ translateY: 420 }).withTargetValues({ translateY: 0 })}
+```
+
+From 4.4.0: flat transform props (`{ translateX: 50 }`) and `withTargetValues`. Below 4.4.0 only `withInitialValues({ transform: [{ translateX: 50 }] })` exists.
 
 ---
 
@@ -109,7 +118,7 @@ Animate item layout changes in `FlatList` when items are added, removed, or reor
 - Only works with single-column `FlatList`. `numColumns` cannot be greater than 1.
 - Items must have a `key` or `id` property (or provide a custom `keyExtractor`).
 - Set `itemLayoutAnimation` to `undefined` to disable at runtime.
-- Use `.skipEnteringExitingAnimations` to prevent entering/exiting animations on initial mount and unmount of the FlatList.
+- `skipEnteringExitingAnimations` is a prop on `Animated.FlatList`, not a modifier. Any defined value, including `false`, skips; pass it only when skipping.
 
 ---
 
@@ -125,13 +134,15 @@ import { LayoutAnimationConfig } from 'react-native-reanimated';
 </LayoutAnimationConfig>
 ```
 
-Can be nested. For FlatLists, use the `.skipEnteringExitingAnimations` modifier on `itemLayoutAnimation` instead.
+Can be nested. For FlatLists, pass the `skipEnteringExitingAnimations` prop on `Animated.FlatList` instead, which applies this wrapper.
 
 ---
 
 ## [Shared Element Transitions](https://docs.swmansion.com/react-native-reanimated/docs/shared-element-transitions/overview)
 
-**Status: Experimental. Not recommended for production.**
+**Status: Experimental, off by default. Not recommended for production.**
+
+Requires 4.2.0+ and the `ENABLE_SHARED_ELEMENT_TRANSITIONS` static feature flag (`package.json`: `"reanimated": { "staticFeatureFlags": { "ENABLE_SHARED_ELEMENT_TRANSITIONS": true } }`, then `pod install` and rebuild; not possible in Expo Go). With the flag off, `sharedTransitionTag` is silently ignored. The flag disables the `*_SYNCHRONOUSLY_UPDATE_UI_PROPS` fast path, and the iOS `pod install` or the Android Gradle build fails if both are set.
 
 Animates a view between two screens during navigation:
 
@@ -142,7 +153,8 @@ Animates a view between two screens during navigation:
 />
 ```
 
-- Requires React Navigation native stack navigator. Tab navigator and `transparentModal` (iOS) are not supported.
+- With a navigator, only the React Navigation native stack is supported. Tab navigator and `transparentModal` (iOS) are not.
+- 4.5.0+: `SharedTransitionBoundary` drops the navigator requirement. Wrap each side and toggle `isActive`: `<SharedTransitionBoundary isActive={activeId === 0}><Animated.View sharedTransitionTag="tag" /></SharedTransitionBoundary>`.
 - Tags must be unique per screen. Add the same tag to matching components on both screens.
 - Default duration: 500ms. Animates width, height, position, transform, backgroundColor, opacity.
 - iOS supports progress-based (swipe gesture) transitions. Android uses timing-based transitions only.

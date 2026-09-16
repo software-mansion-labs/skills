@@ -1,6 +1,6 @@
 # Worked examples
 
-Calibration, not an allow-list: the checks in `SKILL.md` decide.
+Calibration, not an allow-list: the decision tree in `SKILL.md` decides.
 
 ## Migrate: infinite loop
 
@@ -42,7 +42,7 @@ function Spinner() {
 }
 ```
 
-Permitted by check 1 (one write in `useEffect`) and check 5 (`cancelAnimation` only in the cleanup). Under reduced motion the loop runs once for 1ms and snaps back to the static style, which is where a non-`reverse` loop rests (`360deg` is `0deg`).
+A JS-thread write in `useEffect`, and `cancelAnimation` only in the cleanup, so the tree reaches Migrate. Under reduced motion the loop runs once for 1ms and snaps back to the static style, which is where a non-`reverse` loop rests (`360deg` is `0deg`).
 
 ## Migrate: play once on mount
 
@@ -58,7 +58,7 @@ const fadeIn: CSSAnimationKeyframes = { from: { opacity: 0 }, to: { opacity: 1 }
 { opacity: 0, animationName: fadeIn, animationDuration: reduced ? 1 : 300, animationTimingFunction: 'ease-in-out', animationFillMode: 'forwards' }
 ```
 
-Under reduced motion the 1ms run lands on `opacity: 1` through the fill mode, as `withTiming` jumps to its target. The report notes `inOut(quad)` to `'ease-in-out'`, max error 0.012.
+Under reduced motion the 1ms run lands on `opacity: 1` through the fill mode, as `withTiming` jumps to its target. The easing is the `withTiming` default: the report notes `inOut(quad)` to `'ease-in-out'`, max error 0.012, or the exact `linear()` form if the user chose it.
 
 ## Migrate: one-way state change
 
@@ -81,11 +81,11 @@ useEffect(() => { if (uploadComplete) sv.value = true; }, [uploadComplete]);
 />
 ```
 
-Permitted by check 1 (JS effect) and check 7 (an upload completes once, no reversal). Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row (the transition is a color, so no reduced-motion guard).
+A JS effect drives it and an upload completes once, so nothing reverses mid-flight. Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row (the transition is a color under 300ms, so no reduced-motion guard).
 
 ## Needs approval: the toggle that can reverse
 
-Expand/collapse, show/hide, a switch: the user can flip back inside the duration, and check 7 stops there.
+Expand/collapse, show/hide, a switch: the user can flip back inside the duration, and the reversal question in the tree stops there.
 
 ```tsx
 // Before: leave exactly as is until the user accepts

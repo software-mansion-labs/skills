@@ -80,7 +80,7 @@ const animatedStyle = useAnimatedStyle(() => ({
 
 ### [useAnimatedProps](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedProps)
 
-For animating component properties (not styles). Prefer doing value conversions inside the `useAnimatedProps` callback. Adapters are still its third argument: write them with `'worklet'` and pass them directly. `createAnimatedPropAdapter` is a deprecated pass-through that only adds that directive for you; `SVGAdapter` no longer ships.
+For animating component properties (not styles). Prefer doing value conversions inside the `useAnimatedProps` callback. Adapters are still its third argument: write them with `'worklet'` and pass them directly. `createAnimatedPropAdapter` is a pass-through that warns it will be removed (the Babel plugin workletizes its argument, nothing else happens); `SVGAdapter` no longer ships.
 
 ```tsx
 const animatedProps = useAnimatedProps(() => ({
@@ -141,7 +141,7 @@ Rest is decided by `energyThreshold` (default `6e-9`). `restDisplacementThreshol
 
 ### [withClamp](https://docs.swmansion.com/react-native-reanimated/docs/animations/withClamp)
 
-Clamps the animated value to `[min, max]` every frame - it truncates the output, it does not change the animation's parameters. Different from `withSpring`'s own `clamp` config, which rescales the spring's damping ratio so bounces stay inside the bounds, and which is only valid alongside the duration-based config (`duration` / `dampingRatio`).
+Clamps the animated value to `[min, max]` every frame - it truncates the output, it does not change the animation's parameters. Different from `withSpring`'s own `clamp` config, which rescales the spring's damping ratio so bounces stay inside the bounds; its type allows it only alongside the duration-based config (`duration` / `dampingRatio`).
 
 ---
 

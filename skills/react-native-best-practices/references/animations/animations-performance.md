@@ -19,7 +19,7 @@ Without this flag, iOS caps animations at 60fps even on ProMotion devices. The R
 
 ## Feature Flags
 
-Reanimated 4 exposes feature flags to opt into fixes for known New Architecture issues. Every flag below is *static*: it resolves at compile time and cannot be changed at runtime. Set it in your app's `package.json`, run `pod install` (iOS), and rebuild the native app.
+Reanimated 4 exposes feature flags to opt into fixes for known New Architecture issues. Every Reanimated flag below is *static*: it resolves at compile time and cannot be changed at runtime. Set it in your app's `package.json`, run `pod install` (iOS), and rebuild the native app.
 
 ```json
 {
@@ -42,7 +42,7 @@ Run CSS transitions on the platform's own animation API instead of Reanimated's 
 
 Both experimental, both default `false`. CSS *animations* always stay on the loop.
 
-Routing is per property. On 4.4.x iOS routes `opacity` only; from 4.5.0 it routes `opacity`, `backgroundColor`, `borderColor`, `borderRadius`, `borderWidth`, `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`. Android routes `opacity` only. A property falls back to the loop if the component uses any `onCSSTransition*` prop (4.6.0), or, on iOS, if its timing function is `steps` or `linear()` with stops.
+Routing is per property, and the lists move between releases (as of 4.6.0). On 4.4.x iOS routes `opacity` only; from 4.5.0 it routes `opacity`, `backgroundColor`, `borderColor`, `borderRadius`, `borderWidth`, `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`. Android routes `opacity` only. A property falls back to the loop if the component uses any `onCSSTransition*` prop (4.6.0), or, on iOS, if its timing function is `steps` or `linear()` with stops.
 
 iOS caveat: `backgroundColor`, `borderColor`, `borderWidth` and `borderRadius` are routed even when React Native draws them on separate layers, where the routed animation never arrives and the value jumps. That happens on any view with a visible border and the default `overflow`, or with per-side border or per-corner radius differences.
 
@@ -68,7 +68,7 @@ It cannot be enabled alongside `FORCE_REACT_RENDER_FOR_SETTLED_ANIMATIONS`, whic
 Animated components like sticky headers flicker during `FlatList` or `ScrollView` scrolling on the New Architecture.
 
 **Fix:** Upgrade to React Native 0.81+ and enable:
-- `preventShadowTreeCommitExhaustion` (React Native). Override it per app through React Native's feature-flag override API before the host starts (Android: `ReactNativeFeatureFlags.override(object : ReactNativeFeatureFlagsDefaults() { override fun preventShadowTreeCommitExhaustion() = true })`; iOS: `ReactNativeFeatureFlags::override(...)` in `AppDelegate.mm`) rather than switching RN to the experimental release level, which enables unrelated flags too.
+- `preventShadowTreeCommitExhaustion` (React Native, off by default). Enable only this flag the way the [Reanimated feature flags guide](https://docs.swmansion.com/react-native-reanimated/docs/guides/feature-flags) describes: patch `ReactNativeFeatureFlagsDefaults.h` to return `true` (persist it with `patch-package` or `yarn patch`) and build React Native from source. Do not switch React Native to the experimental release level for it; that enables unrelated flags too.
 - `DISABLE_COMMIT_PAUSING_MECHANISM` (Reanimated feature flag)
 
 ### FPS Drops During Scrolling

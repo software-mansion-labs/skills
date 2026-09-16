@@ -113,7 +113,7 @@ useAnimatedReaction(
 );
 ```
 
-The `prepare` function transforms/filters shared values. `react` runs on **every** value-changing write to a shared value read by `prepare`, not only when the prepared value changes; gate with `current !== previous` as above.
+The `prepare` function transforms/filters shared values. `react` runs whenever any shared value read by `prepare` changes (at most once per frame), not only when the prepared value changes; gate with `current !== previous` as above.
 
 **Critical:** Do not mutate the same shared value in `react` that you track in `prepare`. This causes an infinite loop.
 

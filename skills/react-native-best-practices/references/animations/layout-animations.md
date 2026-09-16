@@ -28,7 +28,7 @@ Chain modifiers on any predefined animation:
 entering={FadeIn.delay(200).springify().damping(15)}
 ```
 
-`.easing()` has no effect once `.springify()` is used. A spring is duration-based (`.springify().duration(550).dampingRatio(0.75)`) or physics-based (`.springify().damping(30).mass(5).stiffness(900)`); when both kinds of modifier are present the duration-based one wins and the physics ones are ignored.
+`.easing()` has no effect once `.springify()` is used. A spring is duration-based (`.springify().duration(550).dampingRatio(0.75)`) or physics-based (`.springify().damping(30).stiffness(900)`); `.mass()` applies to both. When both kinds of modifier are present, `duration` and `dampingRatio` win and `damping` and `stiffness` are ignored.
 
 ### Gotchas
 
@@ -36,7 +36,7 @@ entering={FadeIn.delay(200).springify().damping(15)}
 - **View flattening**: Removing a non-animated parent triggers exiting animations in its children, but the parent will not wait for children to finish. Add `collapsable={false}` to the parent to prevent this.
 - **Spring-based animations**: Not yet available on the web platform.
 - **Performance**: Define animation builders outside of components or wrap with `useMemo`.
-- `.energyThreshold()` (default `6e-9`) is the only spring stop condition (4.1.0+); `.restDisplacementThreshold()` and `.restSpeedThreshold()` are no-ops since 4.1.0.
+- `.energyThreshold()` (default `6e-9`) decides when a spring rests (4.1.0+); `.restDisplacementThreshold()` and `.restSpeedThreshold()` are no-ops since 4.1.0.
 
 Override a preset's start and end state (entering/exiting only, not layout transitions):
 
@@ -142,7 +142,7 @@ Can be nested. For FlatLists, pass the `skipEnteringExitingAnimations` prop on `
 
 **Status: Experimental, off by default. Not recommended for production.**
 
-Requires 4.2.0+ and the `ENABLE_SHARED_ELEMENT_TRANSITIONS` static feature flag (`package.json`: `"reanimated": { "staticFeatureFlags": { "ENABLE_SHARED_ELEMENT_TRANSITIONS": true } }`, then `pod install` and rebuild; not possible in Expo Go). With the flag off, `sharedTransitionTag` is silently ignored. The flag disables the `*_SYNCHRONOUSLY_UPDATE_UI_PROPS` fast path, and on iOS `pod install` fails if both are set.
+Requires 4.2.0+ and the `ENABLE_SHARED_ELEMENT_TRANSITIONS` static feature flag (`package.json`: `"reanimated": { "staticFeatureFlags": { "ENABLE_SHARED_ELEMENT_TRANSITIONS": true } }`, then `pod install` and rebuild; not possible in Expo Go). With the flag off, `sharedTransitionTag` is silently ignored. The flag disables the `*_SYNCHRONOUSLY_UPDATE_UI_PROPS` fast path, and the iOS `pod install` or the Android Gradle build fails if both are set.
 
 Animates a view between two screens during navigation:
 

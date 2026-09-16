@@ -6,9 +6,9 @@ Pseudo-selectors drive interaction state without React state; callbacks report a
 
 ## Pseudo-Selectors
 
-**Requires Reanimated 4.5.0.** Below that the pseudo object is not understood: a color pseudo object throws `Invalid color value` at mount once a transition is declared, and other values reach React Native as plain styles. Use `Pressable` + React state instead (`animations.md`, Simple gesture feedback). For the selector table and types, webfetch the [pseudo-selectors docs](https://docs.swmansion.com/react-native-reanimated/docs/css-transitions/pseudo-selectors).
+**Requires Reanimated 4.5.0.** Below that a pseudo object is not understood and breaks the property it sits on (a color throws at mount). Use `Pressable` + React state instead (`animations.md`, Simple gesture feedback). For the selector table and types, webfetch the [pseudo-selectors docs](https://docs.swmansion.com/react-native-reanimated/docs/css-transitions/pseudo-selectors).
 
-Native selectors are `:hover`, `:active`, `:active-deepest`, `:focus` and `:focus-within`. Every other selector (`:focus-visible`, `:disabled`, `:checked`, ...) is web-only; on native its value is dropped with a dev-only warning. Use one only when the code targets web exclusively.
+Native selectors are `:hover`, `:active`, `:active-deepest`, `:focus` and `:focus-within`, and they work on any `Animated` component, no `Pressable` needed. Every other selector (`:focus-visible`, `:disabled`, `:checked`, ...) is web-only; on native its value is dropped with a dev-only warning. Use one only when the code targets web exclusively.
 
 ```tsx
 import { Pressable } from 'react-native-gesture-handler';
@@ -39,7 +39,7 @@ Selector keys go inside each property; a top-level `':active': { ... }` block is
 
 ### Per-selector behavior
 
-- `:active` fires on the pressed element **and every ancestor declaring `:active`**. Put `:active-deepest` on an ancestor that must stay quiet: it yields to any descendant declaring either selector.
+- `:active` matches the pressed element **and every ancestor declaring `:active`**, so a card with `:active` also reacts when a button inside it is pressed. `:active-deepest` matches only the innermost element under the finger that declares a press selector, never an ancestor: put it on a container that should react to presses on its own area but stay still while an inner control is pressed.
 - `:hover` on 4.5.x native reacts only to a hovering pointer (mouse, trackpad, stylus); a finger never triggers it. From 4.6.0 a touch-down turns it on for the touched element and its ancestors declaring `:hover`, and it stays on until a later touch lands outside the element, or a touch that moved past the touch slop is released elsewhere. It has no `-deepest` variant. For press feedback use `:active`.
 - `:focus` matches the element that holds focus itself: on iOS only a text input being edited, on Android and web any focusable element (a `View` with `focusable`, keyboard or D-pad focus). Put it on `createAnimatedComponent(TextInput)`; a wrapping `View` never matches, give it `:focus-within`, which matches while the element or any descendant holds focus.
 - On iOS `:active` and `:active-deepest` never fire on an element whose resting `opacity` is `0.01` or lower: UIKit skips those views when hit-testing. Write `0.02`, visually identical and touchable. SVG hit-tests its own way and is exempt. From 4.6.0 a dev warning flags an `opacity` pseudo object whose `default` is that low.
@@ -48,7 +48,7 @@ Selector keys go inside each property; a top-level `':active': { ... }` block is
 
 There is no `Animated.Pressable`; the namespace exports only `FlatList`, `Image`, `ScrollView`, `Text` and `View`. Use `createAnimatedComponent(Pressable)` as above. Swapping a `Pressable` for a plain `Animated.View` to get `:active` drops the press handlers and its accessibility props.
 
-When the styled element is a child the finger may not land on, or the pressed value also depends on other React state, use `Pressable`'s render prop:
+When the styled element is a descendant the finger may not land on, or the pressed value also depends on other React state, use `Pressable`'s render prop:
 
 ```tsx
 <Pressable onPress={onPress}>

@@ -28,7 +28,7 @@ Selector keys go inside each property; a top-level `':active': { ... }` block is
 ### Rules
 
 - A selector only switches the value. The switch animates when the property has a transition (`transitionProperty` and a duration, as for any transition); without one it snaps.
-- Always write `default`. A pseudo object does not pick up the value of the same property from an earlier entry in the style array: without `default` the selector transitions back to the property's built-in default (transparent for a color, `1` for `opacity`).
+- Write `default` whenever the property also has a plain value elsewhere: an earlier entry of the style array, or the plain prop next to `animatedProps`. Through 4.6.0 a pseudo object without `default` ignores that value on native: when the selector stops matching, the property transitions to its built-in default (transparent for a color, `1` for `opacity`) while the host view still shows the plain value. Fixed on main by software-mansion/react-native-reanimated#10568 (unreleased): once the installed version includes it, the plain value is the resting value and `default` is optional.
 - While a selector matches, its values win over re-renders and regular transitions of the same property. A CSS animation or an animated style targeting that property still overrides it.
 - When several selectors match at once, the one further right in this fixed order wins, whatever the order of keys in the object: `:focus-within < :focus < :hover < :active < :active-deepest`.
 - The transition callbacks (`onCSSTransition*`, `animations.md`) fire for selector-driven transitions too.

@@ -67,6 +67,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
        useAnimatedReaction before it reaches the style -> continue
 
 2. Is it withSpring or withDecay anywhere in the composition?
+                                                        references/springs-and-clamp.md
    |-- YES -> Keep on shared values (no CSS spring or decay)
    `-- NO  -> continue. A withClamp around timing animations never triggers when
              every value stays inside the bounds: both endpoints inside, and an easing
@@ -77,7 +78,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
              clamp() or Math.min/Math.max around the driver, or interpolateColor
 
 3. Does CSS animate the property on every platform the project targets, at the
-   installed version? (supported-properties docs, feature table in animations.md)
+   installed version?                                     references/properties.md
    |-- NO, the property is a keyword flipped at a state change -> render it
    |   conditionally, leave it out of transitionProperty; continue
    |-- NO, a keyword flipped at > 0.5 of a 0..1 numeric driver -> note Needs approval
@@ -90,7 +91,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    `-- YES -> continue
 
 4. Is each animated value a straight line between its two endpoints
-   (a * driver + b, both endpoints the same kind of value)?
+   (a * driver + b, both endpoints the same kind of value)?  references/value-functions.md
    |-- YES, a number, length or percentage -> continue
    |-- YES, a color -> the swing decides (continue; wide swings note Needs approval:
    |   CSS lerps sRGB, the shared value interpolated gamma-corrected)

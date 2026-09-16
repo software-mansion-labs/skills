@@ -58,8 +58,8 @@ Every `with*` without `ReduceMotion.Never` jumps under reduced motion, so an ung
 
 | Kind | Form |
 |---|---|
-| Transition | `transitionDuration: reduced ? 1 : D`, never `0` (`../animations/animations.md`, CSS Transitions, Reduced motion) |
-| Animation | `animationDuration: reduced ? 1 : D` and `animationIterationCount: reduced ? 1 : N`; keep `animationName` so the fill mode and callbacks survive, and pick `animationFillMode` so it rests where the hook rests: `'forwards'` when the hook rests at the target, `'none'` (snapping back to the static style) when it rests at the start (`../animations/animations.md`, CSS Animations, Reduced motion) |
+| Transition | `transitionDuration: reduced ? 1 : D`, never `0` (`../animations/animations.md`, Reduced motion) |
+| Animation | `animationDuration: reduced ? 1 : D` and `animationIterationCount: reduced ? 1 : N`; keep `animationName` so the fill mode and callbacks survive, and pick `animationFillMode` so it rests where the hook rests: `'forwards'` when the hook rests at the target, `'none'` (snapping back to the static style) when it rests at the start (`../animations/animations.md`, Reduced motion) |
 | `ReduceMotion.Never` in the source | no guard |
 | `ReduceMotion.Always` | the reduced form for everyone, no guard |
 
@@ -67,7 +67,7 @@ Where the hook rests: `withTiming(TO)`, `withSequence` and a non-reverse `withRe
 
 ## Colors
 
-`withTiming` and `interpolateColor` interpolate gamma-corrected; CSS lerps sRGB (`../animations/animations.md`, CSS Transitions, Rules). The gap peaks about a quarter in from the darker endpoint.
+`withTiming` and `interpolateColor` interpolate gamma-corrected; CSS lerps sRGB (`../animations/animations.md`, Shared rules). The gap peaks about a quarter in from the darker endpoint.
 
 | Endpoints | Worst channel gap | Verdict |
 |---|---|---|

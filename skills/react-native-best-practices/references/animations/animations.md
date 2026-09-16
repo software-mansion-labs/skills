@@ -53,6 +53,41 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 
 ---
 
+## Shared rules for CSS transitions and animations
+
+- **Units**: bare numbers in every `transition*` and `animation*` duration or delay are milliseconds (`transitionDuration: 300` is 300ms); strings such as `'300ms'` or `'0.3s'` work too.
+- **Timing functions** are the same for both: the named ones (`'linear'`, `'ease'`, `'ease-in'`, `'ease-out'`, `'ease-in-out'`) plus `cubicBezier()`, `steps()` and `linear()` imported from `react-native-reanimated`. The `Easing` object used by `withTiming` is not compatible and throws. With `steps()`, pass the modifier you mean (`steps(4, 'jump-start')`): the default is `'jump-end'`, while `Easing.steps` defaults to jump-start, so a port that keeps the count and drops the modifier shifts every step.
+- **Values must be the same kind on both sides**: `height: open ? 300 : 'auto'` cannot animate between a number and a keyword, so it jumps to the target. Declare the property in both states, or in both keyframes, with the same kind of value.
+- **Colors** interpolate as straight sRGB. `withTiming` and `interpolateColor` gamma-correct, so the same two endpoints produce a visibly different midpoint on wide swings (black to white, red to cyan). Alpha and `opacity` fades match exactly.
+
+### Reduced motion
+
+CSS transitions and animations have no reduced-motion option. Unlike `with*` animations, which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too (an element whose static style is `opacity: 0` then never appears).
+
+```tsx
+const reduced = useReducedMotion();
+
+<Animated.View
+  style={{
+    opacity: visible ? 1 : 0,
+    transitionProperty: 'opacity',
+    transitionDuration: reduced ? 1 : 300,
+  }}
+/>
+
+<Animated.View
+  style={{
+    animationName: pulse,
+    animationDuration: reduced ? 1 : '1200ms',
+    animationIterationCount: reduced ? 1 : 'infinite',
+  }}
+/>
+```
+
+Use `1` (1ms), never `0`, when the transition must not be dropped, for example to still receive its events: a transition whose duration plus delay is `0` is removed entirely. Cap `animationIterationCount` at `1` so a loop does not strobe. Where the motion carries meaning (a slide-in), replace it rather than shorten it: `animationName: reduced ? fadeIn : slideIn`.
+
+---
+
 ## CSS Transitions
 
 Use when a style property should animate whenever a state-driven value changes. For the full property list and timing functions, webfetch the [CSS Transitions docs](https://docs.swmansion.com/react-native-reanimated/docs/category/css-transitions).
@@ -68,8 +103,6 @@ Use when a style property should animate whenever a state-driven value changes. 
 />
 ```
 
-`transitionDuration: 300` is 300ms: bare numbers are milliseconds in every `transition*` and `animation*` duration or delay, and strings such as `'300ms'` or `'0.3s'` work too.
-
 A transition runs when the property's value differs from the previously rendered one: the driver is React state, a prop, or from 4.5.0 a pseudo-selector. It never runs on mount, and a shared value written on the UI thread does not re-render, so it never triggers one.
 
 When using arrays, the order must match the `transitionProperty` array:
@@ -82,7 +115,7 @@ transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 
 ### Simple gesture feedback
 
-Press feedback is a transition too. Which element you style decides the mechanism.
+Press feedback is a transition too. Which element gets the style decides the mechanism.
 
 **The pressed element styles itself.** From 4.5.0 write the pressed value inline with the `:active` pseudo-selector. Pseudo-selectors work on any `Animated` component (and on `react-native-svg` elements from 4.6.0); the `Pressable` here only provides `onPress`. Nothing re-renders.
 
@@ -96,8 +129,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
   onPress={onPress}
   style={{
     transform: { default: [{ scale: 1 }], ':active': [{ scale: 0.96 }] },
-    transitionProperty: 'transform',
-    transitionDuration: 80,
+    boxShadow: {
+      default: '0px 6px 10px rgba(0, 0, 0, 0.3)',
+      ':active': '0px 1px 2px rgba(0, 0, 0, 0.3)',
+    },
+    transitionProperty: ['transform', 'boxShadow'],
+    transitionDuration: '80ms',
   }}
 />
 ```
@@ -117,12 +154,8 @@ function PressableButton({ label, onPress }: { label: string; onPress: () => voi
       {({ pressed }) => (
         <Animated.View
           style={{
-            transform: pressed
-              ? [{ scale: 0.96 }, { translateY: 4 }]
-              : [{ scale: 1 }, { translateY: 0 }],
-            boxShadow: pressed
-              ? '0px 1px 2px rgba(0, 0, 0, 0.3)'
-              : '0px 6px 10px rgba(0, 0, 0, 0.3)',
+            transform: pressed ? [{ scale: 0.96 }, { translateY: 4 }] : [{ scale: 1 }, { translateY: 0 }],
+            boxShadow: pressed ? '0px 1px 2px rgba(0, 0, 0, 0.3)' : '0px 6px 10px rgba(0, 0, 0, 0.3)',
             transitionProperty: ['transform', 'boxShadow'],
             transitionDuration: '80ms',
           }}>
@@ -154,7 +187,7 @@ function PressableCard({ children, onPress }: { children: React.ReactNode; onPre
       style={{
         transform: pressed ? [{ scale: 0.96 }] : [{ scale: 1 }],
         transitionProperty: 'transform',
-        transitionDuration: 80,
+        transitionDuration: '80ms',
       }}>
       {children}
     </AnimatedPressable>
@@ -178,28 +211,8 @@ In a CSS animation they always flip halfway between the two keyframes. The `disp
 
 - `transitionProperty` defaults to `'all'` when omitted, which transitions every property that changes. List the properties explicitly when only some of them should animate.
 - Always set `transitionDuration`. The default is `0`, which discards the motion. The default timing function is `'ease'`.
-- Both values must be the same kind: `height: open ? 300 : 'auto'` cannot animate between a number and a keyword, so it jumps to the target. Declare the property in both states with the same kind of value.
-- Reversing a running transition (a press released while the press-in transition is still running) returns over the remaining distance in proportionally less time, like a browser: reversed 100ms into a 300ms linear transition, the way back takes about 100ms. `withTiming` would restart at the full 300ms.
-- Colors interpolate as straight sRGB. `withTiming` and `interpolateColor` gamma-correct, so the same two endpoints produce a visibly different midpoint on wide swings (black to white, red to cyan). Alpha and `opacity` fades match exactly.
+- Reversing a running transition (the state flips back while the transition is still running) returns over the remaining distance in proportionally less time, like a browser: reversed 100ms into a 300ms linear transition, the way back takes about 100ms. `withTiming` would restart at the full 300ms.
 - Negative delays start the transition partway through (e.g., `'-5s'` on a 10s transition starts at 50%).
-
-### Reduced motion
-
-CSS transitions do not react to the system reduce-motion setting on their own (`withTiming` does). Read `useReducedMotion()` and shorten the transition rather than removing it, so the end state and any callbacks still arrive:
-
-```tsx
-const reduced = useReducedMotion();
-
-<Animated.View
-  style={{
-    opacity: visible ? 1 : 0,
-    transitionProperty: 'opacity',
-    transitionDuration: reduced ? 1 : 300,
-  }}
-/>
-```
-
-Use `1` (1ms), never `0`: a transition whose duration plus delay is `0` is dropped entirely, so nothing fires.
 
 ---
 
@@ -263,53 +276,45 @@ Every `animation*` setting takes a parallel array, one entry per animation. If m
 Prefer `css.keyframes()` (`css` imported from `react-native-reanimated`) called once outside the component: the keyframes are processed once and every component that uses the rule shares it.
 
 ```tsx
-// Best: processed once, shared, never restarts on re-render
+// Best: processed once, shared by every component that uses it
 const pulse = css.keyframes({ '50%': { opacity: 0.4 } });
 
-// Fine: a plain object is matched by content, so it does not restart on re-render,
-// but it is re-checked on every render
-const pulseInline = { '50%': { opacity: 0.4 } };
+function Dot() {
+  return <Animated.View style={{ animationName: pulse, animationDuration: '1200ms' }} />;
+}
+```
+
+A plain keyframes object is matched by its content, so it never restarts the animation on re-render, but it is re-checked on every render and nothing is shared. Defining it outside the component changes nothing; these two are the same:
+
+```tsx
+const pulse = { '50%': { opacity: 0.4 } };
 
 function Dot() {
-  // Restarts the animation on EVERY render: `css.keyframes()` inside a component
-  // creates a new rule each time. Use this only to re-trigger the animation on purpose.
-  const restarting = css.keyframes({ '50%': { opacity: 0.4 } });
+  return <Animated.View style={{ animationName: pulse, animationDuration: '1200ms' }} />;
+}
+
+function Dot() {
+  return <Animated.View style={{ animationName: { '50%': { opacity: 0.4 } }, animationDuration: '1200ms' }} />;
+}
+```
+
+`css.keyframes()` called inside the component creates a new rule on every render and restarts the animation each time. Use it only to re-trigger the animation on purpose:
+
+```tsx
+function Dot() {
+  const pulse = css.keyframes({ '50%': { opacity: 0.4 } });
 
   return <Animated.View style={{ animationName: pulse, animationDuration: '1200ms' }} />;
 }
 ```
 
-A plain keyframes object behaves the same inline or outside the component: matched by content, no restart. Only an inline `css.keyframes()` call restarts the animation each render.
-
 ### Rules
 
 - `animationTimingFunction` at the top level eases every interval between two consecutive keyframes of a property. A keyframe can carry its own `animationTimingFunction` to override it for the interval that starts there, up to the next keyframe that sets the same property; one on the last keyframe has no interval and is ignored.
-- Avoid `animationFillMode: 'forwards'` or `'both'` with fractional `animationIterationCount` and relative units (percentages). If the parent resizes after the animation, the child retains stale dimensions.
-- `animationIterationCount: 'infinite'` runs until the component unmounts; nothing to clean up.
+- Avoid `animationFillMode: 'forwards'` or `'both'` when a fractional `animationIterationCount` meets keyframes that mix relative (percentage) and absolute units for one property. If the parent resizes after the animation, the child retains stale dimensions. Either alone is fine.
+- For infinite CSS animations, set `animationIterationCount: 'infinite'`. The animation stops automatically on unmount — no manual cleanup needed.
 - Negative delays start the animation partway through its cycle.
 - Pause and resume with `animationPlayState: 'paused'` / `'running'`.
-
-### Timing functions
-
-`cubicBezier`, `steps` and `linear` are exported from `react-native-reanimated` and work in transitions and animations alike. Passing an `Easing.*` value throws. Write the `steps` modifier explicitly, `steps(4, 'jump-start')`: the default is `'jump-end'`, the opposite of `Easing.steps`. Modifiers: `'jump-start'`, `'jump-end'`, `'jump-none'`, `'jump-both'`, `'start'`, `'end'`.
-
-### Reduced motion
-
-CSS animations do not react to the system reduce-motion setting on their own either. Shorten the animation instead of removing it, and cap the iteration count so a loop does not strobe; a 1ms run still reaches its end state, keeps `animationFillMode` and fires the end callback:
-
-```tsx
-const reduced = useReducedMotion();
-
-<Animated.View
-  style={{
-    animationName: pulse,
-    animationDuration: reduced ? 1 : '1200ms',
-    animationIterationCount: reduced ? 1 : 'infinite',
-  }}
-/>
-```
-
-Do not remove `animationName` instead: that discards the fill mode too, so an element whose static style is `opacity: 0` never appears. When the motion carries meaning (a slide-in), replace it rather than shorten it: `animationName: reduced ? fadeIn : slideIn`.
 
 ---
 

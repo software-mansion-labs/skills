@@ -30,7 +30,7 @@ Selector keys go inside each property; a top-level `':active': { ... }` block is
 - Include every pseudo-styled property in `transitionProperty`. One styled by a selector but missing from the list changes instantly.
 - Write `default` unless the resting value is the property's own default. The pseudo object owns the property, so an omitted `default` falls back to that default, never to `StyleSheet.create` or an earlier style in the array.
 - Leave no other writer on a property you moved into a pseudo object. From 4.6.0 the property is locked while its selector matches (a re-render or an ordinary transition cannot change it); on 4.5.x a re-render overwrites the matched value.
-- Later selector wins: `:focus-within < :focus < :hover < :active < :active-deepest`.
+- When several selectors match at once, the one further right in this fixed order wins, whatever the order of keys in the object: `:focus-within < :focus < :hover < :active < :active-deepest`.
 - On `react-native-svg` elements (`:hover` and `:active`, from 4.6.0) the pseudo objects and `transition*` settings go in `animatedProps`, not `style`.
 
 ### Per-selector behavior

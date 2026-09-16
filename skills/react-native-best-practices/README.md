@@ -8,7 +8,7 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 
 | Sub-skill | Covers | Status |
 |-----------|--------|--------|
-| [Animations](./references/animations/) | Reanimated 4, CSS transitions, CSS animations, shared values, canvas animations (Skia), GPU shader animations (WebGPU, TypeGPU), layout animations, scroll-driven animations, SVG animations, 120fps, performance flags | Complete |
+| [Animations](./references/animations/) | Reanimated 4, CSS transitions, CSS animations, CSS pseudo-selectors and callbacks, shared values, canvas animations (Skia), GPU shader animations (WebGPU, TypeGPU), layout animations, scroll-driven animations, SVG animations, 120fps, performance flags | Complete |
 | [Gestures](./references/gestures/) | Gesture Handler: tap, pan, pinch, rotation, fling, hover, long press, Pressable, RectButton, Swipeable, Touchable, DrawerLayout, gesture composition, testing | Complete |
 | [SVG](./references/svg/) | React Native SVG: when to use vs expo-image/Skia/Lottie/Rive/fonts/WebView, installation, loading (URI/XML/file), touch events, filters, FilterImage, performance pitfalls, iOS memory leaks | Complete |
 | [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, semantic/instance segmentation, style transfer, embeddings, text-to-image), speech (STT, TTS, VAD), VisionCamera real-time frame processing, model loading, resource management, error handling, custom models | Complete |
@@ -28,6 +28,7 @@ react-native-best-practices/
     ├── animations/
     │   ├── SKILL.md                      # When to use, what references to read
     │   ├── animations.md                 # Decision tree, CSS transitions/animations, shared values
+    │   ├── css-pseudo-selectors-and-callbacks.md  # :hover/:active/:focus without React state, onCSS* callbacks
     │   ├── animation-functions.md        # Core hooks, withSpring, withTiming, withDecay, composition
     │   ├── layout-animations.md          # Entering/exiting, transitions, keyframes
     │   ├── scroll-and-events.md          # Scroll-driven animations, useAnimatedReaction, useFrameCallback

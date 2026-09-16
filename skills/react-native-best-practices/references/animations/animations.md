@@ -115,7 +115,7 @@ transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 
 ### Simple gesture feedback
 
-Press feedback is a transition too. Which element gets the style decides the mechanism.
+Press feedback is a transition too. Which element gets the style decides the mechanism; the selector rules live in `css-pseudo-selectors-and-callbacks.md`.
 
 **The pressed element styles itself.** From 4.5.0 write the pressed value inline with the `:active` pseudo-selector. Pseudo-selectors work on any `Animated` component (and on `react-native-svg` elements from 4.6.0); the `Pressable` here only provides `onPress`. Nothing re-renders.
 

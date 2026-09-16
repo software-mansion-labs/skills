@@ -59,7 +59,7 @@ function AnimatedCounter() {
 }
 ```
 
-- Pass a function when the initial value is expensive: `useSharedValue(() => buildTable())`. It runs once on mount. Reanimated >= 4.4.0.
+- Pass a function when the initial value is expensive: `useSharedValue(() => buildTable())` runs it once on mount (4.4.0+).
 
 ### [useAnimatedStyle](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedStyle)
 
@@ -80,7 +80,7 @@ const animatedStyle = useAnimatedStyle(() => ({
 
 ### [useAnimatedProps](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedProps)
 
-For animating component properties (not styles). Prefer doing value conversions inside the `useAnimatedProps` callback. Adapters are still its third argument: write them with `'worklet'` and pass them directly. `createAnimatedPropAdapter` is a pass-through that warns it will be removed (the Babel plugin workletizes its argument, nothing else happens); `SVGAdapter` no longer ships.
+For animating component properties (not styles). Prefer doing value conversions inside the `useAnimatedProps` callback. Adapters are still its third argument: write them with `'worklet'` and pass them directly. `createAnimatedPropAdapter` only warns that it will be removed, and `SVGAdapter` no longer ships.
 
 ```tsx
 const animatedProps = useAnimatedProps(() => ({
@@ -105,7 +105,7 @@ Built-in animated components: `Animated.View`, `Animated.Text`, `Animated.Image`
 
 ### [useAnimatedRef](https://docs.swmansion.com/react-native-reanimated/docs/core/useAnimatedRef)
 
-The ref value (`current`) is `null` until the component mounts, and `.current` is JS-thread only. The ref itself is made for worklets - `measure()`, `scrollTo()`, `dispatchCommand()` and `setNativeProps()` all call it on the UI runtime. `measure()` returns `null` when called on the JS thread, so call it inside a worklet.
+The ref value (`current`) is `null` until the component mounts and is readable on the JS thread only. Pass the ref itself to worklets: `measure()`, `scrollTo()`, `dispatchCommand()` and `setNativeProps()` take it on the UI runtime, and `measure()` returns `null` on the JS thread.
 
 ---
 

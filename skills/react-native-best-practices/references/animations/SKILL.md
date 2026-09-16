@@ -15,7 +15,7 @@ Read the installed Reanimated version before writing animation code: `node_modul
 
 ## Critical Rules
 
-- **Call JS from a worklet with `scheduleOnRN(fn, ...args)`** (scroll handlers, gesture callbacks, `useAnimatedReaction`, `useFrameCallback`, animation callbacks) and schedule UI work from the JS thread with `scheduleOnUI(fn, ...args)`. Both come from `react-native-worklets` 0.5.0+, the range Reanimated 4.1.0 requires; on Reanimated 4.0.x use `runOnJS`/`runOnUI`, which later versions keep as deprecated wrappers. `react-native-reanimated` re-exports `runOnJS` but not `scheduleOnRN`.
+- **Call JS from a worklet with `scheduleOnRN(fn, ...args)`** (scroll handlers, gesture callbacks, `useAnimatedReaction`, `useFrameCallback`, animation callbacks) and schedule UI work from the JS thread with `scheduleOnUI(fn, ...args)`. Both come from `react-native-worklets` (0.5.0+, required by Reanimated 4.1.0+). On Reanimated 4.0.x use `runOnJS`/`runOnUI`; later versions keep them as deprecated wrappers. `react-native-reanimated` re-exports `runOnJS` but not `scheduleOnRN`.
 
 ## References
 

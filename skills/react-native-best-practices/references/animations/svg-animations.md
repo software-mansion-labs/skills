@@ -8,7 +8,9 @@ react-native-svg implements the SVG standard as a React component tree, giving y
 
 Use `Animated.createAnimatedComponent` to make any SVG element animatable.
 
-SVG attributes (`cx`, `r`, `d`, `fill`, ...) are component props, not `style` keys, so drive them with `useAnimatedProps` or an inline shared value (`<AnimatedCircle r={r} />`), never `useAnimatedStyle`. CSS transitions and animations reach SVG props on iOS and Android from 4.4.0 (on 4.1.0 to 4.3.x only with the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` static flag, a native rebuild) and on web from 4.5.0: put the CSS declarations in `animatedProps`, not `style`. Do value conversions (string formatting, color processing, unit calculations) inside the `useAnimatedProps` callback; `SVGAdapter` no longer ships, and an adapter passed as the third argument must be a worklet (`animation-functions.md`):
+SVG attributes (`cx`, `r`, `d`, `fill`, ...) are component props, not `style` keys, so drive them with `useAnimatedProps` or an inline shared value (`<AnimatedCircle r={r} />`), never `useAnimatedStyle`. CSS transitions and animations reach SVG props on iOS and Android from 4.4.0 (on 4.1.0 to 4.3.x only with the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` static flag, a native rebuild) and on web from 4.5.0; the CSS declarations go in `animatedProps`, not `style`.
+
+Do value conversions (string formatting, color processing, unit calculations) inside the `useAnimatedProps` callback. `SVGAdapter` no longer ships, and an adapter passed as the third argument must be a worklet (`animation-functions.md`):
 
 ```tsx
 import Animated, {

@@ -34,13 +34,11 @@ Inside scenes, `inputId` and `imageId` are plain strings.
 ## Compositions
 
 ```ts
-const { compositionId } = await compositionClient.createComposition();
-await compositionClient.createComposition({ autostart: false, cleanupWithoutInputs: false });
+const { compositionId } = await compositionClient.createComposition({ autostart: false, cleanupWithoutInputs: false });
+const url: string = compositionClient.compositionUrl(compositionId);
 
 await compositionClient.startComposition(compositionId);
 await compositionClient.deleteComposition(compositionId);
-
-const url: string = compositionClient.compositionUrl(compositionId);
 ```
 
 `compositionUrl` is synchronous and makes no request; pass its result to `fishjamClient.forwardRoomTracks`.

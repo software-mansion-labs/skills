@@ -106,13 +106,13 @@ def picture_in_picture(main: str, corner: str) -> VideoScene:
 ```python
 from fishjam.composition import CreateCompositionRequest
 
-composition_id = composition_client.create_composition().composition_id
-composition_client.create_composition(CreateCompositionRequest(autostart=False, cleanup_without_inputs=False))
+composition_id = composition_client.create_composition(
+    CreateCompositionRequest(autostart=False, cleanup_without_inputs=False)
+).composition_id
+url = composition_client.composition_url(composition_id)
 
 composition_client.start_composition(composition_id)
 composition_client.delete_composition(composition_id)
-
-url = composition_client.composition_url(composition_id)
 ```
 
 `composition_url` makes no request; pass its result to `fishjam_client.forward_room_tracks`.

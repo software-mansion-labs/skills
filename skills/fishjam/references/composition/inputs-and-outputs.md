@@ -1,6 +1,6 @@
 # Inputs and Outputs
 
-Inputs bring streams into a composition; outputs push the composed result out. Both are addressed by IDs you choose, unique within the composition. Every input and output is billed per minute while registered, so unregister the ones you no longer need.
+Inputs bring streams into a composition; outputs push the composed result out. Both are addressed by IDs you choose, unique within the composition. Every input and output you register is billed per minute while registered, so unregister the ones you no longer need. Inputs Fishjam creates when forwarding a room are not billed (`room-composition.md`).
 
 ## Inputs
 

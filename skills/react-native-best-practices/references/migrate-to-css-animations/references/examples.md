@@ -81,7 +81,7 @@ useEffect(() => { if (uploadComplete) sv.value = true; }, [uploadComplete]);
 />
 ```
 
-A JS effect drives it and an upload completes once, so nothing reverses mid-flight. Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row; the transition is a color under 300ms, so the row also says `reduced-motion guard dropped`.
+A JS effect drives it and an upload completes once, so nothing reverses mid-flight. Grey to green is the moderate color case: Migrate and state the 36/255 peak gap in the row, together with `inOut(quad)` to `'ease-in-out'` (0.012) and, as the transition is a color under 300ms, `reduced-motion guard dropped`.
 
 ## Needs approval: the toggle that can reverse
 

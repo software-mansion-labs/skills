@@ -16,7 +16,7 @@ Convert only where behavior stays identical; coverage is not the goal. A convers
 
 | Request | Steps |
 |---|---|
-| one site | 0, 2, 3, 4, 5 in short form (or explain why it stays) |
+| one site | 0, 2, 3, 4, 5 in short form (or explain why it stays); ask the easing question from step 1 only when step 5 needs it |
 | "can this be CSS?", an audit | 0, 1, 2, 5, no edits |
 | a directory or the app | all |
 
@@ -55,29 +55,35 @@ Walk the questions in order for every `useAnimatedStyle`/`useAnimatedProps` hook
 
 2. Is it withSpring or withDecay anywhere in the composition, or withClamp around one?
    |-- YES -> Keep on hooks (no CSS spring or decay)
-   `-- NO  -> continue. withClamp around withTiming: both endpoints inside the bounds
-             and an easing that stays within 0..1 (not back, elastic or bounce, not a
-             bezier with y outside 0..1) -> the clamp never triggers, drop it;
-             otherwise -> Keep on hooks.
+   `-- NO  -> continue. withClamp around timing animations: every value inside the
+             bounds, which needs both endpoints inside and an easing that stays within
+             0..1 (not back or elastic, not a bezier with y outside 0..1) -> the clamp
+             never triggers, drop it; otherwise -> Keep on hooks.
 
 3. Does CSS animate every property on every platform the project targets, at the
    installed version? (references/mapping.md, Properties)
-   |-- NO, because the property is a keyword -> note Needs approval, proposing
-   |          transitionBehavior: 'allow-discrete' and saying when it flips; continue
+   |-- NO, because the property is a keyword -> route per references/mapping.md,
+   |          Properties (conditional render, allow-discrete as Needs approval, or Keep)
    |-- NO, for any other reason -> Keep on hooks
    `-- YES -> continue
 
-4. Is each animated value an affine function of the driver between the two endpoints?
+4. Is each animated value an affine function of one driver between the two endpoints,
+   and are both endpoints the same kind of value?
    (a * driver + b, or interpolate with no input stop strictly between the endpoints;
-    references/mapping.md, Value functions)
-   |-- NO  -> transition: Keep on hooks (a transition only tweens two endpoints);
-   |          animation: note Needs approval, sampling the function into keyframes.
+    a number to a number, not 0 to '100%' or 300 to 'auto'; references/mapping.md,
+    Value functions)
+   |-- NO, two drivers feed one property (a.value * b.value) -> Keep on hooks
+   |-- NO, mixed value kinds -> Keep on hooks (the transition jumps)
+   |-- NO, otherwise -> transition: Keep on hooks (a transition only tweens two
+   |          endpoints); animation: note Needs approval, sampling the function into
+   |          keyframes.
    `-- YES -> continue
 
 5. Does the timing curve map to CSS exactly? (references/mapping.md, Easing)
    |-- exact row -> continue
    `-- no exact row -> apply the answer from step 1 (linear() sampling or the nearest
-       approximation), note Needs approval with the max error, continue
+       approximation), record the substitution and its max error in the site's row
+       (no Needs approval note for this alone), continue
 
 6. Does code cancel, pause, reverse or restart the animation?
    (references/mapping.md, Imperative control)
@@ -96,6 +102,8 @@ Walk the questions in order for every `useAnimatedStyle`/`useAnimatedProps` hook
 
 9. Does anything else set the same property without a with*?
    (a direct sv.value = x, a mount jump, a conditional style)
+   |-- YES, and nothing sets it with a with* either -> the site never animated: plain
+   |          state in the static style, no transitionProperty; continue
    |-- YES -> note Needs approval: every change of a transitioned property animates,
    |          so the jump becomes a transition; continue
    `-- NO  -> continue
@@ -113,7 +121,7 @@ Outside the tree, leave these alone: `entering`/`exiting`/`layout` animations, `
 
 Indirection: a `useDerivedValue`, or a `SharedValue` passed as a prop, is not a driver. Follow it to the shared value that is written and classify that write; the derived computation joins the "affine function" question. A derived value that anything besides the migrated hook consumes (a `useAnimatedReaction`, a gesture, a child through props) stays on hooks.
 
-A custom hook that wraps `useAnimatedStyle` (`useFadeIn()`) is one site: classify the hook body, and the verdict must hold for every call site, which then receives plain style props. A property that animates on mount and is later retargeted by state is a transition whose driver flips in a mount `useEffect` (question 9 already covers the jump); never list one property in both `animationName` and `transitionProperty`.
+A custom hook that wraps `useAnimatedStyle` (`useFadeIn()`) is one site: classify the hook body, and the verdict must hold for every call site, which then receives plain style props. A property that animates on mount and is later retargeted by state is one transition: render the start value, flip the state in a mount `useEffect` (the second render starts the transition), and list the property only in `transitionProperty`, never in both `animationName` and `transitionProperty`.
 
 Measured layout (`onLayout`, `measure` in an effect) stored in React state is a plain state driver: a transition to the measured target is fine. `measure` read inside the hook every frame is the per-frame case at the top.
 
@@ -123,7 +131,7 @@ Reduced motion: `useReducedMotion()` returns the system setting read once when t
 
 `references/mapping.md` has the `with*`, easing, callback, reduced-motion, color and SVG tables. Rules that hold for every site:
 
-- Follow the transition and animation Rules in `../animations/animations.md`; above all list `transitionProperty` explicitly (never `'all'` or the `transition` shorthand string) and write the timing function. The `withTiming` default is `Easing.inOut(Easing.quad)` at 300ms, not the CSS default `'ease'`; `references/mapping.md`, Easing, says how to map it.
+- Follow the transition and animation Rules in `../animations/animations.md`; above all list `transitionProperty` explicitly (never `'all'` or the `transition` shorthand string) and write the timing function. The `withTiming` default is `Easing.inOut(Easing.quad)` at 300ms, not the CSS default `'ease'`, and on 4.0.0 to 4.3.x the native `'ease'` is itself a wrong curve; `references/mapping.md`, Easing, says how to map it.
 - The driver becomes React state (`useState`, a prop, a store value); this is the migration, not a cost.
 - Migrate inside each `Platform.select` arm and keep the structure; enumerate `transitionProperty` per platform when the property set differs. A duration or easing computed per trigger (`duration: Math.abs(delta) * k`) becomes state set in the same render as the target, with the formula unchanged.
 - A property the hook returns from a value that is never animated (a constant, or a shared value that is never written after its initial value) is static: move it to the static style. Remove the shared values, hooks and imports the conversion killed and nothing else.
@@ -134,7 +142,7 @@ After converting a site, confirm each of these against the original:
 
 - first render identical: the static style carries the value the hook painted first (`../animations/animations.md`, Mount animations);
 - end state identical, including the value the site rests at under reduced motion;
-- re-trigger identical: writing the same target mid-flight looks identical unless the original cancelled first (a callback on that site fired `false` then `true` on the hook and fires nothing on CSS, `references/mapping.md`, Callbacks); replaying a finished animation needs a new keyframes rule (`useMemo(() => css.keyframes(frames), [replayCount])`, `../animations/animations.md`, Defining keyframes) or a remount, so Needs approval;
+- re-trigger identical: writing the same target mid-flight looks identical unless the original cancelled first (a callback on that site fired `false` and then `true` on the hook; CSS fires only the End, `references/mapping.md`, Callbacks); replaying a finished animation needs a new keyframes rule (`useMemo(() => css.keyframes(frames), [replayCount])`, `../animations/animations.md`, Defining keyframes) or a remount, so Needs approval;
 - the callbacks the original fired still fire, at the same moments;
 - unmount mid-animation throws nothing;
 - nothing else changed: same element tree, props and handlers (a `Pressable` swapped for `Animated.View` fails this), and every `Platform.select` arm converted.

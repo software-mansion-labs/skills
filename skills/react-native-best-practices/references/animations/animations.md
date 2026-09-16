@@ -62,7 +62,7 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 
 ### Reduced motion
 
-CSS transitions and animations have no reduced-motion option. Unlike `with*` animations (`withTiming`, `withSpring`, ...), which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too (an element whose static style is `opacity: 0` then never appears).
+CSS transitions and animations have no reduced-motion option. Unlike `with*` animations (`withTiming`, `withSpring`, ...), which follow the device setting by default (`ReduceMotion.System`), they run regardless of it. Read `useReducedMotion()` and shorten them yourself. Shorten rather than remove: a 1ms run still reaches its end state, keeps `animationFillMode` and fires the transition and animation events, whereas dropping `animationName` discards the fill mode too.
 
 ```tsx
 const reduced = useReducedMotion();
@@ -84,7 +84,7 @@ const reduced = useReducedMotion();
 />
 ```
 
-Use `1` (1ms), never `0`, when the transition must not be dropped, for example to still receive its events: a transition whose duration plus delay is `0` is removed entirely. Cap `animationIterationCount` at `1` so a loop does not strobe. Where the motion carries meaning (a slide-in), replace it rather than shorten it: `animationName: reduced ? fadeIn : slideIn`.
+Use `1` (1ms), never `0`, when the transition must not be dropped, for example to still receive its events: a transition whose duration plus delay is `0` is removed entirely. Cap `animationIterationCount` at `1` so a loop does not strobe. To reduce only the movement and keep the rest smooth, swap the keyframes or shorten only the moving property instead: `animationName: reduced ? fadeIn : slideIn`, or `transitionDuration: reduced ? [1, 300] : [300, 300]` for `transitionProperty: ['transform', 'opacity']`.
 
 ---
 

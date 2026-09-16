@@ -27,7 +27,7 @@ Two loops at different speeds need the array form (`animationName: [spin, pulse]
 
 ## Easing
 
-Map the source expression, never a runtime value. Every row is exact:
+Map the `Easing.*` expression written in the source to a CSS timing function; the `Easing` object itself is not accepted by CSS. Every row is exact:
 
 | Source | CSS |
 |---|---|

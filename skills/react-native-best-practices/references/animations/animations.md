@@ -24,7 +24,7 @@ Does the effect require per-pixel GPU computation?
     └── NO  → Is the animation driven by a state change (not a gesture or continuous input)?
         ├── YES → Can it be expressed as a simple A→B property transition?
         │   ├── YES → Use CSS Transition (transitionProperty)
-        │   └── NO  → Does it need a defined keyframe sequence, or play on mount?
+        │   └── NO  → Does it need a defined keyframe sequence?
         │       ├── YES → Use CSS Animation (animationName + keyframes)
         │       └── NO  → Use CSS Transition with multiple properties
         └── NO  → Is it gesture-driven, or does it need math / trig / layout reads?
@@ -46,7 +46,7 @@ Check the installed version first (see `SKILL.md`). Everything below works from 
 |---|---|
 | CSS transitions and CSS animations: all `transition*` and `animation*` properties, keyframes, and every timing function (the named ones like `'ease-in-out'`, plus `cubicBezier()`, `steps()` and `linear()`) | 4.0.0 |
 | `filter` and its functions (`blur`, `brightness`, `dropShadow`, ...) on iOS and Android; web has it from 4.0.0 | 4.2.0 |
-| CSS on `react-native-svg` components, iOS and Android (declarations go in `animatedProps`, see `svg-animations.md`). Enabled by default from 4.4.0 and still labeled experimental (`EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS`, opt-in on 4.1.0-4.3.x) | 4.4.0 |
+| CSS on `react-native-svg` components, iOS and Android (declarations go in `animatedProps`, see `svg-animations.md`; on 4.1.0-4.3.x only with the `EXPERIMENTAL_CSS_ANIMATIONS_FOR_SVG_COMPONENTS` flag) | 4.4.0 |
 | CSS on `react-native-svg` components, web | 4.5.0 |
 | Pseudo-selectors (`:hover`, `:active`, `:active-deepest`, `:focus`, `:focus-within`) | 4.5.0 |
 | CSS animation and transition callbacks (`onCSSAnimation*`, `onCSSTransition*`) | 4.6.0 |
@@ -82,7 +82,7 @@ transitionTimingFunction: ['ease-out', 'linear', 'ease-in-out'],
 
 ### Simple gesture feedback
 
-Press feedback is a transition too. Two cases:
+Press feedback is a transition too. Which element you style decides the mechanism.
 
 **The pressed element styles itself.** From 4.5.0 write the pressed value inline with the `:active` pseudo-selector. Pseudo-selectors work on any `Animated` component (and on `react-native-svg` elements from 4.6.0); the `Pressable` here only provides `onPress`. Nothing re-renders.
 
@@ -102,9 +102,9 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 />
 ```
 
-`:active` fires on the element under the finger and on every ancestor that declares `:active`; put `:active-deepest` on an ancestor that must stay quiet while a pressed descendant handles the feedback.
+`:active` matches the pressed element and every ancestor that declares `:active`, so a card with `:active` also reacts when a button inside it is pressed. `:active-deepest` matches only the innermost element under the finger that declares a press selector, never an ancestor: put it on a container that should react to presses on its own area but stay still while an inner control declaring `:active` or `:active-deepest` is pressed.
 
-**A child of the pressed element styles itself.** A child the finger does not land on never matches `:active`, so drive it from `Pressable`'s render prop instead. This form also works below 4.5.0:
+**Descendants of the pressed element get styled.** Pseudo-selectors do not help here: a descendant matches `:active` only when the finger is on it. Use the approach that predates pseudo-selectors, `Pressable`'s render prop, which also covers every version below 4.5.0:
 
 ```tsx
 import { Text } from 'react-native';
@@ -117,9 +117,14 @@ function PressableButton({ label, onPress }: { label: string; onPress: () => voi
       {({ pressed }) => (
         <Animated.View
           style={{
-            transform: pressed ? [{ scale: 0.96 }] : [{ scale: 1 }],
-            transitionProperty: 'transform',
-            transitionDuration: 80,
+            transform: pressed
+              ? [{ scale: 0.96 }, { translateY: 4 }]
+              : [{ scale: 1 }, { translateY: 0 }],
+            boxShadow: pressed
+              ? '0px 1px 2px rgba(0, 0, 0, 0.3)'
+              : '0px 6px 10px rgba(0, 0, 0, 0.3)',
+            transitionProperty: ['transform', 'boxShadow'],
+            transitionDuration: '80ms',
           }}>
           <Text>{label}</Text>
         </Animated.View>
@@ -129,7 +134,33 @@ function PressableButton({ label, onPress }: { label: string; onPress: () => voi
 }
 ```
 
-Below 4.5.0, when the `Pressable` itself carries the style, keep a `useState` set from `onPressIn`/`onPressOut` on the animated `Pressable`.
+**The `Pressable` itself, or an ancestor, gets styled without pseudo-selectors** (below 4.5.0, or when the pressed state must reach an ancestor): keep the pressed flag in React state set from `onPressIn`/`onPressOut` and drive the same transition from it:
+
+```tsx
+import { useState } from 'react';
+import { Pressable } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function PressableCard({ children, onPress }: { children: React.ReactNode; onPress: () => void }) {
+  const [pressed, setPressed] = useState(false);
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={{
+        transform: pressed ? [{ scale: 0.96 }] : [{ scale: 1 }],
+        transitionProperty: 'transform',
+        transitionDuration: 80,
+      }}>
+      {children}
+    </AnimatedPressable>
+  );
+}
+```
 
 Reserve shared value animations for continuous gesture tracking (pan, pinch, scroll-driven) where the animation must follow finger position on every frame without a JS thread round-trip.
 
@@ -141,7 +172,7 @@ Properties like `flexDirection`, `justifyContent`, and `alignItems` cannot be sm
 transitionBehavior: 'allow-discrete',
 ```
 
-In a CSS animation they always flip halfway between the two keyframes. The `display` property is special-cased around `none`: leaving `none` it flips at the start, and going to `none` it holds the visible value until the end, which is what makes it usable for enter/exit. To animate the layout change a keyword flip causes, put a layout transition on the affected views instead (`layout-animations.md`).
+In a CSS animation they always flip halfway between the two keyframes. The `display` property is special-cased around `none`: changing from `none` to another value flips at the start, and changing to `none` holds the visible value until the end, which is what makes it usable for enter/exit. To animate the layout change a keyword flip causes, put a layout transition on the affected views instead (`layout-animations.md`).
 
 ### Rules
 

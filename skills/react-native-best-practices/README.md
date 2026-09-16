@@ -67,6 +67,7 @@ react-native-best-practices/
     │   ├── references/easing.md          # Easing.* to CSS timing functions, sampling and approximations
     │   ├── references/imperative-control.md  # cancel, pause, reverse, restart, stop a loop
     │   ├── references/callbacks.md       # with* callbacks to onCSS* events, with examples
+    │   ├── references/press-feedback.md  # Reversal: press/hover/focus to pseudo-selectors or state, toggles
     │   ├── references/transitions-and-animations.md  # with* compositions to transitions or animations
     │   └── references/reduced-motion.md  # Guard forms, resting values, ReducedMotionConfig
     ├── multithreading/

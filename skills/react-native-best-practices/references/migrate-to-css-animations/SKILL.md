@@ -175,10 +175,12 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    `-- NO  -> continue
 
 8. Can the driver reverse mid-flight? (press in/out, a toggle the user flips)
+                                                        references/press-feedback.md
    |-- YES, the site is a transition -> note Needs approval: a CSS transition reversed
    |   mid-flight takes a shortened return leg (../animations/animations.md, CSS
    |   Transitions, Rules), the shared value took whatever duration the site gave the
-   |   return write; continue
+   |   return write; for press, hover and focus feedback propose the version-appropriate
+   |   shape; continue
    |-- YES, the site is an animation (a loop, a sequence, or one that became an
    |   animation at question 4 or 6) -> note Needs approval:
    |   CSS animations do not retarget, a flip mid-flight starts the incoming rule from

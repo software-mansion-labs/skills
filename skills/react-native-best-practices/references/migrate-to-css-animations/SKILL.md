@@ -133,6 +133,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
 6. Does code cancel, pause, reverse or restart the animation from outside the driver?
    (the driver's own return write, a press out or a toggle flipped back, is question 8;
    decide transition or animation first: references/transitions-and-animations.md)
+                                                        references/imperative-control.md
    |-- pause/resume -> animationPlayState 'paused' / 'running'; note Needs approval:
    |   the shared value re-eased the rest over a full duration, CSS resumes where it
    |   paused; continue

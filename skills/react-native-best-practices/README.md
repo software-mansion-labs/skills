@@ -65,6 +65,7 @@ react-native-best-practices/
     │   ├── references/properties.md      # Supported properties per version, keyword routing
     │   ├── references/value-functions.md # Affine values, interpolate stops, two drivers, value kinds
     │   ├── references/easing.md          # Easing.* to CSS timing functions, sampling and approximations
+    │   ├── references/imperative-control.md  # cancel, pause, reverse, restart, stop a loop
     │   ├── references/transitions-and-animations.md  # with* compositions to transitions or animations
     │   └── references/reduced-motion.md  # Guard forms, resting values, ReducedMotionConfig
     ├── multithreading/

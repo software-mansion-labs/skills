@@ -1,12 +1,14 @@
-# Drivers: who writes and reads the shared value
+# Drivers: where the values come from, who else touches them
 
 Questions 1, 9 and 10 of the walk.
 
-## 1. Where is the value written?
+## 1. Where do the target values come from?
 
-Per frame or on the UI thread, so it stays on hooks: a scroll handler, a gesture `onUpdate`/`onChange`, gesture callbacks that run as worklets (every callback inline or marked `'worklet'` and no `.runOnJS(true)`; Gesture Handler 2 and 3 alike), `useAnimatedReaction`, `useFrameCallback`, a sensor hook, `useAnimatedKeyboard`, a `scheduleOnUI`/`runOnUI` body, a JS loop assigning every frame, and any shared value a library owns (a bottom sheet's `animatedIndex`, a carousel's progress, `useScrollOffset`): name the library in the reason.
+A `with*` call produces the frames between two targets; CSS replaces exactly that part. What decides the verdict is where the targets come from.
 
-On the JS thread, so the walk continues: `useEffect`, `onPress`/`onChange`, a timer, a network callback, a gesture `onEnd`/`onFinalize` with `.runOnJS(true)`, or no shared value at all because the hook body reads a prop or state with the `with*` inline, where the render is the driver:
+Continuous input, so the site stays on shared values: a scroll offset, a moving finger (gesture `onUpdate`/`onChange`, or any gesture whose callbacks all run as worklets: inline or marked `'worklet'` and no `.runOnJS(true)`, Gesture Handler 2 and 3 alike), a sensor, `useAnimatedKeyboard`, a `useFrameCallback` that computes new targets every frame, a `scheduleOnUI`/`runOnUI` body, and any shared value a library owns (a bottom sheet's `animatedIndex`, a carousel's progress, `useScrollOffset`): name the library in the reason.
+
+The JS thread, so the walk continues: state, props, `useEffect`, `onPress`/`onChange`, a timer, a network callback, a gesture `onEnd`/`onFinalize` with `.runOnJS(true)`, or no shared value at all because the hook body reads a prop or state with the `with*` inline, where the render is the driver:
 
 ```tsx
 const style = useAnimatedStyle(() => ({ opacity: withTiming(visible ? 1 : 0, { duration: 200 }) }), [visible]);
@@ -14,11 +16,13 @@ const style = useAnimatedStyle(() => ({ opacity: withTiming(visible ? 1 : 0, { d
 
 A writer outside the requested scope: widen the scope, or note Needs approval.
 
-Indirection: a `useDerivedValue`, or a `SharedValue` passed as a prop, is not a driver. Follow it to the shared value that is written and classify that write; the derived computation joins question 4. A derived value that anything besides the migrated hook consumes (a `useAnimatedReaction`, a gesture, a child through props) stays on hooks.
+Chains: a `useDerivedValue`, a `useAnimatedReaction`, or a `SharedValue` passed as a prop is not a source. Follow the chain back to where the value is first written. When that write is on the JS thread, the whole chain collapses: set state where the shared value was written, drop the derived value and the reaction, and let question 4 judge the computation the chain performed. A reaction that reacts to continuous input, or that does UI-thread work of its own (scrollTo, a gesture state), keeps the site on shared values; a reaction whose only job is to forward a JS-written value is removed with it. When you cannot tell what a reaction does for other code, note Needs approval and ask.
 
 A custom hook that wraps `useAnimatedStyle` (`useFadeIn()`) is one site: classify the hook body, and the verdict must hold for every call site, which then receives plain style props.
 
-Measured layout (`onLayout`, `measure` in an effect) stored in React state is a plain state driver: a transition to the measured target is fine. `measure` read inside the hook every frame is the per-frame case above.
+A measured value (`onLayout`, `measure` in an effect or a handler) is a JS-thread target whether the code stored it in state, wrote it into the shared value, or passed it to `withTiming` directly: hold it in state and transition to it. `measure` read inside the hook every frame is continuous input.
+
+A shared value passed directly in `style` or as a prop (`style={{ opacity: sv }}`, `<AnimatedCircle r={r} />`) has no hook; classify the writes to that value the same way.
 
 ## 9. Other writers
 
@@ -28,7 +32,7 @@ A property that animates on mount and is later retargeted by state is one transi
 
 ## 10. Other readers
 
-Removing the shared value breaks every other reader. A worklet that reads it (`useAnimatedReaction`, a gesture, `scrollTo`), a child that receives it as a prop, or JS that reads `sv.value`: Keep on hooks, or Needs approval proposing a state mirror for those readers. Another `useAnimatedStyle` reading the same looping value: see `references/transitions-and-animations.md`, shared phase.
+Removing the shared value breaks every other reader: another `useAnimatedStyle`, a worklet that reads it (`useAnimatedReaction`, a gesture, `scrollTo`), a child that receives it as a prop, or JS that reads `sv.value`. Propose a state mirror for those readers as Needs approval, or Keep on shared values. Another `useAnimatedStyle` reading the same looping value: see `references/transitions-and-animations.md`, shared phase.
 
 ## Example: state-driven fade
 
@@ -41,15 +45,32 @@ const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
 ```tsx
 // After: the state that drove the effect drives the transition
-const reduced = useReducedMotion();
 <Animated.View
   style={[styles.box, {
     opacity: visible ? 1 : 0,
     transitionProperty: 'opacity',
-    transitionDuration: reduced ? 1 : 200,
+    transitionDuration: 200,
     transitionTimingFunction: 'ease-in-out',
   }]}
 />
 ```
 
-The row records `inOut(quad)` to `'ease-in-out'` (0.012) and, when `visible` can flip back inside 200ms, the shortened return from question 8.
+The row records `inOut(quad)` to `'ease-in-out'` (0.012) and, when `visible` can flip back inside 200ms, the shortened return from question 8. With reduced motion kept, `transitionDuration` becomes `reduced ? 1 : 200`.
+
+## Example: a reaction that only forwards a JS write
+
+```tsx
+// Before
+const step = useSharedValue(0);
+const width = useSharedValue(0);
+useAnimatedReaction(() => step.value, (s) => { width.value = withTiming(s * 80, { duration: 250 }); });
+const style = useAnimatedStyle(() => ({ width: width.value }));
+const next = () => { step.value = step.value + 1; };
+```
+
+```tsx
+// After: the handler that wrote step now sets state; the reaction and both shared values go
+const [step, setStep] = useState(0);
+const next = () => setStep((s) => s + 1);
+<Animated.View style={[styles.bar, { width: step * 80, transitionProperty: 'width', transitionDuration: 250, transitionTimingFunction: 'ease-in-out' }]} />
+```

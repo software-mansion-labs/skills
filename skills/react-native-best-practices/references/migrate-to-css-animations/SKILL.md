@@ -1,30 +1,37 @@
 ---
 name: migrate-to-css-animations
-description: "Migrates React Native Reanimated hook animations (useAnimatedStyle, useSharedValue, withTiming, withRepeat, withSequence, withDelay) to CSS transitions and animations, applying only conversions that keep behavior identical and explaining why the rest stay on hooks. Use when asked to migrate, convert, port or audit Reanimated animation code for CSS, or to simplify, modernize or drop worklets from animations. Requires Reanimated 4.x; reads the installed version and emits only what that version supports."
+description: "Migrates React Native Reanimated shared value animations (useAnimatedStyle, useSharedValue, withTiming, withRepeat, withSequence, withDelay) to CSS transitions and animations, applying only conversions that keep behavior identical and explaining why the rest stay on shared values. Use when asked to migrate, convert, port or audit Reanimated animation code for CSS, or to simplify, modernize or drop worklets from animations. Requires Reanimated 4.x; reads the installed version and emits only what that version supports."
 ---
 
-# Migrate Reanimated hook animations to CSS
+# Migrate shared value animations to CSS
 
 Convert only where behavior stays identical; coverage is not the goal. A conversion that typechecks and runs without errors can still animate differently, so neither proves it is correct: the walk below and the checks after converting do.
 
-"Hook animations" here means what `../animations/animations.md` calls shared value animations. For the CSS API itself read `../animations/animations.md` (feature availability by version, transitions, animations, timing functions, callbacks) and, from 4.5.0, `../animations/css-pseudo-selectors.md`. Each question of the walk names the reference file that holds its rule, mapping and example; load only the files the site needs.
+For the CSS API itself read `../animations/animations.md` (feature availability by version, transitions, animations, timing functions, callbacks) and, from 4.5.0, `../animations/css-pseudo-selectors.md`. Each question of the walk names the reference file that holds its rule, mapping and example; load only the files the site needs.
 
 ## 0. Version and scope
 
-- Installed Reanimated: `node_modules/react-native-reanimated/package.json` or the lockfile, never the `package.json` range. 3.x has no CSS API: stop and say so, do not upgrade. On 4.x note the exact version; the feature table in `../animations/animations.md` decides what may be emitted, and a site that needs a feature the installed version lacks stays on hooks.
+- Installed Reanimated: `node_modules/react-native-reanimated/package.json` or the lockfile, never the `package.json` range. 3.x has no CSS API: stop and say so, do not upgrade. On 4.x note the exact version; the feature table in `../animations/animations.md` decides what may be emitted, and a site that needs a feature the installed version lacks stays on shared values.
 - Scope: the files or directories the user named. With none named, the project's own source (not `node_modules`); say so when reporting the inventory.
 
-| Request | Steps |
-|---|---|
-| one site | 0, 2, 3, 4, 5 in short form (or explain why it stays); ask the easing question from step 1 only when step 5 needs it |
-| "can this be CSS?", an audit | 0, 1, 2, 5, no edits |
-| a directory or the app | all |
+What the request asks for decides how much of this skill runs:
+
+- One site ("migrate this spinner"): check the version, walk that site, convert it or explain in one paragraph why it stays. Ask the step 1 questions only if the site raises them.
+- A question or an audit ("can this be CSS?", "what could move?"): inventory, walk every site, report; change nothing.
+- A directory or the whole app: every step below.
 
 ## 1. Inventory, then ask once
 
-Record every `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue` and `with*` site in scope: file, component, animated properties, driver. Report the counts. Nothing animated in scope: say so and stop.
+Record every animation site in scope: `useAnimatedStyle`, `useAnimatedProps`, `useDerivedValue`, a shared value passed directly in `style` or as a prop (`style={{ opacity: sv }}`, `<AnimatedCircle r={r} />`), and every `with*` call. For each: file, component, animated properties, where the values come from. Report the counts. Nothing animated in scope: say so and stop.
 
-Then ask once, in one message: confirm the scope; whether a partial result is wanted when only some sites can move (migrate those and leave the rest, or change nothing unless every site moves); and, only when the inventory found a timing curve with no exact CSS form, whether to sample it into `linear()` or use the nearest approximation (`references/easing.md`). The answers hold for the whole run. Every other judgment call is a Needs approval row in the report, asked in one batch after classification.
+Then ask once, in one message:
+
+- Scope: confirm the files you will touch.
+- Partial result: when only some sites can move, migrate those and leave the rest, or change nothing unless every site moves?
+- Reduced motion: `with*` animations follow the system Reduce Motion setting on their own; CSS ignores it. Keep that behavior (every migrated site gets a `useReducedMotion()` guard, `references/reduced-motion.md`) or drop it (users with Reduce Motion on will see the animations)? Skip the question when the source already handles it explicitly everywhere (`ReduceMotion.Never`, `ReduceMotion.Always`, a `<ReducedMotionConfig>`).
+- Easing: only when the inventory found a timing curve with no exact CSS form. Show the sampled `linear(...)` form for the first such site next to the nearest approximation and its max error, and ask which to use (`references/easing.md`).
+
+The answers hold for the whole run. Every other judgment call is a Needs approval row in the report.
 
 ## 2. Decide per site
 
@@ -32,57 +39,91 @@ Then ask once, in one message: confirm the scope; whether a partial result is wa
 |---|---|
 | Migrate | behavior identical; apply |
 | Needs approval | behavior changes in a way the user may accept, or the walk does not cover the site; show the proposed code, apply only after a yes |
-| Keep on hooks | CSS cannot express it; leave it, give the reason in one sentence |
+| Keep on shared values | CSS cannot express it; leave it, give the reason in one sentence |
 
-Walk the questions in order for every `useAnimatedStyle`/`useAnimatedProps` hook. Keep on hooks ends the walk; Needs approval is noted and the walk continues; a hook that reaches the end with nothing noted is Migrate, and with notes it is Needs approval. One hook is all or nothing: a property that must stay keeps the whole hook (two hooks on one component may get different verdicts). A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
+Walk the questions in order for every site. Keep on shared values ends the walk; Needs approval is noted and the walk continues; a site that reaches the end with nothing noted is Migrate, and with notes it is Needs approval. A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
+
+A hook usually gets one verdict for all its properties. When only some properties of a hook, or only some hooks of one component, can move: Needs approval, proposing the split and saying that the CSS side and the shared value side then run on separate clocks and may drift by a frame against each other.
 
 ```
-1. Is the value written per frame or on the UI thread?      references/drivers.md
-   |-- YES -> Keep on hooks
-   `-- NO  -> continue (a JS-thread write, or a prop/state read in the hook body)
+1. Where do the target values come from?                    references/drivers.md
+   (with* itself produces the frames in between; CSS replaces that part)
+   |-- from continuous input: scroll position, a moving finger, a sensor, the
+   |   keyboard, a frame callback computing new targets every frame
+   |         -> Keep on shared values
+   `-- from the JS thread: state, props, handlers, effects, timers, a gesture end,
+       also when the write travels through useDerivedValue or useAnimatedReaction
+       before it reaches the style -> continue
 
-2. Is it withSpring or withDecay anywhere in the composition, or withClamp?
-   |-- YES -> Keep on hooks (no CSS spring, decay or clamp)
-   `-- NO  -> continue
+2. Is it withSpring or withDecay anywhere in the composition?
+   |-- YES -> Keep on shared values (no CSS spring or decay)
+   `-- NO  -> continue. A withClamp around timing animations never triggers when
+             both endpoints lie inside the bounds and the easing stays within 0..1
+             (not back or elastic, not a bezier with y outside 0..1): drop it;
+             a clamp that can trigger -> Keep on shared values (CSS cannot clamp)
 
 3. Does CSS animate every property on every platform the project targets, at the
    installed version? (supported-properties docs, feature table in animations.md)
    |-- NO, the property is a keyword -> note Needs approval, continue
-   |-- NO, for any other reason -> Keep on hooks
+   |-- NO, for any other reason -> Keep on shared values
    `-- YES -> continue
 
-4. Is each animated value a * driver + b between two endpoints of the same kind?
-   |-- NO  -> Keep on hooks
-   `-- YES -> continue
+4. Is each animated value a straight line between its two endpoints
+   (a * driver + b, both endpoints the same kind of value)?
+   |-- YES -> continue
+   |-- NO, mixed kinds (0 to '100%', 300 to 'auto') -> Keep on shared values (it jumps)
+   `-- NO, a curve or a multi-stop interpolate -> note Needs approval: propose a
+       keyframe animation that samples the value curve (10 to 20 stops), show it,
+       and say that a retrigger mid-flight then restarts instead of retargeting;
+       continue
 
 5. Does the timing curve map to CSS exactly?                references/easing.md
    |-- exact row -> continue
-   `-- no exact row -> apply the answer from step 1, record the substitution and its
-       max error in the site's row (no Needs approval note for this alone), continue
+   `-- no exact row -> apply the answer from step 1 (sampled linear() or the nearest
+       approximation), record the substitution and its max error in the site's row,
+       continue
 
 6. Does code cancel, pause, reverse or restart the animation?
-   |-- YES, except cancelAnimation in an unmount cleanup -> Keep on hooks
-   `-- NO  -> continue
+   |-- pause/resume -> animationPlayState 'paused' / 'running'; continue
+   |-- reverse -> animationDirection: 'reverse', or the state flipped back for a
+   |   transition (question 8); continue
+   |-- restart -> a new css.keyframes() rule with the same keyframes (a new rule
+   |   restarts the animation); continue
+   |-- retarget (cancelAnimation then a with* to another value) -> the new state; continue
+   |-- cancel and hold the current value -> note Needs approval: removing
+   |   animationName snaps to the static style, CSS cannot hold mid-flight; continue
+   `-- none, or cancelAnimation only in an unmount cleanup -> continue
 
 7. Does a completion callback do something observable?
-   |-- YES -> Keep on hooks
+   |-- YES, 4.6.0+ -> map it to the onCSS* props: onCSSTransitionEnd/Cancel for a
+   |   transition, onCSSAnimationEnd/Iteration/Cancel for an animation. With several
+   |   animations on one element branch on the event's animationName, which needs
+   |   css.keyframes() defined outside the component so its .name is stable.
+   |   Note Needs approval when the moments differ (../animations/animations.md,
+   |   Callbacks); continue
+   |-- YES, below 4.6.0 -> Keep on shared values (no CSS callbacks)
    `-- NO  -> continue
 
 8. Can the driver reverse mid-flight? (press in/out, a toggle the user flips)
    |-- YES -> note Needs approval: a CSS transition reversed mid-flight takes a
    |          shortened return leg (../animations/animations.md, CSS Transitions, Rules),
-   |          the hook played the full duration back; continue
+   |          the shared value took whatever duration the site gave the return write;
+   |          continue
    `-- NO  -> continue
 
-9. Does anything else write the shared value without a with*?  references/drivers.md
+9. Does other code write the same value without a with*?   references/drivers.md
+   (sv.value = x in a handler, a mount jump, a conditional style)
    |-- YES, and nothing writes it with a with* either -> the site never animated:
    |          plain state in the static style, no transitionProperty; continue
    |-- YES -> note Needs approval: every change of a transitioned property animates,
-   |          so the jump becomes a transition; continue
+   |          so that jump becomes a transition; continue
    `-- NO  -> continue
 
-10. Does anything else read the shared value?                references/drivers.md
-   |-- YES -> Keep on hooks, or note Needs approval with a state mirror
+10. Does other code read the shared value?                  references/drivers.md
+   (another hook, a worklet such as useAnimatedReaction or a gesture, a child that
+    receives it as a prop, JS reading sv.value)
+   |-- YES -> those readers lose their source when the value goes: note Needs
+   |          approval proposing a state mirror for them, or Keep on shared values
    `-- NO  -> Migrate, or Needs approval if anything was noted
 ```
 
@@ -90,19 +131,19 @@ Outside the walk, leave these alone: `entering`/`exiting`/`layout` animations, `
 
 ## 3. Convert
 
-`references/transitions-and-animations.md` maps `with*` compositions to transitions or animations; `references/easing.md` the timing curve; `references/reduced-motion.md` the guard every site gets. Rules that hold for every site:
+`references/transitions-and-animations.md` maps `with*` compositions to transitions or animations; `references/easing.md` the timing curve; `references/reduced-motion.md` the guard when the user kept reduced motion. Rules that hold for every site:
 
-- Follow the transition and animation Rules in `../animations/animations.md`; above all list `transitionProperty` explicitly (never `'all'` or the `transition` shorthand string) and write the timing function (`references/easing.md` says why the default is never left in place).
-- The driver becomes React state (`useState`, a prop, a store value); this is the migration, not a cost.
+- Follow the transition and animation Rules in `../animations/animations.md`; in the code you emit list `transitionProperty` explicitly (never `'all'` or the `transition` shorthand string) and write the timing function (`references/easing.md` says why the default is never left in place).
+- Replacing the shared value with React state (`useState`, a prop, a store value) is expected; do not count it as a downside in the report.
 - Migrate inside each `Platform.select` arm and keep the structure; enumerate `transitionProperty` per platform when the property set differs. A duration or easing computed per trigger (`duration: Math.abs(delta) * k`) becomes state set in the same render as the target, with the formula unchanged.
 - A property the hook returns from a value that is never animated (a constant, or a shared value that is never written after its initial value) is static: move it to the static style. Remove the shared values, hooks and imports the conversion killed and nothing else.
 - Never put CSS declarations on a plain component.
-- If converting uncovers something the inventory missed (a worklet writer after all, a property the docs table does not list, a question that cannot be answered), revert that site and classify it again.
+- If converting uncovers something the inventory missed (a continuous input after all, a property the docs table does not list, a question that cannot be answered), revert that site and classify it again.
 
 After converting a site, confirm each of these against the original:
 
 - first render identical: the static style carries the value the hook painted first (`../animations/animations.md`, Mount animations);
-- end state identical, including the value the site rests at under reduced motion (`references/reduced-motion.md`);
+- end state identical, including where the site rests under reduced motion when the user kept it (`references/reduced-motion.md`);
 - re-trigger identical: writing the same target mid-flight looks identical unless the original cancelled first; replaying a finished animation needs a new keyframes rule (`useMemo(() => css.keyframes(frames), [replayCount])`, `../animations/animations.md`, Defining keyframes) or a remount, so Needs approval;
 - the callbacks the original fired still fire, at the same moments;
 - unmount mid-animation throws nothing;
@@ -116,11 +157,11 @@ Typecheck and lint the changed files; run their tests (replacing a `useAnimatedS
 
 ## 5. Report
 
-Lead with the numbers: `Migrated 14 sites across 9 files. Left 23: 6 need approval, 17 stay on hooks.` Then:
+Lead with the numbers and the grouped reasons, nothing else:
 
-1. **Applied**: one row per site (file, what it animates, transition or animation, note). The note lists every behavior delta or says `exact`: easing substituted and its max error, reduced-motion guard dropped, a reversal now shorter, a mount step or replay that no longer fires.
-2. **Needs approval**: one row per site with the open question and the proposed code. Ask which to apply, by number.
-3. **Kept on hooks**, grouped by reason with counts.
-4. Before/after code for two or three applied sites of different shape.
+```
+Migrated 14 sites across 9 files. 6 need approval. 17 stay on shared values:
+  9 track continuous input, 5 use withSpring, 3 have other readers.
+```
 
-Up to about ten sites per group, print every row. Above that, print the counts and the grouped reasons, then ask whether to list all rows, the first ten, or one file at a time. Leave out recipes, memoization advice and per-site prose.
+Then ask what to expand. Offer: the applied sites (one row each: file, what it animates, transition or animation, and every behavior delta or `exact`), the sites that need approval, or the kept sites. Show the applied rows in pages of ten; walk the Needs approval sites one at a time with the open question and the proposed diff, and apply each on a yes. Leave out recipes, memoization advice and per-site prose.

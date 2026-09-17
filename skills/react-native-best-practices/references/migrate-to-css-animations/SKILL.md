@@ -55,11 +55,13 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   without .runOnJS(true) -> note Needs approval: propose moving the write to the
    |   JS thread (.runOnJS(true), or runOnJS, from 4.1.0 scheduleOnRN, inside the
    |   worklet) and holding the target in state; the animation then starts after a JS
-   |   round trip instead of on the next UI frame; continue
+   |   round trip instead of on the next UI frame (a press-shaped begin/end pair on the
+   |   styled element is question 8 instead); continue
    |-- through a runOnUI/scheduleOnUI body -> not a source: classify the target the
    |   body writes (a literal, state or prop from the calling handler or effect -> the
-   |   JS thread arm, set state where runOnUI was called; another shared value ->
-   |   question 10; UI-thread work of its own, scrollTo or a gesture state -> Keep)
+   |   JS thread arm, set state where runOnUI was called; another shared value -> a
+   |   chain, follow it back to its first write (references/drivers.md, Chains);
+   |   UI-thread work of its own, scrollTo or a gesture state -> Keep)
    `-- from the JS thread: state, props, handlers, effects, timers, a gesture end
        with .runOnJS(true), also when the write travels through useDerivedValue or
        useAnimatedReaction before it reaches the style -> continue
@@ -107,10 +109,13 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   number start it rendered NaN every frame and jumped to the target at the end
    |   (the migration fixes that), from a percentage start it kept the % and ended at
    |   the wrong value ('50%' to 300 ended at '300%'); say which; continue
+   |-- NO, a keyword ternary already rendered conditionally at question 3 -> continue
    |-- NO, a multi-stop interpolate -> propose a keyframe animation with a keyframe at
-   |   every stop, show it: exact when the driver's easing is linear or has an exact row
-   |   in references/easing.md (value-functions.md says how it splits per interval),
-   |   otherwise note Needs approval with the error; continue
+   |   every stop, show it: exact when the driver's easing is linear, an exact bezier
+   |   row in references/easing.md, or Easing.inOut(f) with the stop at 0.5 where f has
+   |   an exact row (value-functions.md gives the per-interval split, which settles
+   |   question 5 for the property); otherwise note Needs approval with the error;
+   |   continue
    `-- NO, any other curve -> note Needs approval: propose a keyframe animation that
        samples the value curve every 5 to 10 percent, show it with the step and the
        error; continue
@@ -118,7 +123,8 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    restarts the incoming rule instead of retargeting.
 
 5. Does the timing curve map to CSS exactly?                references/easing.md
-   |-- exact row -> continue
+   |-- exact row, or a multi-stop site whose easing question 4 split per interval
+   |   -> continue
    `-- no exact row -> apply the answer from step 1 (sampled linear() or the nearest
        approximation), record the substitution and its max error in the site's row,
        continue
@@ -144,7 +150,9 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   does nothing; continue
    |-- cancel of a running animation (a loop, a sequence) then a with* to a rest value
    |   -> note Needs approval, or Keep on shared values: removing animationName snaps
-   |   to the static style, nothing tweens from the current animated value; continue
+   |   to the static style, nothing tweens from the current animated value (through
+   |   4.6.0 the view can even stay at its last animated frame, fixed on main by
+   |   software-mansion/react-native-reanimated#10528); continue
    |-- cancel and hold the current value -> on an animation: animationPlayState
    |   'paused' holds it, continue; on a transition: nothing holds mid-flight, note
    |   Needs approval stating the snap, or Keep on shared values
@@ -158,6 +166,9 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   css.keyframes() rule, or the restart rule held in state from question 6); a plain
    |   keyframes object has no name you can reference. Note Needs approval when the
    |   moments differ (../animations/animations.md, Callbacks); continue
+   |-- YES, 4.6.0+, and no CSS event exists for that moment (a callback on an earlier
+   |   child of a withSequence, a target already equal to the current value) -> note
+   |   Needs approval with the substitute, or Keep on shared values; continue
    |-- YES, below 4.6.0 -> Keep on shared values (no CSS callbacks)
    `-- NO  -> continue
 
@@ -169,8 +180,9 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |-- YES, the site is an animation (a loop, a sequence, or one that became an
    |   animation at question 4 or 6) -> note Needs approval:
    |   CSS animations do not retarget, a flip mid-flight starts the incoming rule from
-   |   its first keyframe where the shared value tweened back from the current value;
-   |   continue
+   |   its first keyframe where the shared value tweened back from the current value
+   |   (a loop re-entered mid-flight alternated from the re-entry value instead:
+   |   references/transitions-and-animations.md, the withRepeat reverse row); continue
    `-- NO  -> continue
 
 9. Does other code write the same value without a with*?   references/drivers.md

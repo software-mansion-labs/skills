@@ -17,7 +17,7 @@ Question 5 of the walk. Map the `Easing.*` expression written in the source to a
 | `Easing.in(f)` | `Easing.in(f)` is `f` itself: map `f` |
 | `Easing.out(f)` | reflect: `cubicBezier(x1, y1, x2, y2)` becomes `cubicBezier(1 - x2, 1 - y2, 1 - x1, 1 - y1)`; `out(Easing.ease)` is `'ease-out'` |
 
-Always write the timing function, and do not write `'ease'` for a curve the source did not have: no `Easing.*` value is CSS `'ease'`, and on 4.0.0 to 4.5.x the native `'ease'`, which is also the default when the timing function is left out, is `cubicBezier(0.25, 0.1, 0.25, 0.1)`, a wrong curve (up to 0.40 off the real one). When the user says the exact curve does not matter, offer `'ease-in-out'` (0.012 off the `withTiming` default) or the CSS default look, written as `cubicBezier(0.25, 0.1, 0.25, 1)` on those versions.
+Always write the timing function, and do not write `'ease'` for a curve the source did not have: no `Easing.*` value is CSS `'ease'`, and on 4.0.0 to 4.3.x the native `'ease'`, which is also the default when the timing function is left out, is `cubicBezier(0.25, 0.1, 0.25, 0.1)`, a wrong curve (up to 0.40 off the real one; correct from 4.4.0). When the user says the exact curve does not matter, offer `'ease-in-out'` (0.012 off the `withTiming` default) or the CSS default look, written as `cubicBezier(0.25, 0.1, 0.25, 1)` on those versions.
 
 ## Every other curve
 

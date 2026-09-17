@@ -41,7 +41,7 @@ The answers hold for the whole run. Every other judgment call is a Needs approva
 | Needs approval | behavior changes in a way the user may accept, or the walk does not cover the site; show the proposed code, apply only after a yes |
 | Keep on shared values | CSS cannot express it; leave it, give the reason in one sentence |
 
-Walk the questions in order for every site, and where a site animates several properties judge each property on its own. Keep on shared values ends the walk for that property; Needs approval is noted and the walk continues; a property that reaches the end with nothing noted is Migrate, and with notes it is Needs approval. A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
+Walk the questions in order for every site, and where a site animates several properties judge each property on its own. Keep on shared values ends the walk for that property; Needs approval is noted and the walk continues; a property that reaches the end with nothing noted is Migrate, and with notes it is Needs approval; a recorded easing substitution or a stated color gap is a row annotation, not a note. A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
 
 A hook gets the verdict its properties share. When only some properties of a hook, or only some hooks of one component, can move: Needs approval, proposing the split (the movable properties become CSS on the element, the rest stay in the hook) and saying that the CSS side and the shared value side then run on separate clocks and may drift by a frame against each other. When no property can move, the hook is Keep on shared values with the reasons grouped.
 
@@ -52,10 +52,14 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   onChange), a sensor, the keyboard, a frame callback computing new targets
    |   every frame -> Keep on shared values
    |-- from a discrete UI-thread event: a worklet gesture onStart/onEnd/onFinalize
-   |   without .runOnJS(true), a one-off runOnUI/scheduleOnUI body -> note Needs
-   |   approval: propose moving the write to the JS thread (.runOnJS(true), or
-   |   scheduleOnRN inside the worklet) and holding the target in state; the animation
-   |   then starts after a JS round trip instead of on the next UI frame; continue
+   |   without .runOnJS(true) -> note Needs approval: propose moving the write to the
+   |   JS thread (.runOnJS(true), or runOnJS, from 4.1.0 scheduleOnRN, inside the
+   |   worklet) and holding the target in state; the animation then starts after a JS
+   |   round trip instead of on the next UI frame; continue
+   |-- through a runOnUI/scheduleOnUI body -> not a source: classify the target the
+   |   body writes (a literal, state or prop from the calling handler or effect -> the
+   |   JS thread arm, set state where runOnUI was called; another shared value ->
+   |   question 10; UI-thread work of its own, scrollTo or a gesture state -> Keep)
    `-- from the JS thread: state, props, handlers, effects, timers, a gesture end
        with .runOnJS(true), also when the write travels through useDerivedValue or
        useAnimatedReaction before it reaches the style -> continue
@@ -67,16 +71,19 @@ A hook gets the verdict its properties share. When only some properties of a hoo
              within 0..1 or one whose overshoot stays inside too (Easing.back undershoots
              the start by a tenth of the distance, Easing.elastic overshoots the end by
              0.066 of it): drop it; a clamp that can trigger -> Keep on shared values
-             (CSS cannot clamp)
+             (CSS cannot clamp). The same for a clamp spelled as Extrapolation.CLAMP,
+             clamp() or Math.min/Math.max around the driver, or interpolateColor
 
 3. Does CSS animate the property on every platform the project targets, at the
    installed version? (supported-properties docs, feature table in animations.md)
    |-- NO, the property is a keyword flipped at a state change -> render it
    |   conditionally, leave it out of transitionProperty; continue
-   |-- NO, a keyword flipped at a threshold of a numeric driver -> note Needs approval
+   |-- NO, a keyword flipped at > 0.5 of a 0..1 numeric driver -> note Needs approval
    |   proposing transitionBehavior: 'allow-discrete' and saying when CSS flips it
    |   (the midpoint; display around none flips at the start when showing and at the
-   |   end when hiding); a flip that breaks layout -> Keep on shared values
+   |   end when hiding); continue
+   |-- NO, a keyword flipped at any other threshold, or a flip that breaks layout
+   |   -> Keep on shared values
    |-- NO, for any other reason -> Keep on shared values
    `-- YES -> continue
 
@@ -87,15 +94,23 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   CSS lerps sRGB, the shared value interpolated gamma-corrected)
    |-- NO, two or more drivers feed one property -> entries of one compound property
    |   (a transform array, shadowOffset) written together with one config are one
-   |   state object: continue; anything else (a.value * b.value, different configs)
-   |   -> Keep on shared values (no single state value to transition)
-   |-- NO, a number and a keyword (300 to 'auto') -> Keep on shared values (it switches)
-   |-- NO, a nonzero number and a percentage -> note Needs approval: CSS resolves the
-   |   percentage against the parent and tweens, the shared value dropped or kept the
-   |   start suffix, so the end state changes; continue (0 to 'N%' tweens: continue)
+   |   state object: continue; the same entries with different configs -> note Needs
+   |   approval proposing one config and naming the entry whose timing changes, or
+   |   Keep on shared values; a.value * b.value or base.value + offset.value -> Keep
+   |   on shared values (no single state value to transition)
+   |-- NO, a number and a keyword (300 to 'auto') -> Keep on shared values (nothing
+   |   tweens, it jumps to the target)
+   |-- NO, a percentage string at both ends ('0%' to '100%') -> continue (both tween)
+   |-- NO, a number and a percentage -> note Needs approval: CSS resolves the percentage
+   |   (against the parent; translateX/translateY, border radii, gaps and transform
+   |   origin against the view itself) and tweens; the shared value did not: from a
+   |   number start it rendered NaN every frame and jumped to the target at the end
+   |   (the migration fixes that), from a percentage start it kept the % and ended at
+   |   the wrong value ('50%' to 300 ended at '300%'); say which; continue
    |-- NO, a multi-stop interpolate -> propose a keyframe animation with a keyframe at
-   |   every stop, show it: exact when the driver's easing is linear, otherwise note
-   |   Needs approval with the error; continue
+   |   every stop, show it: exact when the driver's easing is linear or has an exact row
+   |   in references/easing.md (value-functions.md says how it splits per interval),
+   |   otherwise note Needs approval with the error; continue
    `-- NO, any other curve -> note Needs approval: propose a keyframe animation that
        samples the value curve every 5 to 10 percent, show it with the step and the
        error; continue
@@ -108,7 +123,9 @@ A hook gets the verdict its properties share. When only some properties of a hoo
        approximation), record the substitution and its max error in the site's row,
        continue
 
-6. Does code cancel, pause, reverse or restart the animation?
+6. Does code cancel, pause, reverse or restart the animation from outside the driver?
+   (the driver's own return write, a press out or a toggle flipped back, is question 8;
+   decide transition or animation first: references/transitions-and-animations.md)
    |-- pause/resume -> animationPlayState 'paused' / 'running'; note Needs approval:
    |   the shared value re-eased the rest over a full duration, CSS resumes where it
    |   paused; continue
@@ -122,6 +139,9 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   keyframe, not a jump for question 9); continue
    |-- retarget of a transitioned property (cancelAnimation then a with* to another
    |   value) -> the new state; the transition retargets from the current value; continue
+   |-- cancel then a with* to the same target on a transition -> note Needs approval:
+   |   the shared value restarted at full duration, a transition already heading there
+   |   does nothing; continue
    |-- cancel of a running animation (a loop, a sequence) then a with* to a rest value
    |   -> note Needs approval, or Keep on shared values: removing animationName snaps
    |   to the static style, nothing tweens from the current animated value; continue
@@ -135,7 +155,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   transition, onCSSAnimationEnd/Iteration/Cancel for an animation. With several
    |   animations on one element branch on the event's animationName, comparing
    |   against the .name of the rule object you pass in animationName (a module-scope
-   |   css.keyframes() rule, or the memoized restart rule from question 6); a plain
+   |   css.keyframes() rule, or the restart rule held in state from question 6); a plain
    |   keyframes object has no name you can reference. Note Needs approval when the
    |   moments differ (../animations/animations.md, Callbacks); continue
    |-- YES, below 4.6.0 -> Keep on shared values (no CSS callbacks)
@@ -146,7 +166,8 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   mid-flight takes a shortened return leg (../animations/animations.md, CSS
    |   Transitions, Rules), the shared value took whatever duration the site gave the
    |   return write; continue
-   |-- YES, the site became an animation at question 4 or 6 -> note Needs approval:
+   |-- YES, the site is an animation (a loop, a sequence, or one that became an
+   |   animation at question 4 or 6) -> note Needs approval:
    |   CSS animations do not retarget, a flip mid-flight starts the incoming rule from
    |   its first keyframe where the shared value tweened back from the current value;
    |   continue
@@ -190,7 +211,7 @@ After converting a site, confirm each of these against the original:
 - re-trigger identical: writing the same target mid-flight looks identical unless the original cancelled first; a replay restarts only through a new keyframes rule (`css.keyframes(frames)` created per replay, `../animations/animations.md`, Defining keyframes), so that form must be present and must not attach the animation on the first render; a remount or `key` change also restarts it but changes the element tree and fails the last check;
 - the callbacks the original fired still fire, at the same moments;
 - unmount mid-animation throws nothing;
-- nothing else changed: same element tree, props and handlers (a `Pressable` swapped for `Animated.View` fails this), and every `Platform.select` arm converted.
+- nothing else changed: same element tree and props, every handler that did more than write the shared value still attached (a `Pressable` swapped for `Animated.View` fails this), and every `Platform.select` arm converted.
 
 Migrate three sites of differing shape first, compare them for consistent treatment, then continue. Keep a status file outside the repo (site, verdict, reason) and trust it plus `git diff` after an interruption.
 

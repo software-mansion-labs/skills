@@ -8,8 +8,9 @@ Question 8 of the walk. A site driven by `onPressIn`/`onPressOut`, `onHoverIn`/`
 Is the styled element the one the finger or pointer lands on?
 (the AnimatedPressable or AnimatedTextInput itself, or a child that fills it)
 |-- YES -> Reanimated 4.5.0+ (4.6.0 for a react-native-svg element, where the pseudo
-|          objects go in animatedProps; the 4.6.0 docs example writes them in style, which
-|          also works, never both): a pseudo-selector (../animations/css-pseudo-selectors.md)
+|          objects go in animatedProps: only that path injects the SVG hit-test responder
+|          on native, style works on web only): a pseudo-selector
+|          (../animations/css-pseudo-selectors.md)
 |          Below 4.5.0: React state from the handlers on the same element
 `-- NO  -> the feedback is on a descendant or an ancestor of the pressed element:
            React state from the handlers, or a Pressable render prop styling the child
@@ -29,7 +30,7 @@ What each selector matches per platform, and which other pseudo-classes are web 
 
 ## Rules that carry over
 
-- Write `default` for every property the selector changes when the property also has a value elsewhere: on the released versions (4.5.0 to 4.6.0) a pseudo object without `default` rests at the property's built-in default, not at the value it replaced; `../animations/css-pseudo-selectors.md` says when that changes.
+- Write `default` for every property the selector changes when the property also has a value elsewhere: a pseudo object without `default` rests at the property's built-in default, not at the value it replaced (`../animations/css-pseudo-selectors.md`, Rules).
 - Keep the transition config on the element (`transitionProperty`, `transitionDuration`, `transitionTimingFunction`); a selector only switches the value.
 - Keep the `Pressable` and its handlers: `onPress` still handles the action, only the visual handlers go. Swapping the `Pressable` for an `Animated.View` changes the element tree and fails the post-conversion checks.
 - Below 4.5.0 keep `onPressIn`/`onPressOut` and write `useState` instead of the shared value; the transition then follows the state.
@@ -100,4 +101,4 @@ Focus ring on a text input, 4.5.0+:
 
 ## Other toggles
 
-Expand/collapse, show/hide, a switch driven by state: the transition, with the shortened return stated in the row (reversed 80ms into a 200ms `'ease-in-out'` transition, the shared value took the 200ms the site gave it and CSS takes about 66ms). A driver behind a timer longer than the duration, or a rare event (rotation, navigation, network): Migrate and state the difference. Animations have no reversal behavior.
+Expand/collapse, show/hide, a switch driven by state: the transition, with the shortened return stated in the row (reversed 80ms into a 200ms `'ease-in-out'` transition, the shared value took the 200ms the site gave it and CSS takes about 66ms). A driver behind a timer longer than the duration, or a rare event (rotation, navigation, network): Migrate and state the difference. A site that became an animation at question 4 or 6 does not retarget: a flip mid-flight starts the incoming rule from its first keyframe, where the shared value tweened back from the current value; Needs approval, stating that jump.

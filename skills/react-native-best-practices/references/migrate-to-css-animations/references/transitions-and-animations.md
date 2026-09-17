@@ -1,6 +1,6 @@
 # Transitions and animations
 
-Step 3 of the walk: what a `with*` composition becomes.
+Step 3, Convert: what a `with*` composition becomes.
 
 ## Transition or animation
 
@@ -8,7 +8,8 @@ Choose per property and per edge, never once for the whole site; one element may
 
 - **Transition**: an outside trigger drives every step (press, toggle, expand, theme change). The driver becomes React state.
 - **Animation**: the steps play themselves once started (mount, loop, `withSequence`, looping `withRepeat`).
-- An element conditionally rendered on the driver (`if (!open) return null`), or a mount `useEffect` that writes a value different from the initial one, is an animation on that edge (`../animations/animations.md`, Mount animations).
+- An element conditionally rendered on the driver (`if (!open) return null`), or a mount `useEffect` that writes a value different from the initial one, is an animation on that edge (`../animations/animations.md`, Mount animations), unless the same property is later retargeted by state: then the mount edge joins that transition (render the start value, flip the state in a mount `useEffect`; `references/drivers.md`, Other writers), since one property is never in both `animationName` and `transitionProperty`.
+- Keyframe values that depend on props, state, a theme or a measured size (`interpolate(p, [0, 1], [-width, width])` with `width` from `onLayout`) are identical only when that input is constant while the element is mounted or settles before the animation is visible: a changed value is a new keyframes rule, which restarts the animation from its first keyframe, where the shared value kept its phase. Otherwise Needs approval stating the restart, or Keep on shared values; prefer a formulation whose keyframes are constant (percentages, a wrapper that owns the changing size) when one exists.
 - Shared phase: a CSS animation restarts on every mount of its element, and N CSS animations share a phase only when mounted in the same commit. A shared value owned by an ancestor that stays mounted kept its phase across child remounts and ticked as one clock for every reader. Such sites: Needs approval, proposing to move the animation to the ancestor.
 
 ## `with*`

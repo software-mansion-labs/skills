@@ -160,7 +160,7 @@ A hook gets the verdict its properties share. When only some properties of a hoo
    |   Needs approval stating the snap, or Keep on shared values
    `-- none, or cancelAnimation only in an unmount cleanup -> continue
 
-7. Does a completion callback do something observable?
+7. Does a completion callback do something observable?  references/callbacks.md
    |-- YES, 4.6.0+ -> map it to the onCSS* props: onCSSTransitionEnd/Cancel for a
    |   transition, onCSSAnimationEnd/Iteration/Cancel for an animation. With several
    |   animations on one element branch on the event's animationName, comparing
@@ -223,7 +223,7 @@ After converting a site, confirm each of these against the original:
 - first render identical: the static style carries the value the hook painted first (`../animations/animations.md`, Mount animations);
 - end state identical, including where the site rests under reduced motion when the user kept it (`references/reduced-motion.md`);
 - re-trigger identical: writing the same target mid-flight looks identical unless the original cancelled first; a replay restarts only through a new keyframes rule (`css.keyframes(frames)` created per replay, `../animations/animations.md`, Defining keyframes), so that form must be present and must not attach the animation on the first render; a remount or `key` change also restarts it but changes the element tree and fails the last check;
-- the callbacks the original fired still fire, at the same moments;
+- the callbacks the original fired still fire, at the same moments (`references/callbacks.md`);
 - unmount mid-animation throws nothing;
 - nothing else changed: same element tree and props, every handler that did more than write the shared value still attached (a `Pressable` swapped for `Animated.View` fails this), and every `Platform.select` arm converted.
 

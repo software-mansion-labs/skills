@@ -61,6 +61,9 @@ react-native-best-practices/
     ├── migrate-to-css-animations/
     │   ├── SKILL.md                      # Version detection, three verdicts, checks, convert, report, verify
     │   ├── references/drivers.md         # Who writes and reads the shared value (questions 1, 9, 10)
+    │   ├── references/springs-and-clamp.md  # withSpring/withDecay stay; when withClamp never triggers
+    │   ├── references/properties.md      # Supported properties per version, keyword routing
+    │   ├── references/value-functions.md # Affine values, interpolate stops, two drivers, value kinds
     │   ├── references/easing.md          # Easing.* to CSS timing functions, sampling and approximations
     │   ├── references/transitions-and-animations.md  # with* compositions to transitions or animations
     │   └── references/reduced-motion.md  # Guard forms, resting values, ReducedMotionConfig

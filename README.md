@@ -66,7 +66,7 @@ Best practices for setting up and migrating to Detour, Software Mansion's deferr
 
 ### [fishjam](./skills/fishjam/)
 
-Guidance for building real-time video, audio, and livestreaming apps with [Fishjam](https://fishjam.io), Software Mansion's hosted WebRTC platform. Covers the platform fundamentals (rooms, peers, tracks, two-tier auth, notifications, REST API) and all four SDKs: the Node.js and Python server SDKs (including AI voice agents and Gemini Live integration), the React web client, and the React Native / Expo client (permissions, foreground service, CallKit, screen sharing, Picture-in-Picture).
+Guidance for building real-time video, audio, and livestreaming apps with [Fishjam](https://fishjam.io), Software Mansion's hosted WebRTC platform. Covers the platform fundamentals (rooms, peers, tracks, two-tier auth, notifications, REST API), compositions (mixing live streams into new outputs with scenes, React templates, and room forwarding), and all four SDKs: the Node.js and Python server SDKs (including AI voice agents and Gemini Live integration), the React web client, and the React Native / Expo client (permissions, foreground service, CallKit, screen sharing, Picture-in-Picture).
 
 ### [react-native-moq](./skills/react-native-moq/)
 
@@ -116,9 +116,17 @@ skills/
 │   └── SKILL.md
 ├── fishjam/
 │   ├── references/
+│   │   ├── composition/
+│   │   │   ├── inputs-and-outputs.md
+│   │   │   ├── rest-endpoints.md
+│   │   │   ├── room-composition.md
+│   │   │   ├── scenes.md
+│   │   │   ├── SKILL.md
+│   │   │   └── templates.md
 │   │   ├── js-server-sdk/
 │   │   │   ├── agent.md
 │   │   │   ├── client.md
+│   │   │   ├── composition.md
 │   │   │   ├── express-fastify.md
 │   │   │   ├── gemini-integration.md
 │   │   │   ├── livestream-and-moq.md
@@ -140,6 +148,7 @@ skills/
 │   │   ├── python-server-sdk/
 │   │   │   ├── agent.md
 │   │   │   ├── client.md
+│   │   │   ├── composition.md
 │   │   │   ├── fastapi.md
 │   │   │   ├── gemini-integration.md
 │   │   │   ├── livestream-and-moq.md

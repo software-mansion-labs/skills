@@ -66,7 +66,7 @@ Most apps interact with livestreams via the room endpoints; the `/livestream` fa
 
 | Method | Path | Purpose |
 |---|---|---|
-| `POST` | `/room/{room_id}/track_forwardings` | Forward a track from this room to another peer or room. Used for relay / fan-out patterns. |
+| `POST` | `/room/{room_id}/track_forwardings` | Forward the room's tracks into a composition. Body: `{ compositionURL }`. See `../composition/room-composition.md`; the Composition API itself is in `../composition/rest-endpoints.md`. |
 
 ## MoQ
 

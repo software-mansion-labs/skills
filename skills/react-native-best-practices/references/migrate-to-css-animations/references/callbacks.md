@@ -15,7 +15,7 @@ The event props, their payloads and timing are in `../animations/animations.md`,
 | `withRepeat(anim, n, reverse, outerCb)` | `onCSSAnimationEnd` | `outerCb` ran once after the last repetition; with `n <= 0` it ran only with `false` on cancel (`onCSSAnimationCancel`) and with `true` under reduced motion, which the `animationIterationCount: reduced ? 1 : 'infinite'` form reaches as `onCSSAnimationEnd` |
 | `withDelay(ms, withTiming(v, cfg, cb))` | as the inner animation | |
 | `cb(false)` from `cancelAnimation` or a retarget | `onCSSTransitionCancel` / `onCSSAnimationCancel` | a retarget of a running transition cancels the old one and runs a new one, so Cancel then Run/Start fire |
-| `cb(true)` when the target already equals the current value | nothing: CSS fires no event when nothing changes | call the handler directly in that branch: `if (next === current) onDone(); else setValue(next)`, and say so in the row. The shared value fired it at once only for a bare `withTiming`; wrapped in `withDelay`, `withSequence` or `withRepeat` it waited the whole timeline first |
+| `cb(true)` when the target already equals the current value | nothing: CSS fires no event when nothing changes | Needs approval: call the handler directly in that branch, `if (next === current) onDone(); else setValue(next)`, and say so in the row. The shared value fired it at once only for a bare `withTiming`; wrapped in `withDelay`, `withSequence` or `withRepeat` it waited the whole timeline first |
 | the same target written again mid-flight | the running transition is left alone and fires one End | the shared value fired the first callback with `false` and the second with `true`; Needs approval when the site counts on the `false` call |
 | a callback that writes another shared value (`withTiming(0, cfg, () => { other.value = withTiming(1); })`) | the `onCSS*` handler runs on the JS thread | set state when the chained site migrates too; otherwise assign the shared value from the handler, one frame later than the shared value did |
 | a callback that reads the shared value it animated | read the React state that replaced it; the End event carries no value | |
@@ -43,7 +43,7 @@ opacity.value = withTiming(0, { duration: 200 }, (finished) => {
 />
 ```
 
-Needs approval row: setting `hidden` while it is already `true` fired `finished: true` on the shared value and fires nothing here; the row proposes `if (hidden) setVisible(false); else setHidden(true)`. The row also records `inOut(quad)` to `'ease-in-out'` (0.012). The End handler fires after the fade-in too, hence the `hidden` check.
+Needs approval row: setting `hidden` while it is already `true` fired `finished: true` on the shared value and fires nothing here; the row proposes `if (hidden) setVisible(false); else setHidden(true)`. The row also records `inOut(quad)` to `'ease-in-out'` (0.012). With reduced motion kept, `transitionDuration` becomes `reduced ? 1 : 200`; the 1ms transition still fires End, so the chained `setVisible(false)` survives. The End handler fires after the fade-in too, hence the `hidden` check.
 
 Repetition counter:
 

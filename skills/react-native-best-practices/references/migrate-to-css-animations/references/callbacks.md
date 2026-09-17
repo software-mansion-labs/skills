@@ -2,7 +2,7 @@
 
 Question 7 of the walk. `with*` completion callbacks map onto the `onCSS*` props from Reanimated 4.6.0 (`../animations/animations.md`, Callbacks). Below 4.6.0 an observable callback keeps the site on shared values. A log-only callback is dropped without a row.
 
-Event props and their payload: transitions get `onCSSTransitionRun`, `onCSSTransitionStart`, `onCSSTransitionEnd`, `onCSSTransitionCancel` with `{ propertyName, elapsedTime }`; animations get `onCSSAnimationStart`, `onCSSAnimationIteration`, `onCSSAnimationEnd`, `onCSSAnimationCancel` with `{ animationName, elapsedTime }`. `elapsedTime` is in seconds. They are component props, not style keys. With several animations on one element, branch on `animationName`: define the keyframes with `css.keyframes()` outside the component and compare against its `.name` (a plain keyframes object gets a generated name you cannot reference).
+The event props, their payloads and timing are in `../animations/animations.md`, Callbacks; they are component props, not style keys. With several animations on one element, branch on the event's `animationName`, comparing it against the `.name` of the rule object you pass in `animationName`: a `css.keyframes()` rule from module scope, or the restart rule held in state (`references/imperative-control.md`). A plain keyframes object gets a generated name you cannot reference. When a replay swaps the rule, the Cancel event of the run it interrupts carries the previous rule's name.
 
 ## Mapping
 
@@ -43,7 +43,7 @@ opacity.value = withTiming(0, { duration: 200 }, (finished) => {
 />
 ```
 
-Needs approval row: setting `hidden` while it is already `true` fired `finished: true` on the shared value and fires nothing here; the row proposes `if (hidden) setVisible(false); else setHidden(true)`. The row also records `inOut(quad)` to `'ease-in-out'` (0.012) and, as the transition is an opacity fade under 300ms, `reduced-motion guard dropped`. The End handler fires after the fade-in too, hence the `hidden` check.
+Needs approval row: setting `hidden` while it is already `true` fired `finished: true` on the shared value and fires nothing here; the row proposes `if (hidden) setVisible(false); else setHidden(true)`. The row also records `inOut(quad)` to `'ease-in-out'` (0.012). The End handler fires after the fade-in too, hence the `hidden` check.
 
 Repetition counter:
 

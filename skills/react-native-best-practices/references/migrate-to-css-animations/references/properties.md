@@ -6,6 +6,7 @@ CSS animates a property only when Reanimated has an interpolator for it. Check t
 
 - If React Native never renders the property on a platform (`shadowOffset`, `shadowOpacity` and `shadowRadius` on Android, `elevation` on iOS), CSS not animating it there changes nothing.
 - If React Native renders it and CSS cannot animate it: Keep on shared values.
+- SVG attributes have their own floors and exceptions: `references/svg.md`.
 - Discrete (keyword) properties jump to the target at once in a transition; only with `transitionBehavior: 'allow-discrete'` do they flip at the midpoint (`../animations/animations.md`, Discrete properties). `display` to or from `none` is the exception: it flips at the start when showing and at the end when hiding, so the element is visible for the whole transition either way. Route by where the shared value version flipped the keyword:
 
 | The keyword flipped | Verdict |

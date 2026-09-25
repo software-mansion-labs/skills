@@ -1,14 +1,14 @@
 ---
 name: typegpu
 description: >-
-  TypeGPU is type-safe WebGPU in TypeScript. Use whenever the user writes, debugs, or designs TypeGPU code: 'use gpu' shader functions, tgpu.fn, buffers, textures, bind groups, compute and render pipelines, command encoders, render passes, render bundles, vertex layouts, slots, accessors, @typegpu/react hooks (useRoot, useFrame, useUniform), React Native worklet rendering, and any TypeGPU API. Shader logic and CPU-side resources are tightly coupled - handle both sides here even if the user only mentions one (e.g. "how do I write a shader", "how do I create a buffer"). Trigger on any mention of typegpu, tgpu, "use gpu", TypedGPU, or WebGPU code written using TypeGPU's schema API (d.*, tgpu.*, std.*). Do NOT trigger for raw WebGPU (using GPUDevice/GPURenderPipeline directly without tgpu), WGSL-only questions, Three.js, Babylon.js, or WebGL.
+  TypeGPU is type-safe WebGPU in TypeScript. Use whenever the user writes, debugs, or designs TypeGPU code: 'use gpu' shader functions, tgpu.fn, buffers, textures, bind groups, compute and render pipelines, command encoders, render passes, render bundles, vertex layouts, slots, accessors, @typegpu/react hooks (useRoot, useFrame, useUniform), React Native worklet rendering, the @typegpu/noise and @typegpu/sdf packages, and any TypeGPU API. Shader logic and CPU-side resources are tightly coupled - handle both sides here even if the user only mentions one (e.g. "how do I write a shader", "how do I create a buffer"). Trigger on any mention of typegpu, tgpu, "use gpu", TypedGPU, or WebGPU code written using TypeGPU's schema API (d.*, tgpu.*, std.*). Do NOT trigger for raw WebGPU (using GPUDevice/GPURenderPipeline directly without tgpu), WGSL-only questions, Three.js, Babylon.js, or WebGL.
 ---
 
 # TypeGPU
 
 A single schema (`d.*`) defines a GPU type, CPU buffer layout, and TypeScript type at once - no manual alignment, type mapping, or casting. The build plugin `unplugin-typegpu` transforms `'use gpu'`-marked TypeScript for runtime WGSL transpilation, enabling type inference and polymorphism across the CPU/GPU boundary.
 
-This skill targets TypeGPU `0.12`. If the user's project is on an older release, verify API availability before relying on examples or recommended patterns here.
+This skill targets TypeGPU `0.12`; features marked 0.12.5+ or 0.12.6+ need that patch release. If the user's project is on an older release, verify API availability before relying on examples or recommended patterns here.
 
 ---
 
@@ -16,16 +16,17 @@ This skill targets TypeGPU `0.12`. If the user's project is on an older release,
 
 **Read before writing virtually any shader or GPU function** — these two cover the rules that trip people up most:
 - `references/types.md` — abstract type resolution, exactly when `d.f32()` is required vs redundant, vector constructor overloads, sampler/texture schemas for `tgpu.fn` signatures, CPU-side `TgpuBuffer`/`TgpuTexture` TypeScript types. **If you skip this, you'll hit type errors.**
-- `references/shaders.md` — loops (`std.range`, `tgpu.unroll`), ternary/logical-operator semantics, `tgpu.comptime`, outer-scope capture rules, complete builtin reference for all three shader stages, `console.log`. **Read this for any non-trivial shader logic.**
+- `references/shaders.md` — loops (`std.range`, `tgpu.unroll`), ternary/logical-operator semantics, `switch`, `tgpu.comptime`, outer-scope capture rules, complete builtin reference for all three shader stages, `console.log`. **Read this for any non-trivial shader logic.**
 - `references/std.md` — full `std` function listing (math, comparison/boolean vectors, matrix builders, texture, atomics, packing, subgroups, environment probes). Consult before hand-rolling any math/utility function.
 
 **Read when the task specifically involves:**
 - `references/pipelines.md` — vertex buffers/layouts, `attribs` wiring, MRT, fullscreen triangle, depth/stencil, blend modes, `fragDepth` output, loading 3D models (`@loaders.gl`), resolve API
 - `references/matrices.md` — `wgpu-matrix` integration, column-major layout, camera uniforms, `common.writeSoA`, fast-path CPU writes. **Read for any 3D work** (view/projection matrices, animated transforms, model loading)
-- `references/textures.md` — texture creation, views, samplers, storage textures, mipmaps, multisampling
+- `references/textures.md` — texture creation, image uploads (regions, `fit`, `writeAsync`, channel packing), views, samplers, storage textures, mipmaps, multisampling
 - `references/noise.md` — `@typegpu/noise` (random, distributions, Perlin 2D/3D)
 - `references/sdf.md` — `@typegpu/sdf` (2D/3D primitives, operators, ray marching, AA masking)
-- `references/encoders.md` — typed command encoders, multi-pipeline render/compute passes, render bundles, batched submission, raw-WebGPU encoder interop (unstable API, stable behavior)
+- `references/encoders.md` — typed command encoders, multi-pipeline render/compute passes, pass-state precedence, per-draw values and immediates (with fallback), render bundles, batched submission, raw-WebGPU encoder interop (unstable API, stable behavior)
+- `references/performance.md` — what compilers already optimize vs what to do by hand, branches and divergence, when unrolling pays, SoA vs AoS, texture vs storage buffer, workgroup size, f16. **Read before optimizing a shader**
 - `references/timing.md` — GPU timing via timestamp queries: `withPerformanceCallback` vs a shared query set, the `available` guard, why per-pass timings overlap
 - `references/react.md` — `@typegpu/react` hooks (useRoot, useFrame, useUniform, ...), React Native worklet render loops
 - `references/setup.md` — TypeGPU CLI, install, `unplugin-typegpu` build plugin, `tsover` operator overloading, troubleshooting
@@ -167,7 +168,7 @@ const myFragment = tgpu.fragmentFn({
 
 Vertex `in` may include builtins: `d.builtin.vertexIndex`, `d.builtin.instanceIndex`.
 
-Full shader syntax, branch pruning, the `std` library, type inference, and idiomatic patterns (vector ops, struct constructors, register pressure): see `references/shaders.md`. Read it before any non-trivial shader — values-vs-references handling lives there and is the most common source of `ResolutionError`.
+Full shader syntax, branch pruning, the `std` library, type inference, and idiomatic patterns (vector ops, struct constructors): see `references/shaders.md`. Read it before any non-trivial shader — values-vs-references handling lives there and is the most common source of `ResolutionError`.
 
 ---
 
@@ -425,6 +426,8 @@ root.with(colorAccess, () => { 'use gpu'; return computeColor(); }).createComput
 
 Write access: `tgpu.mutableAccessor(schema, initial?)`.
 
+An accessor can also be filled with an immediate (`tgpu['~unstable'].immediateVar`, 0.12.6+) for per-draw values without buffers. Immediates are Chromium-only for now, so keep a uniform fallback; see `references/encoders.md`.
+
 ---
 
 ## Type utilities
@@ -438,7 +441,7 @@ Write access: `tgpu.mutableAccessor(schema, initial?)`.
 1. **Numeric literals**: `1.0` may strip -> `abstractInt`. Use `d.f32(1)`. See types.md.
 2. **Outer-scope captures are constants**: not runtime-mutable. Use `createUniform`/`createMutable`. See shaders.md.
 3. **TypedArray/ArrayBuffer alignment**: bytes copied verbatim. `vec3f` elements are 16 bytes (12 + 4 padding). Plain arrays handle padding; typed arrays must include it.
-4. **Integer division**: `a / b` on primitives is `f32`. Use `d.i32()`/`d.u32()` for integer semantics. See types.md.
+4. **Integer division**: `a / b` on primitives is `f32`, even for integer operands. Use `std.intdiv(a, b)`. See types.md.
 5. **Uninitialised variables**: `let x;` is invalid - always initialise so the type can be inferred: `let x = d.f32(0)`.
 6. **Ternary operators**: runtime ternaries compile to WGSL `select` — both branches always evaluate, so branches must be side-effect-free and scalar/vector-valued (no structs/arrays/matrices; use `if`/`else` for those). Comptime-known conditions prune the dead branch entirely. See shaders.md.
 7. **Fragment output is always 4-component** (`d.vec4f`; `d.vec4i`/`d.vec4u` for integer formats), even for fewer-channel formats. A pipeline with `targets: { format: 'r8unorm' }` or `'rg16float'` still requires `out: d.vec4f` and `return d.vec4f(...)`. WebGPU drops the unused channels.
@@ -450,6 +453,8 @@ Write access: `tgpu.mutableAccessor(schema, initial?)`.
 - **`@typegpu/noise`** - real PRNG (`randf`), distributions (uniform, normal, hemisphere, ...), and Perlin noise (`perlin2d`/`perlin3d`) with optional precomputed gradient caches (~10x speedups). Prefer over hand-rolled hashes. See `references/noise.md`.
 
 - **`@typegpu/sdf`** - 2D/3D signed distance primitives (`sdDisk`, `sdBox2d`, `sdRoundedBox2d`, `sdBezier`, `sdSphere`, `sdBox3d`, `sdCapsule`, `sdPlane`, ...) and operators (`opUnion`, `opSmoothUnion`, `opSmoothDifference`, `opExtrudeX/Y/Z`). All `tgpu.fn` with pinned types, callable directly from `'use gpu'`. For ray marching, UI masking, AA vector drawing. See `references/sdf.md`.
+
+- **`@typegpu/radiance-cascades`** - 2D global illumination: `create` from `@typegpu/radiance-cascades/holographic` (per-pixel medium) or from `@typegpu/radiance-cascades` (SDF scene) returns a runner whose `output` texture you sample. Since 0.12.1, `createRadianceCascades` is deprecated and `color`/`colorSlot` are `emission`/`emissionSlot`. Guide: https://docs.swmansion.com/TypeGPU/ecosystem/typegpu-radiance-cascades/
 
 - **`@typegpu/react`** - hooks for TypeGPU in React and React Native (`useRoot`, `useFrame`, `useUniform`, ...), including UI-thread render loops via `react-native-worklets`. See `references/react.md`.
 

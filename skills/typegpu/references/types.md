@@ -17,7 +17,7 @@ So `d.f32(0.88)` as an arithmetic operand is always redundant — write `0.88`. 
 
 ## Division always produces `f32`
 
-`/` always yields `f32` regardless of operand types — `d.i32(10) / d.i32(3)` is `3.333...`. For integer division: `d.i32(10 / 3)` → `3`.
+`/` always yields `f32` regardless of operand types — `d.i32(10) / d.i32(3)` is `3.333...`. For integer division use `std.intdiv(a, b)` (truncates toward zero). `d.i32(a / b)` also truncates, but it divides in `f32` first, so it loses precision above 2^24 and costs a float round-trip.
 
 ## TypeScript annotations don't affect WGSL
 

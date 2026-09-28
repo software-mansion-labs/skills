@@ -28,9 +28,9 @@ Then ask once, in one message, only the questions the inventory raised:
 
 - Scope: confirm the files you will touch.
 - Partial components: when a component has both sites that can move and sites that must stay, migrate the ones that can (that component then mixes CSS and shared values) or leave the whole component on shared values? Judged per component, not per file; a file with several independent components can end up with some migrated and some not either way.
-- Reduced motion: every `with*` animation follows the system Reduce Motion setting by default (`ReduceMotion.System`: when the setting is enabled the animation completes at once at its resting value, the target for `withTiming`, `withSequence` and a non-reversed `withRepeat`, the start for a reversed `withRepeat` with an even or infinite count); CSS transitions and animations ignore the setting. Ask: keep that behavior (every migrated site gets a `useReducedMotion()` guard, `references/reduced-motion.md`; the hook reads the system setting once at app start and ignores `<ReducedMotionConfig>`) or drop it (users with Reduce Motion enabled will see the migrated animations play)? Do not ask when the source already settles it for every site: `ReduceMotion.Never` on each `with*`, or a `<ReducedMotionConfig>` with a fixed `mode={ReduceMotion.Never}`, means no guard; `ReduceMotion.Always` on each `with*`, or a fixed `mode={ReduceMotion.Always}`, means the animation never played for anyone, so emit the reduced form (duration `1`, `references/reduced-motion.md`) with no guard; a `mode` that changes at runtime keeps every site on shared values; `mode={ReduceMotion.System}` is the same as no config, ask.
+- Reduced motion: every `with*` animation follows the system Reduce Motion setting by default (`ReduceMotion.System`: when the setting is enabled the animation completes at once at its resting value, the target for `withTiming`, `withSequence`, a non-reversed `withRepeat` and a reversed one with an odd count, the start for a reversed `withRepeat` with an even or infinite count); CSS transitions and animations ignore the setting. Ask: keep that behavior (every migrated site gets a `useReducedMotion()` guard, `references/reduced-motion.md`; the hook reads the system setting once at app start and ignores `<ReducedMotionConfig>`) or drop it (users with Reduce Motion enabled will see the migrated animations play)? Do not ask when the source already settles it for every site: `ReduceMotion.Never` on each `with*`, or a `<ReducedMotionConfig>` with a fixed `mode={ReduceMotion.Never}`, means no guard; `ReduceMotion.Always` on each `with*`, or a fixed `mode={ReduceMotion.Always}`, means the animation never played for anyone, so emit the reduced form (duration `1`, `references/reduced-motion.md`) with no guard; a `mode` that changes at runtime keeps every site on shared values; `mode={ReduceMotion.System}` is the same as no config, ask.
 - Easing: only when a timing curve has no exact CSS form. Show the sampled `linear(...)` form for the first such site next to the nearest approximation and its max error, and ask which to use (`references/easing.md`).
-- Colors: only when a color animates. CSS interpolates colors straight in sRGB; `withTiming` on a color and `interpolateColor` interpolate gamma-corrected (gamma 2.2), so the middle of the run differs while both ends match: black to white passes through `#808080` in CSS and `#bababa` on the shared value, up to 72/255 apart a quarter of the way in; `#eee` to `#ccc` differs by 1/255. Show the first color site's two midpoint colors and ask whether the difference is acceptable. A no keeps every color site on shared values.
+- Colors: only when a color animates. CSS interpolates colors straight in sRGB; `withTiming` on a color and `interpolateColor` interpolate gamma-corrected (gamma 2.2), so the middle of the run differs while both ends match: black to white passes through `#808080` in CSS and `#bababa` on the shared value, up to 72/255 apart at 24% of the run; `#eee` to `#ccc` differs by 1/255. Show the color site with the largest gap: its endpoints, both midpoint colors, and the largest channel gap and where in the run it falls. A yes covers every color site, a no keeps every color site on shared values.
 
 The answers hold for the whole run. Everything else that needs a decision becomes a Needs approval row in the report.
 
@@ -42,13 +42,13 @@ The answers hold for the whole run. Everything else that needs a decision become
 | Needs approval | behavior changes in a way the user may accept, or the walk does not cover the site; show the proposed code, apply only after a yes. A declined row stays on shared values |
 | Keep on shared values | CSS cannot express it; leave it, give the reason in one sentence |
 
-Walk the questions in order for every site, and where a site animates several properties judge each property on its own. Keep on shared values ends the walk for that property, and so does the state-switched keyword arm of question 3, as Migrate; a Needs approval arm adds a note and the walk continues; a property that reaches the end with no note is Migrate, with a note it is Needs approval. The easing and color forms chosen in step 1 are already approved: write them in the site's row, they add no note. A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
+Walk the questions in order for every site, and where a site animates several properties judge each property on its own. Keep on shared values ends the walk for that property. The state-switched keyword arm of question 3 also ends the walk, with the verdict Migrate. A Needs approval arm adds a note and the walk continues. A property that finishes with no note is Migrate; a property that finishes with a note is Needs approval. The easing and color forms chosen in step 1 are already approved: write them in the site's row, they add no note. A pattern the questions do not cover that still looks convertible: Needs approval, with the proposal and a plain statement that the walk does not cover it and you are not sure the behavior is identical.
 
-A hook's verdict follows its properties: Keep on shared values when every property is Keep (reasons grouped); Migrate when every property reached the end with no note; Needs approval otherwise. When some properties are Keep and others can move, the Needs approval row proposes the split (the movable properties become CSS on the element, the rest stay in the hook) and says that the CSS side and the shared value side then run on separate clocks and may drift by a frame against each other; the same holds for two hooks on one component. Entries of one compound property (the transform array, shadowOffset) are one property with one verdict: when any entry stays on shared values the whole property stays, naming that entry as the reason, because the element carries the entries as one style key (a CSS transform and a hook transform on the same element replace each other whole) and a wrapper view would change the element tree (step 3).
+A hook's verdict follows its properties: Keep on shared values when every property is Keep (reasons grouped); Migrate when every property reached the end with no note; Needs approval otherwise. When some style keys are Keep and others can move, the Needs approval row proposes the split (the movable properties become CSS on the element, the rest stay in the hook) and says that the CSS side and the shared value side then run on separate clocks and may drift by a frame against each other; the same holds for two hooks on one component. Entries of one compound property (the transform array, shadowOffset) are one property with one verdict: when any entry stays on shared values the whole property stays, naming that entry as the reason, because the element carries the entries as one style key (a CSS transform and a hook transform on the same element replace each other whole) and a wrapper view would change the element tree (step 3).
 
 Pick the form before walking, per property; question 4 overrides it when the value is not a straight line between its endpoints. A **transition**: a trigger outside the animation (React state, a prop, a press, a toggle) moves the property from one resting value to another, and that trigger becomes React state; an effect or handler that writes a `with*` whenever the trigger changes is still a transition. An **animation**: after a start signal the timeline runs by itself (a loop, a `withSequence`, a one-shot play on mount with no later trigger, or a curve with stops between its endpoints, question 4). `references/transitions-and-animations.md` has the edge cases; questions 6 and 8 depend on the form.
 
-The walk calls the driver whatever moves the property: before migration the shared value a `with*` is assigned to (`progress`, `pressed`, `offset`) together with the handler or effect that assigns it, after migration the state or prop that replaces them; the driver's easing is that `with*` call's easing. Its own writes are the plain `with*` target writes; a `cancelAnimation`, pause or restart around them, in the same handler or elsewhere, is code outside the driver (question 6).
+The walk calls the driver whatever moves the property: before migration the shared value a `with*` is assigned to (`progress`, `pressed`, `offset`) together with the handler or effect that assigns it, after migration the state or prop that replaces them; the driver's easing is that `with*` call's easing. Its own writes are the plain `with*` target writes; a `cancelAnimation`, pause or restart around them, in the same handler or elsewhere, is code outside the driver (question 6). A two-way driver is one whose writes go back and forth between two targets (a toggle, press and release).
 
 ```
 1. Where do the target values come from?                    references/drivers.md
@@ -57,8 +57,10 @@ The walk calls the driver whatever moves the property: before migration the shar
    |   onChange in Gesture Handler 2, writing the value), a sensor, the keyboard, a
    |   frame callback computing new targets every frame -> Keep on shared values
    |-- a worklet gesture callback that fires once per interaction (onBegin, onStart or
-   |   onActivate, onEnd or onDeactivate, onFinalize), on a gesture without runOnJS: true,
-   |   writing a target for a property that onUpdate does not also write: the callback
+   |   onActivate, onEnd or onDeactivate, onFinalize), on a gesture whose runOnJS is not
+   |   true (neither the literal nor a shared value holding true),
+   |   writing a target for a style key that onUpdate does not also write (an entry of a
+   |   transform array whose other entries onUpdate writes is that same key): the callback
    |   runs on the UI thread, and CSS needs the target in React state -> note Needs
    |   approval: propose scheduleOnRN(setTarget, value) inside that callback only
    |   (imported from react-native-worklets, which react-native-reanimated does not
@@ -113,15 +115,20 @@ The walk calls the driver whatever moves the property: before migration the shar
    |   the midpoint of the transition
    |   |-- display -> note Needs approval: with allow-discrete, display leaves 'none' at
    |   |   the start of the transition and enters 'none' at its end, not at the source
-   |   |   threshold, so the element stays visible while it fades; say so; continue
-   |   |-- another keyword, threshold 0.5 -> continue (the midpoint is the threshold)
+   |   |   threshold, so the element is in the tree for the whole run in both
+   |   |   directions; say so; continue
+   |   |-- another keyword, the threshold halfway between the driver's two endpoints
+   |   |   (0.5 of a 0..1 driver) -> continue: CSS switches when the eased progress
+   |   |   reaches one half, which is when the driver crossed the threshold
    |   `-- another keyword, any other threshold -> note Needs approval: CSS switches at
-   |       the midpoint, not at the source threshold; continue
+   |       half the eased progress, not at the source threshold; continue
    `-- NO, for any other reason (no interpolator for the property on that platform or
        version) -> Keep on shared values
 
 4. Is each animated value a straight line between its two endpoints?
-   (a * driver + b, both endpoints the same kind of value)
+   (a * driver + b, both endpoints the same kind of value; each withTiming leg of a
+   withSequence or withRepeat is judged on its own, and the composition itself maps per
+   references/transitions-and-animations.md)
    |-- YES, a number at both ends, or a percentage string at both ends -> continue
    |-- YES, a color -> continue (the step 1 answer covers the interpolation difference;
    |   write both midpoint colors in the row)
@@ -146,25 +153,34 @@ The walk calls the driver whatever moves the property: before migration the shar
    |   it, resolving the percentage against the parent (against the view itself for
    |   translate, border radii, gaps and transform origin); continue
    |-- NO, an interpolate with stops between the endpoints
-   |   (interpolate(p, [0, 0.5, 1], [0, 200, 100])) -> not a transition (a transition
-   |   goes straight between its endpoints) but a keyframe animation with one keyframe
-   |   per stop, holding that stop's output value, at the time t where the driver has
-   |   covered the stop's share of its run: solve easing(t) = (stop - start) / (target -
-   |   start) with the driver's endpoints of that rule (for Easing.linear, t is the
-   |   share itself; the return rule of a two-way driver reaches stop 0.25 at share
+   |   (interpolate(p, [0, 0.5, 1], [0, 200, 100])) -> not a transition (a transition goes
+   |   straight between its endpoints) but a keyframe animation with one keyframe per stop,
+   |   holding that stop's output value, at the time t where the driver has covered the
+   |   stop's share of its run, the share being (stop - start) / (target - start) with the
+   |   driver's endpoints of that rule: solve easing(t) = share (for Easing.linear, t is
+   |   the share itself; the return rule of a two-way driver reaches stop 0.25 at share
    |   0.75). Each interval gets, as the animationTimingFunction of the keyframe that
-   |   starts it, the piece of the driver's easing between its two keyframe times,
-   |   rescaled to 0..1 in time and value, because CSS eases every interval on its own
-   |   clock. Exact for linear (every piece is 'linear'), for Easing.inOut(f) with a
-   |   stop at share 0.5 (the pieces are f then Easing.out(f), exact when f has an exact
-   |   row in references/easing.md), and for an exact bezier row (subdivide the curve at
-   |   the keyframe times and map the control points onto 0..1; exact while the mapped
-   |   x controls stay within 0..1, which holds for every named row). Any other curve,
-   |   or a piece that fails that check, is sampled with linear() at even stops of the
-   |   piece, with the stop count the step 1 answer settled. For a two-way driver emit
-   |   one rule per direction chosen by state, attached only after the first change,
-   |   with animationFillMode: 'forwards' and the static style at the resting value.
-   |   Show it; continue (this settles question 5 for the property)
+   |   starts it, the piece of the driver's easing between its two keyframe times, rescaled
+   |   to 0..1 in time and value, because CSS eases every interval on its own clock. Exact
+   |   for linear (every piece is 'linear'), for Easing.inOut(f) with a stop at share 0.5
+   |   (the pieces are f then Easing.out(f), exact when f has an exact row in
+   |   references/easing.md), and for an exact bezier row (subdivide the curve at the
+   |   keyframe times and map the control points onto 0..1; exact while the mapped x
+   |   controls stay within 0..1, which holds for every named row). Any other curve, or a
+   |   piece that fails that check, is sampled with linear() at even stops of the piece,
+   |   with the stop count the step 1 answer settled (20 even intervals when step 1 did not
+   |   ask, with the max error in the row). For a two-way driver emit one rule per
+   |   direction chosen by state, attached only after the first change, with
+   |   animationFillMode: 'forwards' and the static style at the resting value; keep these
+   |   rules even when the property is also animated on mount. Show it; continue (this
+   |   settles question 5 for the property)
+   |-- NO, a number chosen by a condition on the animated value
+   |   (opacity: progress.value > 0.5 ? 1 : 0.3) -> it steps, it never animated: set it
+   |   from the state in the static style, out of transitionProperty. The step then
+   |   happens when the state changes instead of when the value crosses the threshold:
+   |   identical for a boolean driver or a threshold at the start value (walk ends,
+   |   Migrate); any other threshold -> note Needs approval with the timing shift;
+   |   continue
    `-- NO, any other function of the driver (Math.sin(driver), a lookup table) -> note
        Needs approval: propose a keyframe animation that samples the value curve every
        5 to 10 percent, show it with the step and the error; continue
@@ -184,7 +200,9 @@ The walk calls the driver whatever moves the property: before migration the shar
    |   approval: the shared value emulated pause with cancelAnimation and re-eased the
    |   remaining distance over a full duration on resume, CSS resumes where it paused
    |   with the time that was left; continue
-   |-- reverse (cancelAnimation, then a with* back to the start) -> on an animation: a
+   |-- reverse (a sequence or a one-shot animation cancelled and played back to where it
+   |   started; a loop cancelled and then animated to a resting value is the loop arm
+   |   below, even when that value is where the loop started) -> on an animation: a
    |   new keyframes rule object (css.keyframes() called again; changing the direction
    |   on the rule already attached only mirrors the current position:
    |   ../animations/animations.md, Defining keyframes) with animationDirection:
@@ -212,11 +230,13 @@ The walk calls the driver whatever moves the property: before migration the shar
    |   mid-flight, note Needs approval stating the snap to the static style; continue
    `-- none, or cancelAnimation only in an unmount cleanup -> continue
 
-7. Does a completion callback do something observable? (a log-only callback is
-   dropped without a row)
+7. Does a completion callback do something observable?
+   |-- NO, there is none, or it only logs -> continue
    |-- YES, below 4.6.0 -> Keep on shared values (no CSS callbacks)
-   `-- YES, 4.6.0+ -> map it to the onCSS* props: onCSSTransitionEnd/Cancel for a
-       transition, onCSSAnimationEnd/Iteration/Cancel for an animation. With several
+   `-- YES, 4.6.0+ -> map it to the onCSS* props: what ran when finished was true goes
+       to onCSSTransitionEnd or onCSSAnimationEnd, what ran when it was false goes to
+       onCSSTransitionCancel or onCSSAnimationCancel, and a withRepeat callback per
+       repetition to onCSSAnimationIteration. With several
        animations on one element branch on the event's animationName, comparing
        against the .name of the rule object you pass in animationName (a module-scope
        css.keyframes() rule, or the restart rule held in state from question 6); a
@@ -232,21 +252,29 @@ The walk calls the driver whatever moves the property: before migration the shar
        directly in the branch that writes the unchanged target, or in a mount effect
        when the initial state already selects that value; continue
 
-8. Can the user reverse the driver within the duration? (press and release, open and
-   close, a toggle or a theme switch flipped back)
-   |-- NO: the driver is one-shot relative to the duration (a navigation push, one
-   |   network result, a rotation) -> continue
-   |-- YES, a transition -> note Needs approval: a CSS transition reversed mid-flight
-   |   takes a shortened return leg (../animations/animations.md, CSS Transitions,
-   |   Rules), the shared value took whatever duration the site gave the return write.
+8. Can the driver flip back before the animation ends? (press and release, open and
+   close, a toggle or a theme switch flipped back, a loading loop stopped and started
+   again)
+   |-- NO: it cannot flip back mid-flight: one-shot (a navigation push, one network
+   |   result, a rotation), a retarget to a third value (a transition then runs the
+   |   full duration from the current value, as withTiming did), or a loop or sequence
+   |   nothing stops and restarts while it runs (its only cancel is an unmount
+   |   cleanup) -> continue
+   |-- YES, a transition flipped back to the value it started from (a two-way driver)
+   |   -> note Needs approval: a CSS transition reversed mid-flight takes a shortened
+   |   return leg, the duration times the eased progress at the flip (only for a flip
+   |   back to its start value; ../animations/animations.md, CSS Transitions, Rules),
+   |   the shared value took whatever duration the site gave the return write.
    |   A press pair on the component that owns the style: from 4.5.0 the pressed value
    |   goes under ':active' (../animations/css-pseudo-selectors.md), nothing re-renders,
    |   and the note adds that ':active' also releases once the finger moves about 10
-   |   points, where a Pressable stayed pressed until the finger left its press rect;
+   |   points on iOS or past the touch slop on Android, where a Pressable stayed pressed
+   |   until the finger left its press rect;
    |   below 4.5.0 React state set from the press handlers (through scheduleOnRN when
    |   they are worklets); continue
-   `-- YES, an animation (a loop, a sequence, or a property that became an animation at
-       question 4 or 6) -> note Needs approval: CSS animations do not retarget, a flip
+   `-- YES, an animation (a loop stopped and started again, a sequence, or a property
+       that became an animation at question 4 or 6, such as a keyframe toggle) -> note
+       Needs approval: CSS animations do not retarget, a flip
        mid-flight starts the incoming rule from its first keyframe where the shared
        value animated back from the current value (a loop re-entered mid-flight ran
        every cycle from the re-entry value: references/transitions-and-animations.md,

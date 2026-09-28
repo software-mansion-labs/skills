@@ -12,7 +12,7 @@
 | `ReduceMotion.Always`, or `<ReducedMotionConfig mode={ReduceMotion.Always}>` | the reduced form for everyone, no guard |
 | `<ReducedMotionConfig mode={ReduceMotion.System}>` | the same as no config |
 | `<ReducedMotionConfig>` whose `mode` changes at runtime | Keep on shared values: CSS has no live reduced-motion source |
-| reduced motion dropped | no guard; say once in the report that users with Reduce Motion on now see the animations |
+| reduced motion dropped | no guard; say once in the report that users with Reduce Motion enabled now see the animations |
 
 Where the shared value rested: `withTiming(TO)`, `withSequence` and a non-reverse `withRepeat` rest at `TO`; `withRepeat(anim, n, true)` with odd `n` runs once under reduced motion and rests at `TO`, with `n <= 0` or even `n` it rests at the start whatever `anim` is (a reversed sequence included, which otherwise rests at its last value). Evaluate the style body at that driver value to know which end the fill mode must hold.
 

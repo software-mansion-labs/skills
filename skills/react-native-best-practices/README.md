@@ -13,6 +13,7 @@ Add this skill to give your AI coding agent accurate, current guidance for Softw
 | [SVG](./references/svg/) | React Native SVG: when to use vs expo-image/Skia/Lottie/Rive/fonts/WebView, installation, loading (URI/XML/file), touch events, filters, FilterImage, performance pitfalls, iOS memory leaks | Complete |
 | [On-device AI](./references/on-device-ai/) | React Native ExecuTorch: LLMs (chat, tool calling, structured output, vision-language models), computer vision (classification, object detection, OCR, semantic/instance segmentation, style transfer, embeddings, text-to-image), speech (STT, TTS, VAD), VisionCamera real-time frame processing, model loading, resource management, error handling, custom models | Complete |
 | [Rich Text](./references/rich-text/) | Rich text editing with react-native-enriched, Markdown rendering with react-native-enriched-markdown | Complete |
+| [Migrate to CSS animations](./references/migrate-to-css-animations/) | Converting Reanimated shared value animations (useAnimatedStyle, useSharedValue, withTiming, withRepeat, withSequence, withDelay) to CSS transitions and animations: version detection, three verdicts (migrate, needs approval, keep on shared values), the with*/Easing mapping, reduced motion, worked examples | Complete |
 | [Multithreading](./references/multithreading/) | react-native-worklets: Worker Runtimes, scheduling APIs, shared memory, Serializable, Synchronizable | Complete |
 | [Enable Worklets Bundle Mode](./references/enable-worklets-bundle-mode/) | Step-by-step Bundle Mode enablement for react-native-worklets (Expo, RN CLI, brownfield): babel plugin options, metro config helpers, mandatory metro + metro-runtime patches for every package manager (Yarn berry, npm/Yarn classic, bun, pnpm), verification, uniwind/NativeWind resolver workaround | Complete |
 | [Audio](./references/audio/) | React Native Audio API: playback (buffer sources, oscillators, streaming, queued playback), recording (file, data callback, graph processing), effects (gain, filters, delay, convolver, panner, waveshaper), analysis and visualization, worklets (custom processing, synthesis, UIRuntime/AudioRuntime), system integration (sessions, interruptions, notifications, permissions), testing | Complete |
@@ -57,6 +58,12 @@ react-native-best-practices/
     │   └── setup.md                      # Installation, resource fetcher, model loading, error handling, custom models
     ├── rich-text/
     │   └── SKILL.md                      # Editor and renderer patterns, style customization
+    ├── migrate-to-css-animations/
+    │   ├── SKILL.md                      # Version detection, three verdicts, checks, convert, report, verify
+    │   ├── references/drivers.md         # Who writes and reads the shared value (questions 1, 9, 10)
+    │   ├── references/easing.md          # Easing.* to CSS timing functions, sampling and approximations
+    │   ├── references/transitions-and-animations.md  # with* compositions to transitions or animations
+    │   └── references/reduced-motion.md  # Guard forms, resting values, ReducedMotionConfig
     ├── multithreading/
     │   ├── SKILL.md                      # Runtime model, API decision tree, critical rules
     │   ├── threading-api.md              # Scheduling APIs, Worker Runtimes, sync/async

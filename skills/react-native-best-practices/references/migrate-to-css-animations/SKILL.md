@@ -56,31 +56,24 @@ The walk calls the driver whatever moves the property: before migration the shar
    |-- continuous input: a scroll position, a moving finger (a gesture's onUpdate, or
    |   onChange in Gesture Handler 2, writing the value), a sensor, the keyboard, a
    |   frame callback computing new targets every frame -> Keep on shared values
-   |-- a worklet gesture callback that fires once per interaction (onBegin, onStart or
-   |   onActivate, onEnd or onDeactivate, onFinalize), on a gesture whose runOnJS is not
-   |   true (neither the literal nor a shared value holding true),
-   |   writing a target for a style key that onUpdate does not also write (an entry of a
-   |   transform array whose other entries onUpdate writes is that same key): the callback
-   |   runs on the UI thread, and CSS needs the target in React state -> note Needs
-   |   approval: propose scheduleOnRN(setTarget, value) inside that callback only
-   |   (imported from react-native-worklets, which react-native-reanimated does not
-   |   re-export; on 4.0.x, which has no scheduleOnRN, runOnJS(setTarget)(value), a
-   |   deprecated but still exported function), never runOnJS: true on the gesture, which
-   |   would move every callback, onUpdate included, to the JS thread; the animation then
-   |   starts after a JS round trip and a render instead of on the next UI frame. A Pan
-   |   or Pinch activate/deactivate pair is this arm. Exception: a press pair
-   |   (onPressIn/onPressOut, or a Tap or LongPress gesture's onBegin/onFinalize; a Tap's
-   |   onStart and onEnd both fire at release, so they are not one) writing the pressed
-   |   and the rest value of a property on the component that owns the style adds no
-   |   note here: question 8 names its CSS form; continue
+   |-- a gesture callback that runs on the UI thread (references/drivers.md says when) and
+   |   fires once per interaction (onBegin, onStart or onActivate, onEnd or onDeactivate,
+   |   onFinalize), writing a target for a style key that onUpdate does not also write (a
+   |   transform entry shares the key with the other entries): CSS needs that target in
+   |   React state -> note Needs approval: when no other callback of the gesture must stay
+   |   on the UI thread, set runOnJS: true on the gesture and call the state setter
+   |   directly; otherwise call scheduleOnRN(setTarget, value) in that callback only
+   |   (../animations/animations.md, Threading). A Pan or Pinch activate/deactivate pair is
+   |   this arm; a press pair (onPressIn/onPressOut, or a Tap or LongPress gesture's
+   |   onBegin/onFinalize) writing the pressed and the rest value of a property on the
+   |   component that owns the style is question 8; continue
    |-- through a runOnUI/scheduleOnUI body -> not a source: classify the target the
    |   body writes (a literal, state or prop from the calling handler or effect -> the
    |   JS thread arm, set state where runOnUI was called; another shared value -> a
    |   chain, follow it back to its first write (references/drivers.md, Chains);
    |   UI-thread work of its own, scrollTo or a gesture state -> Keep)
-   `-- the JS thread: state, props, handlers, effects, timers, any callback of a gesture
-       with runOnJS: true or whose callbacks are not worklets (references/drivers.md
-       says when that happens), also when the write travels through useDerivedValue or
+   `-- the JS thread: state, props, handlers, effects, timers, a gesture callback that
+       runs on the JS thread, also when the write travels through useDerivedValue or
        useAnimatedReaction before it reaches the style -> continue
 
 2. Is there a spring, a decay, or a clamp?
@@ -290,8 +283,8 @@ The walk calls the driver whatever moves the property: before migration the shar
    |-- YES, and nothing writes it with a with* either -> the site never animated: plain
    |   state in the static style, no transitionProperty; continue
    |-- YES -> note Needs approval: every change of a transitioned property animates;
-   |   propose rendering that write with the transition turned off for the property in
-   |   that render (references/drivers.md, Other writers); continue
+   |   propose leaving the property out of transitionProperty in the render of that
+   |   write (references/drivers.md, Other writers); continue
    `-- NO  -> continue
 
 10. Does other code read the shared value?                  references/drivers.md

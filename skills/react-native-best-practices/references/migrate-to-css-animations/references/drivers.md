@@ -4,7 +4,7 @@ Questions 1, 9 and 10 of the walk.
 
 ## 1. Where do the target values come from?
 
-A `with*` call produces the frames between two targets; CSS replaces exactly that part. What decides the verdict is where the targets come from.
+A target is the value a `with*` animates to (`withTiming(1)` animates to 1). CSS can play the animation only when that target comes from React state or props, because CSS starts a transition or animation when a render changes the style. So this question asks what sets each target. The paragraphs below go from sources that set it every frame (the site stays on shared values), through gesture callbacks on the UI thread (the target has to be moved into state), to sources on the JS thread (the walk continues).
 
 Continuous input, so the site stays on shared values: a scroll offset, a moving finger (a gesture whose `onUpdate` drives the value, or `onChange` in Gesture Handler 2), a sensor, `useAnimatedKeyboard`, a `useFrameCallback` that computes new targets every frame, and any shared value a library owns (a bottom sheet's `animatedIndex`, a carousel's progress, `useScrollOffset`): name the library in the reason.
 

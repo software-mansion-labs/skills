@@ -52,7 +52,7 @@ The walk calls the driver whatever moves the property: before migration the shar
 
 ```
 1. Where do the target values come from?                    references/drivers.md
-   (with* itself produces the frames between two targets; CSS replaces that part)
+   (a target is the value a with* animates to; CSS needs it to come from a render)
    |-- continuous input: a scroll position, a moving finger (a gesture's onUpdate, or
    |   onChange in Gesture Handler 2, writing the value), a sensor, the keyboard, a
    |   frame callback computing new targets every frame -> Keep on shared values

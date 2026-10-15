@@ -120,6 +120,17 @@ viewer_token = fishjam_client.create_livestream_viewer_token(room.id)
 
 Issue only for `livestream` rooms. Public livestreams skip the viewer token.
 
+## Compositions
+
+```python
+fishjam_client.forward_room_tracks(room.id, composition_client.composition_url(composition_id))
+
+whip_url = fishjam_client.livestream_whip_url()
+whep_url = fishjam_client.livestream_whep_url()
+```
+
+`forward_room_tracks` forwards a room into a composition; `livestream_whip_url` and `livestream_whep_url` are the livestream endpoints for composition outputs and WHEP inputs. Everything else lives on `CompositionClient`: `composition.md`.
+
 ## MoQ tokens
 
 ```python

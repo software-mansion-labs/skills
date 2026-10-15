@@ -1,12 +1,12 @@
 ---
 name: fishjam
-description: "Software Mansion's Fishjam — hosted WebRTC platform for video, audio, and one-to-many livestreaming. MUST USE before writing, reviewing, or debugging ANY code that talks to a Fishjam instance from a backend (Node, Python) or a client (React web, React Native / Expo). Routes to platform fundamentals and the right SDK sub-skill. Trigger on: 'Fishjam', 'fishjam.io', 'fishjam.swmansion.com', 'fishjam dashboard', 'Fishjam ID', 'management token', 'peer token', 'sandbox API', 'livestream room', '@fishjam-cloud/js-server-sdk', 'fishjam-server-sdk', '@fishjam-cloud/react-client', '@fishjam-cloud/react-native-client', '@fishjam-cloud/ts-client', 'FishjamClient', 'FishjamProvider', 'FishjamNotifier', 'FishjamAgent', 'createPeer', 'createRoom', 'createAgent', 'createLivestreamStreamerToken', 'createMoqToken', 'refreshPeerToken', 'webhook', 'gemini fishjam', 'vapi fishjam', 'fishjam expo plugin'."
+description: "Software Mansion's Fishjam — hosted WebRTC platform for video, audio, one-to-many livestreaming, and compositions. MUST USE before writing, reviewing, or debugging ANY code that talks to a Fishjam instance from a backend (Node, Python) or a client (React web, React Native / Expo). Routes to platform fundamentals and the right SDK sub-skill. Trigger on: 'Fishjam', 'fishjam.io', 'fishjam.swmansion.com', 'fishjam dashboard', 'Fishjam ID', 'management token', 'peer token', 'sandbox API', 'livestream room', '@fishjam-cloud/js-server-sdk', 'fishjam-server-sdk', '@fishjam-cloud/react-client', '@fishjam-cloud/react-native-client', '@fishjam-cloud/ts-client', 'FishjamClient', 'FishjamProvider', 'FishjamNotifier', 'FishjamAgent', 'createPeer', 'createRoom', 'createAgent', 'createLivestreamStreamerToken', 'createMoqToken', 'refreshPeerToken', 'webhook', 'gemini fishjam', 'vapi fishjam', 'fishjam expo plugin', 'Fishjam composition', 'CompositionClient', 'forwardRoomTracks', '@fishjam-cloud/composition'."
 license: MIT
 ---
 
 # Fishjam
 
-Software Mansion's hosted WebRTC platform. Routes between platform fundamentals and the four SDKs.
+Software Mansion's hosted WebRTC platform. Routes between platform fundamentals, the four SDKs, and compositions.
 
 Read the **`references/platform/SKILL.md`** first for the domain model (rooms, peers, tracks, tokens, notifications). Then read the SDK sub-skill that matches what you're building. All sub-skills are in `references/`.
 
@@ -20,6 +20,7 @@ Read the **`references/platform/SKILL.md`** first for the domain model (rooms, p
 | A React app in a browser                                                          | `references/react-client/SKILL.md`                                                              |
 | A React Native / Expo app for iOS or Android                                      | `references/react-native-client/SKILL.md`                                                       |
 | Vanilla TS / Svelte / Vue / web worker (non-React)                                | `references/react-client/SKILL.md` → `ts-client-escape.md` (drop to `@fishjam-cloud/ts-client`) |
+| A composed stream: a call as a broadcast, restreaming, overlays, React templates  | `references/composition/SKILL.md`                                                               |
 | Just calling REST directly (no SDK)                                               | `references/platform/rest-endpoints.md`                                                         |
 
 A production Fishjam app always has **a backend (server SDK) + a client (client SDK)**. For prototyping you can skip the backend with the Sandbox API — see `references/platform/sandbox-vs-production.md`.

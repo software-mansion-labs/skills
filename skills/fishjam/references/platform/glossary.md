@@ -61,7 +61,7 @@ A no-auth HTTP backend hosted by Fishjam that mints peer tokens, livestream toke
 
 ## Track Forwarding
 
-A track forwarded from a peer in one room to another peer or room (e.g. for relay-style fan-out). Set up via `POST /room/{room_id}/track_forwardings` on the REST API. This is a create-only endpoint — there is no list/delete equivalent in the user API (forwardings auto-expire when the source track is removed).
+Forwarding a room's tracks into a composition. Set up via `POST /room/{room_id}/track_forwardings` with the composition URL; Fishjam then adds each peer's media as a composition input while the peer publishes. Lasts as long as the room. See `../composition/room-composition.md`.
 
 ## Data Channel
 

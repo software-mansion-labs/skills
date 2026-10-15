@@ -1,6 +1,6 @@
 ---
 name: fishjam-python-server-sdk
-description: "Python server SDK for Fishjam — backends that create rooms, mint peer tokens, receive server notifications, and run voice agents. Use when writing a Python backend (FastAPI, Flask, Starlette, aiohttp) that talks to Fishjam, decorates a notification handler, decodes a Fishjam webhook, or builds an AI voice agent in Python. Trigger on: 'fishjam-server-sdk', 'pip install fishjam-server-sdk', 'from fishjam import', 'fishjam.FishjamClient', 'FishjamNotifier', 'on_server_notification', 'receive_binary', 'fishjam Agent', 'AgentSession', 'PeerOptions', 'RoomOptions', 'AgentOptions', 'AgentOutputOptions', 'OutgoingAudioTrackOptions', 'create_room', 'create_peer', 'create_agent', 'create_vapi_agent', 'create_livestream_streamer_token', 'create_moq_token', 'subscribe_peer', 'fastapi fishjam', 'flask fishjam', 'fishjam python', 'gemini fishjam python'. Python 3.10+. The REST client is synchronous; notifier and agent are async."
+description: "Python server SDK for Fishjam — backends that create rooms, mint peer tokens, receive server notifications, and run voice agents. Use when writing a Python backend (FastAPI, Flask, Starlette, aiohttp) that talks to Fishjam, decorates a notification handler, decodes a Fishjam webhook, builds an AI voice agent, or composes streams in Python. Trigger on: 'fishjam-server-sdk', 'pip install fishjam-server-sdk', 'from fishjam import', 'fishjam.FishjamClient', 'FishjamNotifier', 'on_server_notification', 'receive_binary', 'fishjam Agent', 'AgentSession', 'PeerOptions', 'RoomOptions', 'AgentOptions', 'AgentOutputOptions', 'OutgoingAudioTrackOptions', 'create_room', 'create_peer', 'create_agent', 'create_vapi_agent', 'create_livestream_streamer_token', 'create_moq_token', 'subscribe_peer', 'fastapi fishjam', 'flask fishjam', 'fishjam python', 'gemini fishjam python', 'CompositionClient', 'forward_room_tracks'. Python 3.10+. The REST client is synchronous; notifier and agent are async."
 license: Apache-2.0
 ---
 
@@ -52,6 +52,7 @@ peer, peer_token = fishjam_client.create_peer(
 | `FishjamNotifier` (async) | Persistent WebSocket; one handler via decorator gets every event. | `notifier.md` |
 | `receive_binary(bytes)` (sync) | Decode an HTTP webhook body to a typed event. | `webhooks.md` |
 | `Agent` + `AgentSession` (async) | Server-side voice agent — async iter over incoming, `await track.send_chunk(...)`. | `agent.md` |
+| `CompositionClient` (sync) | Compositions: register inputs and outputs, deploy templates, send events. Concepts in `../composition/SKILL.md`. | `composition.md` |
 
 ## When to read which reference
 
@@ -65,6 +66,7 @@ peer, peer_token = fishjam_client.create_peer(
 | FastAPI / Flask wiring patterns | `fastapi.md` |
 | Issue livestream / MoQ tokens | `livestream-and-moq.md` |
 | Use manual subscribe mode | `selective-subscriptions.md` |
+| Compose streams: `CompositionClient` calls, forwarding a room | `composition.md` |
 
 ## Key rules
 
@@ -89,3 +91,4 @@ peer, peer_token = fishjam_client.create_peer(
 | `fastapi.md` | FastAPI patterns (`Depends`-injected client, async webhook route, background notifier). |
 | `livestream-and-moq.md` | `create_livestream_streamer_token`, `create_livestream_viewer_token`, `create_moq_token`. |
 | `selective-subscriptions.md` | `subscribe_peer` / `subscribe_tracks` with `subscribe_mode='manual'` rooms. |
+| `composition.md` | `CompositionClient`: compositions, inputs, outputs, template deploy, events, `type_` enums in scene models. |

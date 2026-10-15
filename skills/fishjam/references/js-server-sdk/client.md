@@ -123,6 +123,16 @@ const { token: viewerToken }   = await fishjamClient.createLivestreamViewerToken
 
 Issue these only for `livestream`-type rooms. Public livestreams don't need viewer tokens. See `livestream-and-moq.md`.
 
+## Compositions
+
+```ts
+await fishjamClient.forwardRoomTracks(roomId, compositionClient.compositionUrl(compositionId));
+
+const endpointUrl: string = fishjamClient.livestreamWhipUrl();
+```
+
+`forwardRoomTracks` forwards a room into a composition; `livestreamWhipUrl` is the WHIP endpoint for a composition output into a livestream room. Everything else lives on `CompositionClient`: `composition.md`.
+
 ## MoQ tokens
 
 ```ts

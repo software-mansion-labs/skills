@@ -401,9 +401,7 @@ This updates the native text node directly on the UI thread, bypassing React and
 
 ## Infinite Animations
 
-CSS animations with `animationIterationCount: 'infinite'` clean up automatically on unmount.
-
-For shared value infinite animations, always cancel them in the `useEffect` cleanup:
+CSS animations with `animationIterationCount: 'infinite'` clean up automatically on unmount, and so does a shared value animation: `useSharedValue` cancels it when the component unmounts. Cancel explicitly to stop a loop early, or for values created with `makeMutable`:
 
 ```tsx
 useEffect(() => {
@@ -447,14 +445,14 @@ Most React Native style properties are animatable. Key exceptions and platform n
 
 ## Threading: scheduleOnRN instead of runOnJS
 
-`runOnJS` is removed in Reanimated 4. Use `scheduleOnRN` to call JS-thread functions from a worklet. Arguments are passed directly, not curried:
+`runOnJS` still works but is deprecated; use `scheduleOnRN`. Arguments are passed directly, not curried:
 
 ```tsx
-// Reanimated 3 (removed)
+// deprecated, still works
 runOnJS(setCount)(newCount);
 
-// Reanimated 4
+// preferred
 scheduleOnRN(setCount, newCount);
 ```
 
-`scheduleOnRN` schedules the call asynchronously on the React Native runtime. Functions passed to `scheduleOnRN` must be defined in JS thread scope (they cannot be created inside worklets or animation callbacks).
+Import it from `react-native-worklets`. It schedules the call asynchronously on the JS thread; the function passed to it must be defined there (component body or module scope), not inside a worklet.

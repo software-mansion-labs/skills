@@ -4,8 +4,7 @@
 
 - **`tgpu.fn` vs plain callback** — when to pin a signature; WGSL-implemented bodies as an escape hatch
 - **Polymorphism and branch pruning** — one function, many WGSL variants
-- **Syntax limitations inside `'use gpu'`** — unsupported TS features; ternaries; `&&` and `||`
-- **Register pressure** — why large locals cost occupancy
+- **Syntax limitations inside `'use gpu'`** — unsupported TS features; ternaries; `&&` and `||`; `switch`
 - **Arithmetic operators** — `+ - * / %` on vectors/matrices, `tsover`, infix fallbacks
 - **Numeric literal gotcha** — when `1.0` degrades to `abstractInt`
 - **Do not assign textures or samplers to variables** — use them directly
@@ -106,11 +105,34 @@ Pruning follows terminating control flow. When a compile-time-selected branch re
 
 When the left-hand side is comptime-known (a slot, simple accessor, or captured external), the expression is evaluated at compile time - JS short-circuit semantics apply and the dead side is pruned from WGSL. Otherwise both operands must be booleans and the operators compile to WGSL's strictly-boolean `&&`/`||` - value-returning JS idioms like `maybeVec || fallback` don't work at runtime; use `std.select` or `if`.
 
----
+### `switch` (TypeGPU 0.12.6+)
 
-## Register pressure
+Compiles to WGSL `switch`. Stacked empty cases merge (`case 0u, 1u`), and a missing `default` is added as an empty one.
 
-When the GPU runs out of registers per thread it spills to slow memory, which can crater performance. Modern shader compilers are smart — naming an intermediate `const` costs nothing (SSA), and inlining erases call boundaries before register allocation — so don't contort your code to outsmart them. The one thing they can't fix is **variable liveness**: a `mat4x4f` holds 16 registers for its entire live range, so compute large values close to where they're consumed. Vector ops and swizzles are the right style because they express the math directly.
+```ts
+switch (mode.$) {
+  case 0:
+  case 1:
+    color = shadeFlat(p);
+    break;
+  case 2:
+    color = shadeToon(p);
+    break;
+  default:
+    color = d.vec3f(1, 0, 1);
+}
+```
+
+- **Selector:** `i32` or `u32`. Other types are cast to `i32` with only a console warning: an `f32` selector is truncated, and `bool` becomes 0/1. Vectors are rejected.
+- **Case values:** must be compile-time constants: literals, captured JS constants or `as const` objects, slots, and accessors bound to constants. They are converted to the selector type, again with only a warning (`case 1.5` becomes `1`).
+- **Values that pass TypeGPU but fail WGSL compilation:**
+  - duplicate case values (JS treats the second as dead code);
+  - a negative case on a `u32` selector, which emits `-1u`.
+- **No fallthrough:** each non-empty case except the last must end with a top-level `break`, `return` or `continue`. A conditional `break`, or an `if`/`else` whose branches both `break` or `return`, is rejected. End the case with an unconditional statement instead.
+- **Scope:** each case is its own scope, unlike JS. A declaration in one case isn't visible in the next.
+- **Returning from every case:** a value-returning function that ends in a `switch` needs an explicit `default` that returns. Otherwise the auto-added empty `default` gives "missing return at end of function".
+- **No pruning:** a comptime-known selector still emits every case, and every case's dependencies must resolve. For compile-time specialization, use `if` on a comptime condition.
+- **Loops:** `continue` inside a switch continues the enclosing loop. Inside a `tgpu.unroll` body, any `break` in a switch is rejected ("Cannot unroll loop containing `break`"). Write those cases without `break`, or use `if`/`else`.
 
 ---
 
@@ -126,7 +148,7 @@ const prod = a * 2;         // vec3f(2, 4, 6) - scalar broadcast
 const dot  = std.dot(a, b); // 32
 ```
 
-Division on primitives defaults to `f32`. Integer division: `d.i32(10 / 3)`.
+Division on primitives defaults to `f32`, even when both operands are integers. Use `std.intdiv(a, b)` for integer division.
 
 Bitwise and shift operators (`& | ^ << >> >>>`) work on integer scalars and vectors; `>>>` requires a `u32` left-hand side (where it's the same as `>>`).
 
@@ -200,7 +222,7 @@ for (const dy of tgpu.unroll([-1, 0, 1])) {
 
 Hard rules: **no `continue` or `break` targeting the unrolled loop itself** (a nested runtime loop inside the body may use them), and the length must be known at compile time.
 
-**Warning — register spill.** Unrolled code is straight-line and the register file is finite. Keep unrolled counts roughly under ~8–16 in hot shaders (~27 as an upper bound); beyond that, a regular `for...of` with `std.range` is almost certainly better.
+When unrolling pays, and how to unroll long loops in chunks: see `references/performance.md`.
 
 #### Unrolling a numeric range
 
@@ -429,12 +451,12 @@ let uvY = input.uv.y * 0.2 + 0.5;
 let uv = d.vec2f(uvX, uvY);
 ```
 
-**Struct constructors work inside shaders** — build the whole struct locally and assign once rather than mutating fields one by one on a storage buffer:
+**Struct constructors work inside shaders** — build the whole struct locally and assign once rather than mutating fields one by one on a storage buffer. This is about clarity: compilers usually generate the same memory traffic for both forms.
 
 ```ts
 const Particle = d.struct({ pos: d.vec2f, vel: d.vec2f, life: d.f32 });
 
-// GOOD - single write to global memory:
+// GOOD - one readable update:
 const newP = Particle({
   pos: oldP.pos + oldP.vel * dt,
   vel: oldP.vel * 0.99,
@@ -442,10 +464,10 @@ const newP = Particle({
 });
 particles.$[idx] = Particle(newP);
 
-// BAD - multiple global memory round-trips:
+// BAD - repeated indexing, harder to read:
 particles.$[idx].pos = particles.$[idx].pos + particles.$[idx].vel * dt;
 particles.$[idx].vel.x = particles.$[idx].vel.x * 0.99;
 particles.$[idx].life = particles.$[idx].life - dt;
 ```
 
-Struct constructor forms: `MyStruct()` (zero-init), `MyStruct({ field: value, ... })` (named fields), `MyStruct(otherInstance)` (copy). Both patterns also minimise **register pressure** — see the "Register pressure" section above.
+Struct constructor forms: `MyStruct()` (zero-init), `MyStruct({ field: value, ... })` (named fields), `MyStruct(otherInstance)` (copy).

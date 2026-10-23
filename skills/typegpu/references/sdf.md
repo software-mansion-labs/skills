@@ -21,8 +21,9 @@ All take `point: vec2f`, return `f32`.
 | `sdBezier(point, A, B, C)` | `A, B, C: vec2f` | Exact unsigned distance to quadratic Bezier |
 | `sdBezierApprox(point, A, B, C)` | `A, B, C: vec2f` | Fast Bezier approx; cheaper, less accurate near cusps |
 | `sdPie(point, sc, radius)` | `sc: vec2f, radius: f32` | Circular sector; `sc = vec2f(sin(halfAngle), cos(halfAngle))` - **precompute on CPU** |
+| `sdArc(point, sc, radius)` | `sc: vec2f, radius: f32` | **Unsigned** zero-width arc, midpoint at `(0, radius)`, `sc` as in `sdPie`; subtract a half-width for a stroke (0.12.1+) |
 
-> `sdLine`/`sdBezier`/`sdBezierApprox` return **unsigned** distance (no inside/outside for a curve). Draw AA strokes by comparing against half the stroke width.
+> `sdLine`/`sdBezier`/`sdBezierApprox`/`sdArc` return **unsigned** distance (no inside/outside for a curve). Draw AA strokes by comparing against half the stroke width.
 
 ## 3D primitives
 
@@ -37,6 +38,9 @@ All take `point: vec3f`, return `f32`.
 | `sdLine3d(point, A, B)` | `A, B: vec3f` | Unsigned distance to 3D segment |
 | `sdCapsule(point, A, B, radius)` | `A, B: vec3f, radius: f32` | "Thick line segment" |
 | `sdPlane(point, normal, h)` | `normal: vec3f, h: f32` | Infinite plane; `normal` **must be normalized** |
+| `sdCappedCylinder(point, r, h)` | `r, h: f32` | Along Y, flat caps at `y = ±h` (0.12.1+) |
+| `sdRhombus3d(point, la, lb, h, ra)` | `la, lb, h, ra: f32` | Rhombus in XZ (half-diagonals `la`, `lb`), extruded ±`h` along Y, rounded by `ra` (0.12.1+) |
+| `sdTriangle3d(point, a, b, c)` | `a, b, c: vec3f` | **Unsigned** distance to a filled zero-thickness triangle (0.12.1+) |
 
 ## Operators
 
@@ -128,7 +132,7 @@ runner.sdfOutput;   // rgba16float texture (distance in .x), 'storage' + 'sample
 runner.colorOutput; // rgba8unorm texture from getColor
 ```
 
-`runner.initSync()`/`await runner.initAsync()` pre-initialize the pipelines; `runner.destroy()` frees the executor's textures. This is the input format `@typegpu/radiance-cascades` consumes for 2D global illumination.
+`runner.initSync()`/`await runner.initAsync()` pre-initialize the pipelines; `runner.destroy()` frees the executor's textures. The SDF runner of `@typegpu/radiance-cascades` can sample these textures for 2D global illumination.
 
 ## Bounding shapes for early-out
 
@@ -157,7 +161,7 @@ Two common forms:
 
 ## Further reading
 
-For SDFs the package doesn't ship (ellipse, torus, triangle, CSG over meshes):
+For SDFs the package doesn't ship (ellipse, torus, 2D triangle, CSG over meshes):
 - **2D:** https://iquilezles.org/articles/distfunctions2d/
 - **3D:** https://iquilezles.org/articles/distfunctions/
 - **Smooth min:** https://iquilezles.org/articles/smin/

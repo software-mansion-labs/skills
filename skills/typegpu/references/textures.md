@@ -32,18 +32,30 @@ Escape hatch: `.$overrideFlags(GPUTextureUsage...)` replaces the inferred flags 
 ## Writing data
 
 ```ts
-// Image sources: ImageBitmap, ImageData, HTMLCanvasElement, HTMLVideoElement,
-// HTMLImageElement, OffscreenCanvas, VideoFrame - or an array of them
-// (one per layer for array/3D textures; each must match the layer size).
-// Image-source writes require 'render' usage.
-texture.write(imageBitmap);                     // source size must match - throws otherwise
-texture.write(imageBitmap, { fit: 'stretch' }); // resample the source to the texture size
+// Image sources (require 'render' usage). Decode to ImageBitmap for portability;
+// canvas, video, ImageData, HTMLImageElement and VideoFrame support varies by browser.
+texture.write(imageBitmap);                     // sizes must match - throws otherwise
+texture.write(imageBitmap, { fit: 'stretch' }); // resample into the target region (render-pass blit)
+texture.write(tile, { origin: [128, 64], fit: 'clip' }); // 1:1 texel copy, overflow cut off
+texture.write(imageBitmap, {                    // crop a source region into a destination region
+  sourceOrigin: [16, 16], sourceSize: [128, 128], size: [256, 256], fit: 'stretch',
+});
+texture.write([layer0, layer1]);                // array/3D textures: one source per layer
+await texture.writeAsync(blob, { fit: 'stretch' }); // decodes a fetched Blob for you
+
+// Pack single channels from several images (omitted channels are left untouched):
+common.writeChannels(material, {
+  r: { source: roughnessMap, from: 'r' },
+  g: { source: metalnessMap, from: 'r' },
+});
 
 // Raw binary data: ArrayBuffer, TypedArray, or DataView ('render' not needed).
 // Bytes are copied verbatim in the texture's format layout (e.g. 4 bytes/pixel for rgba8unorm).
 texture.write(new Uint8Array([255, 0, 0, 255 /* ...one entry per pixel */]));
 texture.write(mipData, 1); // optional second arg: target mip level
 ```
+
+Regions, `fit: 'clip'`, `writeAsync` and `common.writeChannels` need TypeGPU 0.12.6+.
 
 ---
 

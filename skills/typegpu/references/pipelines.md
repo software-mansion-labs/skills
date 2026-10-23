@@ -115,6 +115,17 @@ prebound
   .draw(3, instanceCount);
 ```
 
+`pipeline.pipe(fn)` (0.12.5+) applies `fn` to the pipeline and returns its result, so a module can hand out one configuration step instead of a list of `with` calls:
+
+```ts
+const mesh = {
+  vertices, indices,
+  inject: () => <P extends TgpuRenderPipeline>(p: P) =>
+    p.with(vertexLayout, mesh.vertices).withIndexBuffer(mesh.indices),
+};
+pipeline.pipe(mesh.inject()).drawIndexed(indexCount);
+```
+
 ---
 
 ## Loading 3D models

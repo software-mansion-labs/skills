@@ -18,6 +18,8 @@ const pipeline = root
 - **Each pipeline with a callback allocates its own query set** (plus resolve buffers), and resolves + reads back per submission. Four timed pipelines = four query sets and four readbacks. Fine for quick, temporary measurement of a pipeline or two; for a durable setup (perf HUD, profiler across many passes) use one shared query set instead (below).
 - Works when the pipeline records into an encoder via `pipeline.with(encoder)` (callback fires after `encoder.submit()`), but **not** when drawing into a shared pass — timestamp writes are part of the pass descriptor. There, pass `timestampWrites` to `encoder.beginRenderPass`/`beginComputePass`.
 
+Live readings of the same workload fluctuate noticeably between frames. Use them for orders of magnitude and trends. For a small A/B difference, compare many frames at a fixed load, or replay a GPU capture.
+
 ## Durable timing: one shared query set
 
 Create one query set sized for all tracked passes and give each pass a begin/end index pair:

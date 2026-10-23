@@ -45,7 +45,17 @@ pass.setVertexBuffer(vertexLayout, vertexBuffer);
 pass.draw(3);
 ```
 
-Both styles share one pass state, applied lazily at draw time and following WebGPU ordering rules (state persists until overwritten). Footgun: `pipeline.with(pass).draw(...)` sets the pass's current pipeline — a subsequent bare `pass.draw(...)` runs *that* pipeline, not one set earlier via `setPipeline`.
+Both styles share one pass state, applied lazily at draw time and only when it changed since the previous draw. Precedence (TypeGPU 0.12.6+): state set on the pass (`pass.set*`) wins over state held by the pipeline (`pipeline.with*`), which wins over WebGPU defaults. Pass state persists across draws and pipeline switches until overwritten; pipeline-held state applies only to that pipeline's draws. Footgun: `pipeline.with(pass).draw(...)` sets the pass's current pipeline — a subsequent bare `pass.draw(...)` runs *that* pipeline, not one set earlier via `setPipeline`.
+
+`pipeline.with(pass)` allocates a wrapper on every call. When drawing one pipeline many times, bind it once and vary per-draw values through the pass:
+
+```ts
+const bound = scenePipeline.with(pass);
+for (const object of objects) {
+  pass.setBindGroup(object.bindGroup);
+  bound.draw(object.vertexCount);
+}
+```
 
 ## Compute passes
 
@@ -57,6 +67,40 @@ encoder.submit();
 ```
 
 Caveat: guarded compute pipelines (`createGuardedComputePipeline` / `dispatchThreads`) cannot record into passes or encoders — each `dispatchThreads` submits on its own.
+
+## Immediates (per-draw values without buffers)
+
+> **Unstable and not portable.** `tgpu['~unstable'].immediateVar` (TypeGPU 0.12.6+) needs the `immediate_address_space` WGSL language feature. As of September 2026, only Chromium 149+ exposes it, on Windows, macOS, ChromeOS and Android with capable hardware; Firefox, Safari, Chrome on Linux and react-native-wgpu do not. Always keep a fallback path.
+
+Immediates are WebGPU's push constants: a small value set per draw or dispatch, directly on the pass. An accessor lets the same shader read either an immediate or a buffer:
+
+```ts
+const params = tgpu.bindGroupLayout({ tint: { uniform: d.vec4f } });
+const tint = tgpu.accessor(d.vec4f, () => params.$.tint); // shader reads tint.$
+
+const tintImmediate = root.enabledWgslLanguageFeatures.has('immediate_address_space')
+  ? tgpu['~unstable'].immediateVar(d.vec4f)
+  : undefined;
+const pipeline = (tintImmediate ? root.with(tint, tintImmediate) : root)
+  .createRenderPipeline({ vertex, fragment, targets: { format } });
+
+const bound = pipeline.with(pass);
+for (const object of objects) {
+  if (tintImmediate) {
+    pass.setImmediates(tintImmediate, object.tint); // or a Float32Array, copied verbatim
+  } else {
+    pass.setBindGroup(object.tintBindGroup); // one uniform buffer + bind group per value
+  }
+  bound.draw(object.vertexCount);
+}
+```
+
+- **Where values come from:** `pipeline.with(immediate, value)` holds a value on the pipeline, and `pass.setImmediates` overrides it. The variable's optional default (`immediateVar(schema, default)`) is the last resort. Drawing with no value throws `MissingImmediatesError`.
+- **Values are serialized when set.** Mutating the source object afterwards has no effect.
+- **Limits:** one immediate variable per shader, so group several values in a struct. No arrays, atomics or booleans. The size must be a multiple of 4 bytes and fit `maxImmediateSize` (64 bytes by default; request more via `tgpu.init({ device: { requiredLimits: { maxImmediateSize: 128 } } })` where supported).
+- **Fallback:** a single uniform written with `buffer.write` between draws does not work: queue writes are not recorded between draws, so every draw would see the last value. Use one buffer and bind group per distinct value, as above. When one variable holds either an immediate or a uniform, `isImmediateVar(x)` (exported from `typegpu`) tells them apart.
+
+Test the fallback explicitly: a recent desktop Chrome usually takes the immediate path.
 
 ## `submit()` vs `finish()`
 

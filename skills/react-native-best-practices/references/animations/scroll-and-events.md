@@ -113,11 +113,9 @@ useAnimatedReaction(
 );
 ```
 
-The `prepare` function transforms/filters shared values before comparison. The `react` function fires when the prepared value changes.
+The `prepare` function transforms/filters shared values. `react` runs whenever any shared value read by `prepare` changes (at most once per frame), not only when the prepared value changes; gate with `current !== previous` as above.
 
 **Critical:** Do not mutate the same shared value in `react` that you track in `prepare`. This causes an infinite loop.
-
-Use `prepare` to reduce callback frequency (e.g., `Math.floor()` to react only on whole page changes instead of every pixel).
 
 ---
 
@@ -141,6 +139,16 @@ frameCallback.setActive(true);
 - Always memoize the callback with `useCallback` to avoid recreation on every render.
 - Use time deltas (`timeSincePreviousFrame`) for frame-rate-independent animations.
 
+### [useTimestamp](https://docs.swmansion.com/react-native-reanimated/docs/advanced/useTimestamp)
+
+Reanimated 4.4.0+. Shared value that updates every frame with time elapsed since the first frame:
+
+```tsx
+const timestamp = useTimestamp(); // useTimestamp(isActive?), default true
+```
+
+Reuse one `useTimestamp` instead of creating several - each one registers its own frame callback.
+
 ---
 
 ## Measurement
@@ -153,10 +161,8 @@ Synchronously get a view's dimensions and position on the UI thread:
 const animatedRef = useAnimatedRef<Animated.View>();
 
 const animatedStyle = useAnimatedStyle(() => {
-  if (!_WORKLET) return {}; // Guard: first evaluation runs on JS thread
-
   const measurements = measure(animatedRef);
-  if (measurements === null) return {};
+  if (measurements === null) return {}; // Covers the first evaluation, which runs on the JS thread
 
   return {
     transform: [{ translateY: -measurements.height }],
@@ -168,7 +174,7 @@ Returns `{ x, y, width, height, pageX, pageY }` or `null` if the component is un
 
 **Rules:**
 - Always check for `null` before using measurements.
-- In `useAnimatedStyle`, guard with `if (!_WORKLET) return {}` because the first evaluation runs on the JS thread where `measure` is unavailable.
+- No separate `_WORKLET` guard is needed in `useAnimatedStyle`: `measure` returns `null` on the JS thread, so the `null` check covers the first evaluation.
 - Wrap with `scheduleOnUI()` when calling from RN-thread event handlers.
 - Not available with Remote JS Debugger (use Chrome DevTools).
 
@@ -182,4 +188,4 @@ Returns `{ x, y, width, height, pageX, pageY }` or `null` if the component is un
 
 ## Keyboard (Deprecated)
 
-[`useAnimatedKeyboard`](https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedKeyboard) is deprecated in Reanimated 4. Use `react-native-keyboard-controller` for keyboard-aware animations.
+[`useAnimatedKeyboard`](https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedKeyboard) is deprecated as of Reanimated 4.2.0 (still shipped through 4.6.0). Use `react-native-keyboard-controller` for keyboard-aware animations.

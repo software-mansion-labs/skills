@@ -46,16 +46,7 @@ Production patterns for React Native apps on the New Architecture, covering:
 
 ### [react-native-executorch](./skills/react-native-executorch/)
 
-Build on-device AI features with a choice of pre-exported models and task hooks or custom PyTorch
-models and TypeScript pipelines. Covers app setup, native binary provisioning, model selection,
-export integration, resource lifetime and troubleshooting. Uses the matching library documentation
-for API details and ExecuTorch Export Recipes for exporting custom models.
-
-Install this skill individually:
-
-```bash
-npx skills add software-mansion-labs/skills -s react-native-executorch
-```
+Guidance for building on-device AI features with React Native ExecuTorch, using pre-exported models and task hooks or custom PyTorch models and TypeScript pipelines. Covers app setup, native binary provisioning, model selection, export integration with ExecuTorch Export Recipes, resource management, and troubleshooting.
 
 ### [pulsar-haptics](./skills/pulsar-haptics/)
 

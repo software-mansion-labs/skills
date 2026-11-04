@@ -447,13 +447,13 @@ Most React Native style properties are animatable. Key exceptions and platform n
 
 ## Threading: scheduleOnRN instead of runOnJS
 
-`runOnJS` is removed in Reanimated 4. Use `scheduleOnRN` to call JS-thread functions from a worklet. Arguments are passed directly, not curried:
+`runOnJS` is deprecated from Reanimated 4.1.0, still exported but replaced by `scheduleOnRN` from `react-native-worklets` (4.0.x has only `runOnJS`). Use `scheduleOnRN` to call JS-thread functions from a worklet. Arguments are passed directly, not curried:
 
 ```tsx
-// Reanimated 3 (removed)
+// Reanimated 3 and 4.0.x (deprecated from 4.1.0)
 runOnJS(setCount)(newCount);
 
-// Reanimated 4
+// Reanimated 4.1.0+
 scheduleOnRN(setCount, newCount);
 ```
 

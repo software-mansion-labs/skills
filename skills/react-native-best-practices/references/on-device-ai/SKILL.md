@@ -12,11 +12,14 @@ Use the `react-native-executorch` skill for app setup, model selection, inferenc
 custom models and troubleshooting. It covers both ready-made task hooks with pre-exported models
 and custom PyTorch models with TypeScript pipelines.
 
-If that skill is not installed, it is available from this repository:
+If the skill is not available, install it from the app's project directory, selecting the coding agent
+in use when prompted:
 
 ```bash
 npx skills add software-mansion-labs/skills -s react-native-executorch
 ```
+
+Then read its `SKILL.md` and the references relevant to the task before implementing the integration.
 
 For direct guidance, read
 [Getting Started](https://docs.swmansion.com/react-native-executorch/docs/fundamentals/getting-started.md)

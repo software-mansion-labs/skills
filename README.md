@@ -44,6 +44,10 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
 | **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
+### [react-native-executorch](./skills/react-native-executorch/)
+
+Guidance for building on-device AI features with React Native ExecuTorch, using pre-exported models and task hooks or custom PyTorch models and TypeScript pipelines. Covers app setup, native binary provisioning, model selection, export integration with ExecuTorch Export Recipes, resource management, and troubleshooting.
+
 ### [pulsar-haptics](./skills/pulsar-haptics/)
 
 Implementation, migration, design, and troubleshooting for Software Mansion's Pulsar haptics SDK across its supported native, cross-platform, and Web packages. Also covers the Figma MCP integration.
@@ -262,11 +266,7 @@ skills/
 │   │   │   ├── SKILL.md
 │   │   │   └── threading-api.md
 │   │   ├── on-device-ai/
-│   │   │   ├── llm.md
-│   │   │   ├── setup.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── speech.md
-│   │   │   └── vision.md
+│   │   │   └── SKILL.md
 │   │   ├── rich-text/
 │   │   │   └── SKILL.md
 │   │   └── svg/
@@ -274,6 +274,13 @@ skills/
 │   │       ├── svg.md
 │   │       └── when-to-use.md
 │   ├── README.md
+│   └── SKILL.md
+├── react-native-executorch/
+│   ├── references/
+│   │   ├── custom-models.md
+│   │   ├── ready-made-tasks.md
+│   │   ├── setup.md
+│   │   └── troubleshooting.md
 │   └── SKILL.md
 ├── react-native-moq/
 │   ├── references/

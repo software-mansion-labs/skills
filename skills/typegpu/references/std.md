@@ -15,10 +15,12 @@ std.sqrt  std.inverseSqrt
 std.exp   std.exp2   std.log   std.log2   std.pow
 std.min   std.max   std.clamp(x, lo, hi)
 std.mod(a, b)
+std.intdiv(a, b)              // integer division; `/` always divides as f32
 std.mix(a, b, t)              // linear interpolation
 std.smoothstep(edge0, edge1, x)
 std.step(edge, x)
 std.select(falseVal, trueVal, cond)
+std.isCloseTo(a, b, precision?) // |a - b| <= precision (0.01 default), scalar or vector
 std.copy(x)                   // schema-agnostic deep copy (works when exact schema is generic)
 std.bitcast(d.u32, d.f32)(x)  // reinterpret bits; any scalar/vector pair of equal size
 ```
@@ -46,6 +48,7 @@ std.mul(mat, vec)     // matrix-vector multiply
 std.transpose(m)      std.determinant(m)
 std.identity2/3/4()   std.translation4(v)  std.scaling4(v)   // build matrices in-shader
 std.rotationX4(rad)   std.rotationY4(rad)  std.rotationZ4(rad)
+std.translate4(m, v)  std.scale4(m, v)     std.rotateX4(m, rad)  // + Y4/Z4; e.g. rotateX4(m, a) = rotationX4(a) * m
 ```
 
 **Arrays**
@@ -66,6 +69,8 @@ std.textureGather(component, view.$, sampler.$, uv)
 std.textureLoad(view.$, coords, mipLevel)
 std.textureStore(storageView.$, coords, value)
 std.textureDimensions(view.$)
+std.textureNumLevels(view.$)  std.textureNumLayers(view.$)  std.textureNumSamples(view.$)
+std.textureGatherCompare(depthView.$, comparisonSampler.$, uv, ref)
 ```
 
 **Fragment control**
@@ -80,7 +85,8 @@ std.dpdx(v)  std.dpdy(v)  std.fwidth(v)   // + Coarse/Fine variants of each
 
 **Synchronization** (compute only)
 ```ts
-std.workgroupBarrier()   std.storageBarrier()
+std.workgroupBarrier()   std.storageBarrier()   std.textureBarrier()
+std.workgroupUniformLoad(wgVar.$)   // barrier + load, result is uniform across the workgroup
 ```
 
 **Atomic**
@@ -89,13 +95,13 @@ std.atomicLoad(ptr)         std.atomicStore(ptr, val)
 std.atomicAdd(ptr, val)     std.atomicSub(ptr, val)
 std.atomicMin(ptr, val)     std.atomicMax(ptr, val)
 std.atomicAnd(ptr, val)     std.atomicOr(ptr, val)     std.atomicXor(ptr, val)
-// atomicExchange / atomicCompareExchangeWeak are NOT exposed
+std.atomicExchange(ptr, val)
+std.atomicCompareExchangeWeak(ptr, cmp, val)  // -> { old_value, exchanged }; may fail spuriously, retry in a loop
 ```
 
-**Packing** (the full WGSL set is not exposed — only these four)
+**Packing** — the full WGSL set: `pack`/`unpack` × `4x8unorm`, `4x8snorm`, `2x16unorm`, `2x16snorm`, `2x16float`, `4xI8`, `4xU8`, plus `pack4xI8Clamp`/`pack4xU8Clamp` and `dot4I8Packed`/`dot4U8Packed`
 ```ts
-std.pack4x8unorm(v)   std.unpack4x8unorm(x)
-std.pack2x16float(v)  std.unpack2x16float(x)
+std.pack4x8unorm(v)   std.unpack4x8unorm(x)   // vec4f in [0, 1] <-> u32
 ```
 
 **Subgroups** (require the `subgroups` device feature — see `references/setup.md`)
@@ -105,6 +111,7 @@ std.subgroupExclusiveAdd / ExclusiveMul / InclusiveAdd / InclusiveMul (value)
 std.subgroupAll / Any (bool)    std.subgroupBallot(bool)   std.subgroupElect()
 std.subgroupBroadcast(value, lane)   std.subgroupBroadcastFirst(value)
 std.subgroupShuffle / ShuffleUp / ShuffleDown / ShuffleXor (value, x)
+std.quadBroadcast(value, lane)   std.quadSwapX / quadSwapY / quadSwapDiagonal (value)
 // builtins: d.builtin.subgroupId, subgroupSize, subgroupInvocationId, numSubgroups
 ```
 

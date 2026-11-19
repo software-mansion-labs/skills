@@ -1694,6 +1694,331 @@
           "files": []
         }
       ]
+    },
+    {
+      "skill_name": "use-react-native-bottom-sheet",
+      "skill_path": "../skills/react-native-bottom-sheet/use-react-native-bottom-sheet",
+      "evals": [
+        {
+          "id": 151,
+          "prompt": "I have a bare React Native 0.82 app on iOS and Android. Write a self-contained FiltersApp.tsx using @swmansion/react-native-bottom-sheet 1.1.0. A button opens a modal filter sheet to 40% height, the sheet can snap to 80%, and a drag or tap on the dimmed background can close it. Tell me how to install it for both targets.",
+          "should_trigger": true,
+          "expected_output": "Provide a runnable root component with a provider, an accessible open button, a rendered surface and visible scrim, ascending closed/40%/80% detents, and controlled state that reflects gesture and default dismissal changes. Describe installing in the app, installing iOS pods and rebuilding the native targets.",
+          "assertions": [
+            {
+              "type": "file_exists",
+              "value": "FiltersApp.tsx",
+              "text": "Delivers the requested root component file"
+            },
+            {
+              "type": "contains",
+              "value": "<BottomSheetProvider",
+              "text": "Mounts the portal provider in the JSX example"
+            }
+          ]
+        },
+        {
+          "id": 152,
+          "prompt": "Write a ResultsSheet.tsx example for a map screen using Software Mansion's React Native Bottom Sheet 1.1.0. The sheet should stay inside the map's parent view and contain a long list. An upward drag from the list should expand the sheet and scroll the list in one motion. A downward drag that starts mid-list should only scroll the list, even when it reaches the top.",
+          "should_trigger": true,
+          "expected_output": "Use an inline sheet with a normal React Native list, two or more bounded open detents, and controlled index updates. Match upward handoff and downward ownership at gesture start, using the documented default or an explicit configuration. Size the list against the tallest detent so it can reach its last item.",
+          "assertions": [
+            {
+              "type": "file_exists",
+              "value": "ResultsSheet.tsx",
+              "text": "Delivers the requested inline sheet file"
+            }
+          ]
+        },
+        {
+          "id": 153,
+          "prompt": "In @swmansion/react-native-bottom-sheet 1.1.0 I have a modal form that opens to its measured content height. The app already supplies a React Native Animated.Value for keyboard-driven bottom padding using the JS driver. Show the updated FormSheet.tsx with a text field and the animated padding integrated so the sheet does not fight the padding animation. The app already wraps it in the modal provider.",
+          "should_trigger": true,
+          "expected_output": "Keep the form content-sized and apply the app's animated padding to the content wrapper. Disable the sheet's separate content-height resize animation, keep the modal index controlled, and avoid adding a second keyboard strategy. Identify keyboard visibility as a behavior to verify on the target device.",
+          "assertions": [
+            {
+              "type": "file_exists",
+              "value": "FormSheet.tsx",
+              "text": "Delivers the requested modal form file"
+            },
+            {
+              "type": "contains",
+              "value": "animateContentHeight={false}",
+              "text": "Disables the independent sheet resize animation"
+            }
+          ]
+        },
+        {
+          "id": 154,
+          "prompt": "Our React Navigation native stack has a screen presented as a native modal. A confirmation sheet declared inside it with @swmansion/react-native-bottom-sheet 1.1.0 must cover the entire window on iOS and Android, and the sheet content must still read the theme provider local to that screen. Write NativeModalSheet.tsx showing where to declare it and explain the provider placement.",
+          "should_trigger": true,
+          "expected_output": "Declare the modal sheet below the screen-local context provider and use window overlay presentation to cover the native modal and retain that context. Explain that a default portal reads context at its provider. Passing values from the sheet owner restores access to those values but does not extend the portal's window coverage. State that the window overlay needs no portal provider.",
+          "assertions": [
+            {
+              "type": "file_exists",
+              "value": "NativeModalSheet.tsx",
+              "text": "Delivers the requested native modal example"
+            },
+            {
+              "type": "contains",
+              "value": "windowOverlay",
+              "text": "Uses the library's window overlay option"
+            }
+          ]
+        },
+        {
+          "id": 155,
+          "prompt": "Write EditSheet.tsx for @swmansion/react-native-bottom-sheet 1.1.0 on iOS, Android and web. When edits are dirty, tapping the scrim, using a screen reader dismiss action, Android Back, or Escape wherever supported should ask before discarding. Can I use that same handler to intercept a swipe all the way closed? Make sure a swipe never discards an edit, and provide an accessible way to request dismissal.",
+          "should_trigger": true,
+          "expected_output": "Route non-drag close requests through one confirmation handler and update the controlled index only when clean or confirmed. Keep scrim opacity positive while open so scrim taps and supported screen-reader dismiss actions can request dismissal. Explain that drag completion reports an index change instead of a close request. While dirty, use a programmatic-only closed detent to prevent a swipe from reaching it, and provide an accessible close control using the same confirmation flow. Preserve cancellation and describe the platform limits of Escape.",
+          "assertions": [
+            {
+              "type": "file_exists",
+              "value": "EditSheet.tsx",
+              "text": "Delivers the requested edit sheet file"
+            },
+            {
+              "type": "contains",
+              "value": "onCloseRequest=",
+              "text": "Connects non-drag close requests to the app handler"
+            }
+          ]
+        },
+        {
+          "id": 156,
+          "prompt": "Can I add @swmansion/react-native-bottom-sheet 1.1.0 to an Expo SDK 54 project on React Native 0.81 if my team only tests in Expo Go? Diagnose compatibility without changing our dependencies, package versions or build settings.",
+          "should_trigger": true,
+          "expected_output": "Identify both blockers independently: version 1.1.0 requires React Native 0.82 or later with React 19.1.1 or later and Fabric, and Expo Go does not contain this native library. Explain the compatible app baseline and development-build requirement while respecting the request for diagnosis only."
+        },
+        {
+          "id": 157,
+          "prompt": "My existing @gorhom/bottom-sheet v5 BottomSheetFlatList loses its scroll offset when the sheet reopens. Help debug this in the current library. Keep our installed packages and public component API.",
+          "should_trigger": false,
+          "expected_output": "Stay within the existing Gorhom dependency and diagnose state, mounting and scrolling through its API. The Software Mansion integration skill should not trigger."
+        },
+        {
+          "id": 158,
+          "prompt": "My React Native app's profile avatar flashes a placeholder when I navigate back to its screen. Help diagnose the image caching and component lifecycle.",
+          "should_trigger": false,
+          "expected_output": "Investigate the avatar image lifecycle and cache. The bottom-sheet integration skill should not trigger."
+        }
+      ]
+    },
+    {
+      "skill_name": "migrate-gorhom-to-react-native-bottom-sheet",
+      "skill_path": "../skills/react-native-bottom-sheet/migrate-gorhom-to-react-native-bottom-sheet",
+      "evals": [
+        {
+          "id": 159,
+          "prompt": "Replace @gorhom/bottom-sheet v5 with @swmansion/react-native-bottom-sheet in our compatible app. Explain how to migrate a BottomSheetModal using present(data), dismiss(), snapPoints={[240, 480]}, enableDynamicSizing={false}, and BottomSheetFlatList. Keep the current wrapper contract.",
+          "should_trigger": true,
+          "expected_output": "Map the modal and provider, move payload and open/close actions into controlled state, and rebuild the index table with an explicit zero detent. Distinguish smallest open stop from close. Preserve mount/reset and completion effects deliberately and use a bounded React Native FlatList."
+        },
+        {
+          "id": 160,
+          "prompt": "Can we migrate Gorhom v5 sheets to Software Mansion React Native Bottom Sheet 1.1.0 on Expo SDK 54 / React Native 0.81 when we only use Expo Go? Assess feasibility without changing any project files.",
+          "should_trigger": true,
+          "expected_output": "Identify the React Native compatibility blocker and native development-build requirement independently. Explain prerequisites, defer the package swap, and preserve assessment-only scope."
+        },
+        {
+          "id": 161,
+          "prompt": "Our Gorhom v5 sheet starts at -1, uses default dynamic sizing with snapPoints={[100, 1000]}, and keys commands and backdrop animations to numeric indices. Plan its migration to @swmansion/react-native-bottom-sheet without changing which heights those actions select.",
+          "should_trigger": true,
+          "expected_output": "Inventory dynamically resolved source stops and every index consumer. Choose explicit destination detents and a closed index, map actions by intended height rather than blanket arithmetic, and preserve resolved ordering as content and host size change. Rebuild animation domains and flag sizing requirements without documented direct mappings."
+        },
+        {
+          "id": 162,
+          "prompt": "Migrate our Gorhom edit modal to @swmansion/react-native-bottom-sheet. It opens above a native-stack modal, reads a screen-local theme, and needs confirmation before dirty edits are discarded by backdrop, Back, or swipe. Explain the lifecycle and interaction changes; do not build an app.",
+          "should_trigger": true,
+          "expected_output": "Use windowOverlay for native-window coverage and call-site context. Explain default mounted content versus lazy reset and completion timing. Route close requests through confirmation, use a programmatic zero detent to block dirty swipe closing, and provide an accessible close control. State that blocked swipes do not invoke onCloseRequest and keep scrim opacity positive for scrim and screen-reader requests."
+        },
+        {
+          "id": 163,
+          "prompt": "Fix scroll offset restoration when reopening our existing @gorhom/bottom-sheet v5 BottomSheetFlatList. Keep this package and its API.",
+          "should_trigger": false,
+          "expected_output": "Stay within Gorhom maintenance; do not activate the Software Mansion migration workflow."
+        },
+        {
+          "id": 164,
+          "prompt": "Upgrade @gorhom/bottom-sheet from v4 to v5 and replace useBottomSheetDynamicSnapPoints with the supported Gorhom sizing API.",
+          "should_trigger": false,
+          "expected_output": "Handle the same-library upgrade with Gorhom documentation, not a replacement with Software Mansion."
+        },
+        {
+          "id": 165,
+          "prompt": "Migrate from @swmansion/react-native-bottom-sheet back to @gorhom/bottom-sheet.",
+          "should_trigger": false,
+          "expected_output": "Recognize the reverse direction as outside this migration skill."
+        },
+        {
+          "id": 166,
+          "prompt": "Replace react-native-modalize with @swmansion/react-native-bottom-sheet.",
+          "should_trigger": false,
+          "expected_output": "Recognize that migration from another source package is outside the Gorhom-only skill."
+        }
+      ]
+    },
+    {
+      "skill_name": "migrate-true-sheet-to-react-native-bottom-sheet",
+      "skill_path": "../skills/react-native-bottom-sheet/migrate-true-sheet-to-react-native-bottom-sheet",
+      "evals": [
+        {
+          "id": 167,
+          "prompt": "Plan replacing @lodev09/react-native-true-sheet v4 with @swmansion/react-native-bottom-sheet in our compatible app. We use detents={[0.5, 1]}, present(0), resize(1), and work after await dismiss(). present() can also be called while already open. Preserve those meanings without building an app.",
+          "should_trigger": true,
+          "expected_output": "Convert source fractions to destination percentage strings with an explicit zero-height close detent and account for host geometry. Map open/resize indices by height. Preserve present-on-open and dismiss-on-closed no-ops. Replace command timing with controlled state and transition-filtered onSettle work; do not treat a setter or timeout as awaited animation completion or wait for a new settle on a no-op."
+        },
+        {
+          "id": 168,
+          "prompt": "Migrate our True Sheet v4 auto-sized FlatList with scrollableRef, visible-height flex layout, and a keyboard-following footer to Software Mansion Bottom Sheet. Short lists must stay compact and long lists must scroll. Explain any gaps first.",
+          "should_trigger": true,
+          "expected_output": "Distinguish v4 auto scroll-content measurement and visible-detent layout from destination tallest-detent filling layout. A fixed upper bound alone does not preserve compact list sizing. Identify app-owned measurement, footer, keyboard, and safe-area work; preserve useful list refs and do not invent native footer parity."
+        },
+        {
+          "id": 169,
+          "prompt": "Replace our True Sheet v4 dirty edit sheet with @swmansion/react-native-bottom-sheet. dismissible=false and onDismissAttempt currently show confirmation for a blocked swipe. Can the same interaction be preserved?",
+          "should_trigger": true,
+          "expected_output": "Explain that target close requests exclude dragging and blocked swipes do not invoke onCloseRequest. Use programmatic closed detents to prevent drag closure, an app confirmation flow for eligible nondrag requests, and an accessible explicit close control. Flag the blocked-swipe confirmation gap and shared close-request policy."
+        },
+        {
+          "id": 170,
+          "prompt": "Assess migrating our True Sheet navigator and named dismissStack/dismissAll calls to Software Mansion Bottom Sheet. We have linked Expo Router routes, stacked sheets, global actions, and other Reanimated consumers. Do not edit files.",
+          "should_trigger": true,
+          "expected_output": "Preserve route identity, params, history, links, and navigation dependencies. Separate destination visual open order from source cascade, hide/restore, focus, and presentation-context actions. Describe app-owned coordination and retain dependencies/providers needed by remaining consumers. Keep assessment read-only."
+        },
+        {
+          "id": 171,
+          "prompt": "Fix a scrolling bug in our existing True Sheet v4. Keep @lodev09/react-native-true-sheet and its component API.",
+          "should_trigger": false,
+          "expected_output": "Maintain True Sheet without invoking replacement."
+        },
+        {
+          "id": 172,
+          "prompt": "Upgrade True Sheet from v3 to v4 using its official migration guide.",
+          "should_trigger": false,
+          "expected_output": "Handle a source-library version upgrade, not a Software Mansion replacement."
+        },
+        {
+          "id": 173,
+          "prompt": "Replace @swmansion/react-native-bottom-sheet with @lodev09/react-native-true-sheet.",
+          "should_trigger": false,
+          "expected_output": "Recognize the reverse direction as outside this skill."
+        },
+        {
+          "id": 174,
+          "prompt": "Migrate React Navigation presentation: formSheet to @swmansion/react-native-bottom-sheet.",
+          "should_trigger": false,
+          "expected_output": "Route to native form-sheet migration guidance rather than the True Sheet skill."
+        }
+      ]
+    },
+    {
+      "skill_name": "migrate-expo-ui-to-react-native-bottom-sheet",
+      "skill_path": "../skills/react-native-bottom-sheet/migrate-expo-ui-to-react-native-bottom-sheet",
+      "evals": [
+        {
+          "id": 175,
+          "prompt": "Plan migrating BottomSheet imported from @expo/ui on Expo SDK 58 to @swmansion/react-native-bottom-sheet. It uses isPresented, onDismiss, half/full snapPoints, and an RN FlatList inside RNHostView. Preserve Android and iOS behavior.",
+          "should_trigger": true,
+          "expected_output": "Classify the universal source API. Use a destination modal, explicit closed/open controlled indices, and deliberate height mappings rather than exact native-geometry assumptions. Preserve the Android partial/expanded behavior, bound the RN list, remove only obsolete bridge wrappers, and account for scroll handoff and destination native-build requirements."
+        },
+        {
+          "id": 176,
+          "prompt": "Move our Expo SDK 56 @expo/ui/swift-ui BottomSheet to Software Mansion Bottom Sheet. It uses onIsPresentedChange, optional onDismiss, presentationDetents, and native VStack/Form content. Explain the conversion without upgrading Expo or creating an app.",
+          "should_trigger": true,
+          "expected_output": "Use SDK-specific SwiftUI documentation rather than universal props. Separate visibility, selected detent, and dismissal completion. Preserve or translate native content with appropriate Host boundaries and platform scope. Check destination compatibility, deferring an incompatible swap without an unauthorized Expo upgrade."
+        },
+        {
+          "id": 177,
+          "prompt": "Migrate @expo/ui/jetpack-compose ModalBottomSheet to @swmansion/react-native-bottom-sheet. It mounts conditionally, awaits ref.hide() before removal, and uses initialFullyExpanded while still permitting a partial state.",
+          "should_trigger": true,
+          "expected_output": "Map expanded and partial state intent to explicit destination indices and keep partial available. Keep the component through closing and move completion-dependent work to guarded onSettle. Distinguish lazy internal-content reset from outer component unmount and preserve native-content hosting or an explicit RN rewrite."
+        },
+        {
+          "id": 178,
+          "prompt": "Assess replacing our Expo SDK 58 universal BottomSheet with Software Mansion Bottom Sheet. Android Back must be consumed without closing, while outside taps may close. Can shouldDismissOnBackPress=false and shouldDismissOnClickOutside=true map directly?",
+          "should_trigger": true,
+          "expected_output": "Identify independent source Android policies versus the shared destination onCloseRequest without a source discriminator. Explain no-op consumption and default eligibility without inventing a request reason field. Flag the policy gap and accessibility/dimming implications instead of silently changing behavior; keep assessment read-only."
+        },
+        {
+          "id": 179,
+          "prompt": "Debug onDismiss in our existing @expo/ui BottomSheet. Keep Expo UI as the sheet implementation.",
+          "should_trigger": false,
+          "expected_output": "Use the resolved Expo UI API and do not activate migration."
+        },
+        {
+          "id": 180,
+          "prompt": "Upgrade Expo SDK 55 to SDK 58 and update our @expo/ui imports, keeping Expo UI.",
+          "should_trigger": false,
+          "expected_output": "Treat this as an SDK/API upgrade rather than replacing Expo UI with Software Mansion."
+        },
+        {
+          "id": 181,
+          "prompt": "Migrate @swmansion/react-native-bottom-sheet to @expo/ui BottomSheet.",
+          "should_trigger": false,
+          "expected_output": "Recognize the reverse direction as outside this skill."
+        },
+        {
+          "id": 182,
+          "prompt": "Migrate @lodev09/react-native-true-sheet to @swmansion/react-native-bottom-sheet.",
+          "should_trigger": false,
+          "expected_output": "Use True Sheet migration guidance rather than the Expo UI source skill."
+        }
+      ]
+    },
+    {
+      "skill_name": "migrate-native-form-sheets-to-react-native-bottom-sheet",
+      "skill_path": "../skills/react-native-bottom-sheet/migrate-native-form-sheets-to-react-native-bottom-sheet",
+      "evals": [
+        {
+          "id": 183,
+          "prompt": "Replace React Navigation native-stack presentation: formSheet with @swmansion/react-native-bottom-sheet while keeping the route name, typed params, links, and browser history. Explain the approach and closing flow.",
+          "should_trigger": true,
+          "expected_output": "Preserve navigation ownership while changing visual presentation through an explicitly app-owned route host. Avoid nesting the replacement inside the still-active native form sheet. Coordinate accepted close, controlled index, settle completion, and route removal once; preserve original pending navigation actions and no-predecessor fallback rather than deleting the route."
+        },
+        {
+          "id": 184,
+          "prompt": "Migrate an Expo Router formSheet screen to Software Mansion Bottom Sheet. sheetAllowedDetents is [0.25, 0.5, 1], sheetInitialDetentIndex is 1, and sheetLargestUndimmedDetentIndex is 0. What changes in the mapping and events?",
+          "should_trigger": true,
+          "expected_output": "Use percentage detents with an explicit closed zero and remap source initial index 1 to destination index 2 only while the ordered stop list is retained. Preserve detent event consumers by purpose, distinguishing controlled user commits from completion. Review interpolated scrim opacity, touch behavior, and accessibility rather than claiming native undimming parity."
+        },
+        {
+          "id": 185,
+          "prompt": "Assess migrating an Expo SDK 58 Router formSheet edit route to @swmansion/react-native-bottom-sheet. Dirty state must guard sheet dismissal, browser Back, and route removal. A deep link can open it without previous history.",
+          "should_trigger": true,
+          "expected_output": "Use the SDK-specific expo-router removal hook, repeat for the original blocked action, and disablePrevention before a newly chosen fallback action after clearing prevention. Keep these separate from React Navigation data.action APIs. Distinguish sheet close requests from route removal, block drag closure where confirmation must precede it, and preserve one pending action with route/reopen guards. Plan a no-history fallback or reachable content; do not leave an empty route after visual close."
+        },
+        {
+          "id": 186,
+          "prompt": "Plan replacing native formSheet presentation with Software Mansion Bottom Sheet across Android, iOS, and web. We use fitToContents, scrolling, a pinned Android footer, and a web modal override from an older Expo Router release. Gather constraints without changing the app.",
+          "should_trigger": true,
+          "expected_output": "Inventory actual SDK and platform overrides; distinguish release-specific web modal behavior and iOS flex guidance. Map content sizing, tallest-detent viewport, app-owned footer/keyboard/insets, host/context and native coverage deliberately. Preserve route semantics and dependencies; do not apply current web removals or framework upgrades blindly to an older app."
+        },
+        {
+          "id": 187,
+          "prompt": "Fix a formSheet layout bug in @react-navigation/native-stack. Keep native form-sheet presentation.",
+          "should_trigger": false,
+          "expected_output": "Debug native-stack form sheets without replacing their implementation."
+        },
+        {
+          "id": 188,
+          "prompt": "Add a new Expo Router screen using presentation: formSheet and sheetAllowedDetents.",
+          "should_trigger": false,
+          "expected_output": "Create the requested native form sheet rather than migrating to another component."
+        },
+        {
+          "id": 189,
+          "prompt": "Replace @swmansion/react-native-bottom-sheet with native-stack formSheet presentation.",
+          "should_trigger": false,
+          "expected_output": "Recognize the reverse direction as outside this migration skill."
+        },
+        {
+          "id": 190,
+          "prompt": "Migrate @gorhom/bottom-sheet to @swmansion/react-native-bottom-sheet.",
+          "should_trigger": false,
+          "expected_output": "Use the Gorhom migration skill rather than native route-form-sheet guidance."
+        }
+      ]
     }
   ]
 }

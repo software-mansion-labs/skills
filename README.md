@@ -44,6 +44,10 @@ Production patterns for React Native apps on the New Architecture, covering:
 | **Audio**          | Playback, recording, visualization, session management with React Native Audio API                                                                                                                   |
 | **JSI**            | C++ JavaScript Interface: `HostObject`, `HostFunction`, `NativeState`, zero-copy `ArrayBuffer`, threading safety, `CallInvoker`, TurboModules vs Nitro Modules, C++ memory patterns, crash debugging |
 
+### [react-native-bottom-sheet](./skills/react-native-bottom-sheet/)
+
+Guidance for integrating `@swmansion/react-native-bottom-sheet` on iOS, Android, and the web, and migrating from Gorhom, True Sheet, Expo UI, or React Navigation / Expo Router native form sheets. Covers setup for Expo and bare React Native, inline and modal presentation, controlled detents, surfaces, scroll coordination, keyboard behavior, and dismissal.
+
 ### [react-native-executorch](./skills/react-native-executorch/)
 
 Guidance for building on-device AI features with React Native ExecuTorch, using pre-exported models and task hooks or custom PyTorch models and TypeScript pipelines. Covers app setup, native binary provisioning, model selection, export integration with ExecuTorch Export Recipes, resource management, and troubleshooting.
@@ -275,6 +279,35 @@ skills/
 │   │       └── when-to-use.md
 │   ├── README.md
 │   └── SKILL.md
+├── react-native-bottom-sheet/
+│   ├── migrate-expo-ui-to-react-native-bottom-sheet/
+│   │   ├── references/
+│   │   │   ├── migration.md
+│   │   │   └── source-apis.md
+│   │   └── SKILL.md
+│   ├── migrate-gorhom-to-react-native-bottom-sheet/
+│   │   ├── references/
+│   │   │   ├── presentation-and-interactions.md
+│   │   │   └── state-and-sizing.md
+│   │   └── SKILL.md
+│   ├── migrate-native-form-sheets-to-react-native-bottom-sheet/
+│   │   ├── references/
+│   │   │   ├── detents-and-content.md
+│   │   │   └── navigation-and-dismissal.md
+│   │   └── SKILL.md
+│   ├── migrate-true-sheet-to-react-native-bottom-sheet/
+│   │   ├── references/
+│   │   │   ├── presentation-and-interactions.md
+│   │   │   └── state-and-sizing.md
+│   │   └── SKILL.md
+│   ├── use-react-native-bottom-sheet/
+│   │   ├── references/
+│   │   │   ├── interactions.md
+│   │   │   ├── setup.md
+│   │   │   ├── troubleshooting.md
+│   │   │   └── usage.md
+│   │   └── SKILL.md
+│   └── README.md
 ├── react-native-executorch/
 │   ├── references/
 │   │   ├── custom-models.md

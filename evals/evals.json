@@ -653,8 +653,7 @@
               "values": [
                 "pass report.status",
                 "report.status as an argument",
-                "with report.status",
-                "(report.status)"
+                ", report.status)"
               ],
               "text": "Passes only the required report field as an argument"
             }

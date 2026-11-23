@@ -649,9 +649,14 @@
               "text": "Reuses a stable worklet function"
             },
             {
-              "type": "contains",
-              "value": "report.status",
-              "text": "Transfers only the required report field"
+              "type": "contains_any",
+              "values": [
+                "pass report.status",
+                "report.status as an argument",
+                "with report.status",
+                "(report.status)"
+              ],
+              "text": "Passes only the required report field as an argument"
             }
           ]
         },
@@ -739,7 +744,7 @@
             },
             {
               "type": "not_contains",
-              "value": "await runOnUIAsync",
+              "value": "runOnUIAsync(",
               "text": "Does not break the synchronous return contract"
             }
           ]

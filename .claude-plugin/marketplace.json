@@ -15,7 +15,6 @@
         "repo": "software-mansion-labs/skills"
       },
       "description": "Production-ready patterns for React Native development by Software Mansion. Covers animations, gestures, SVG, on-device AI, audio, multithreading, rich text, Radon IDE debugging, and Fishjam real-time livestreaming.",
-      "version": "0.1.0",
       "author": {
         "name": "Software Mansion",
         "url": "https://swmansion.com"

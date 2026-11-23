@@ -58,7 +58,7 @@ Best practices for using Radon IDE's MCP tools when developing, debugging, and i
 
 ### [typegpu](./skills/typegpu/)
 
-Practical guidance for building with TypeGPU, from project setup and schema design through shader authoring, resource management, and pipeline composition. It helps an AI coding agent work confidently across the CPU/GPU boundary while avoiding common typing, memory-layout, and WebGPU integration mistakes.
+Routes agents to the TypeGPU skill that ships inside the `typegpu` package (`node_modules/typegpu/skills/typegpu`), so the guidance always matches the installed version. The skill itself lives in the [TypeGPU repository](https://github.com/software-mansion/TypeGPU/tree/main/packages/typegpu/skills/typegpu).
 
 ### [rnrepo](./skills/rnrepo/)
 
@@ -296,20 +296,6 @@ skills/
 │   │   └── troubleshooting.md
 │   └── SKILL.md
 └── typegpu/
-    ├── references/
-    │   ├── advanced.md
-    │   ├── encoders.md
-    │   ├── matrices.md
-    │   ├── noise.md
-    │   ├── pipelines.md
-    │   ├── react.md
-    │   ├── sdf.md
-    │   ├── setup.md
-    │   ├── shaders.md
-    │   ├── std.md
-    │   ├── textures.md
-    │   ├── timing.md
-    │   └── types.md
     └── SKILL.md
 ```
 

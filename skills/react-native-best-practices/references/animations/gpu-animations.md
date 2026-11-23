@@ -85,7 +85,7 @@ The `Canvas` component provides the WebGPU surface. Use `useDevice` and `useCanv
 
 ```tsx
 import { Canvas, useDevice, useCanvasRef } from 'react-native-wgpu';
-import tgpu, { d } from 'typegpu';
+import { tgpu, d } from 'typegpu';
 
 function GPUScene() {
   const { device = null } = useDevice();
@@ -158,204 +158,19 @@ npm install react-native-reanimated react-native-worklets
 
 Use this pattern to tie GPU rendering to Reanimated shared values or `useFrameCallback` for continuous animation loops.
 
----
-
-## Render Pipelines with TypeGPU
-
-TypeGPU provides a type-safe API for creating GPU pipelines with TypeScript shader functions.
-
-### Vertex and fragment functions
-
-```tsx
-import tgpu, { d } from 'typegpu';
-
-const positions = tgpu.const(d.arrayOf(d.vec2f, 3), [
-  d.vec2f(0.0, 0.5),
-  d.vec2f(-0.5, -0.5),
-  d.vec2f(0.5, -0.5),
-]);
-
-const mainVertex = tgpu.vertexFn({
-  in: { vertexIndex: d.builtin.vertexIndex },
-  out: { pos: d.builtin.position, uv: d.vec2f },
-})(({ vertexIndex }) => {
-  'use gpu';
-  return {
-    pos: d.vec4f(positions.$[vertexIndex], 0, 1),
-    uv: positions.$[vertexIndex],
-  };
-});
-
-const mainFragment = tgpu.fragmentFn({
-  in: { uv: d.vec2f },
-  out: d.vec4f,
-})(({ uv }) => {
-  'use gpu';
-  return d.vec4f(uv.x, uv.y, 0.5, 1);
-});
-```
-
-### Creating and executing the pipeline
-
-```tsx
-const pipeline = root.createRenderPipeline({
-  vertex: mainVertex,
-  fragment: mainFragment,
-  targets: { format: navigator.gpu.getPreferredCanvasFormat() },
-});
-
-pipeline
-  .withColorAttachment({ view: context })
-  .draw(3);
-
-context.present();
-```
+Dawn devices are not thread-safe by default. If the JS thread also touches the device (writes buffers, reads results, submits) while a worklet renders, request the `'implicit-device-synchronization'` feature when creating the device; without it iOS crashes in Metal asserts. The `typegpu` skill shows how with TypeGPU.
 
 ---
 
-## Compute Pipelines
+## Writing TypeGPU Code
 
-Use compute shaders when the animation state (positions, velocities, colors) is computed on the GPU. Write the state to a storage buffer, then read it in a render pipeline.
-
-### Standard compute pipeline
-
-```tsx
-const particleBuffer = root.createMutable(
-  d.arrayOf(d.vec2f, 1000),
-  initialPositions,
-);
-
-const updateParticles = tgpu.computeFn({
-  workgroupSize: [64],
-  in: { gid: d.builtin.globalInvocationId },
-})(({ gid }) => {
-  'use gpu';
-  const idx = gid.x;
-  particleBuffer.$[idx] = particleBuffer.$[idx].add(d.vec2f(0.001, 0));
-});
-
-root.createComputePipeline({ compute: updateParticles })
-  .dispatchWorkgroups(16); // 16 workgroups * 64 threads = 1024 particles
-```
-
-### Guarded compute pipeline (simplified)
-
-For simple parallel loops without manual workgroup sizing:
-
-```tsx
-const data = root.createMutable(d.arrayOf(d.f32, 512));
-
-root.createGuardedComputePipeline((x) => {
-  'use gpu';
-  data.$[x] = data.$[x] * 2;
-}).dispatchThreads(512);
-```
-
-Think of `dispatchThreads(n)` as a parallelized `for (let i = 0; i < n; i++)` that runs on the GPU.
-
----
+For shaders, buffers, pipelines and the `@typegpu/*` packages (`@typegpu/noise` for random numbers and Perlin noise, `@typegpu/sdf` for signed distance fields, `@typegpu/react` for hooks and worklet frame loops), use the `typegpu` skill. It matches the installed TypeGPU version.
 
 ## Common Animation Patterns
 
 ### Particle system
 
-Define particle state as a struct, update positions in a compute shader each frame, render as instanced geometry:
-
-```tsx
-const Particle = d.struct({
-  position: d.vec2f,
-  velocity: d.vec2f,
-  life: d.f32,
-});
-
-const particles = root.createMutable(
-  d.arrayOf(Particle, 10000),
-  initialData,
-);
-
-const time = root.createUniform(d.f32);
-
-// Compute: update state
-const updateCompute = tgpu.computeFn({
-  workgroupSize: [256],
-  in: { gid: d.builtin.globalInvocationId },
-})(({ gid }) => {
-  'use gpu';
-  const i = gid.x;
-  const p = particles.$[i];
-  particles.$[i].position = p.position.add(p.velocity.mul(time.$));
-  particles.$[i].life = p.life - 0.01;
-});
-
-// Render: draw each particle as instanced geometry
-// Vertex shader reads from particles buffer via instance index
-```
-
-### Procedural noise effects
-
-Use `@typegpu/noise` for Perlin noise, random distributions, and procedural generation:
-
-```sh
-npm install @typegpu/noise
-```
-
-```tsx
-import { perlin2d, randf } from '@typegpu/noise';
-
-const noiseFragment = tgpu.fragmentFn({
-  in: { uv: d.vec2f },
-  out: d.vec4f,
-})(({ uv }) => {
-  'use gpu';
-  const noise = perlin2d.sample(uv.mul(10));
-  return d.vec4f(noise, noise, noise, 1);
-});
-```
-
-For better performance on large textures, precompute gradients with a static or dynamic cache:
-
-```tsx
-const cache = perlin3d.staticCache({ root, size: d.vec3u(64, 64, 1) });
-
-const pipeline = root
-  .pipe(cache.inject())
-  .createRenderPipeline({ /* ... */ });
-```
-
-Caching provides up to 10x performance improvement over on-demand gradient computation.
-
-Available from `@typegpu/noise`:
-- **PRNG**: `randf.sample()`, `randf.seed2()` for per-thread seeding
-- **Distributions**: `exponential`, `normal`, `cauchy`, `bernoulli`
-- **Geometric**: `inUnitCircle`, `onUnitSphere`, `inHemisphere`, and more
-- **Perlin noise**: `perlin2d.sample()`, `perlin3d.sample()` with optional caching
-
-### SDF rendering
-
-Use `@typegpu/sdf` for procedural shape rendering and ray marching:
-
-```sh
-npm install @typegpu/sdf
-```
-
-```tsx
-import * as sdf from '@typegpu/sdf';
-
-const sdfFragment = tgpu.fragmentFn({
-  in: { uv: d.vec2f },
-  out: d.vec4f,
-})(({ uv }) => {
-  'use gpu';
-  const centered = uv.sub(0.5);
-  const dist = sdf.sdDisk(centered, 0.25);
-  if (dist < 0) {
-    return d.vec4f(0.2, 0.6, 1.0, 1);
-  }
-  return d.vec4f(0, 0, 0, 1);
-});
-```
-
-Shapes are positioned at origin. Apply inverse transforms to the point for translation, rotation, and scale.
+Keep particle state in a storage buffer of structs, update it in a compute pass each frame, and draw the particles as instanced geometry that reads the same buffer.
 
 ### Boids / flocking simulation
 
@@ -387,7 +202,4 @@ This enables skeletal animation, cloth simulation, particle effects, and complex
 
 - GPU compute runs thousands of threads in parallel with zero JS overhead.
 - Frame presentation is manual (`context.present()`). You control timing.
-- TypeGPU pipelines are created lazily on first execution, avoiding upfront compilation cost.
-- Use `root.unwrap()` to access raw WebGPU resources when needed for interop.
-- Timestamp queries (`withPerformanceCallback`) provide nanosecond-precision GPU timing for profiling.
 - TypeGPU and raw WebGPU can be mixed freely. Adoption is non-contagious: use TypeGPU where type safety helps and raw WebGPU everywhere else.

@@ -62,7 +62,7 @@ function computeOnUI() {
 
 **Don't call scheduling APIs from the wrong runtime**: `scheduleOnUI`, `runOnUISync`, `runOnUIAsync`, `runOnRuntimeSync`, `runOnRuntimeAsync`, `scheduleOnRuntime` can only be called from the RN Runtime (unless Bundle Mode is enabled). Calling them from a Worklet Runtime throws an error.
 
-**Closures are copied, not shared**: when a worklet runs on a different runtime, its closure variables are serialized at invocation time. Mutating the original variable after scheduling has no effect on the worklet's copy.
+**Closures are copied, not shared**: when a worklet function is first transferred to another runtime, its closure is serialized and cached by function-object identity. Later calls that reuse that function object also reuse its captured copy. Mutating the original variable does not update that copy; pass changing values as arguments.
 
 **Deprecated APIs**: `runOnUI` is replaced by `scheduleOnUI`. `runOnJS` is replaced by `scheduleOnRN`. `runOnRuntime` is replaced by `scheduleOnRuntime`. The new APIs pass arguments directly instead of returning a curried function.
 
@@ -72,9 +72,11 @@ Load at most one reference file per question.
 
 | File | Load when question is about |
 |------|------------------------------|
-| `threading-api.md` | Scheduling work across runtimes, creating Worker Runtimes, sync vs async execution, migrating from deprecated APIs |
-| `shared-memory.md` | Passing data between runtimes, closures in worklets, Serializable, Synchronizable, shared mutable state |
-| `performance-practices.md` | Reducing scheduling and serialization overhead, reusing runtimes and worklet functions, reviewing closures and wrapper worklets, recurring or delayed work, choosing async instead of sync invocations |
+| `threading-api.md` | API behavior for scheduling, creating Worker Runtimes, sync vs async execution, or migrating from deprecated APIs |
+| `shared-memory.md` | Data semantics for closures, Serializable, Synchronizable, or shared mutable state |
+| `performance-practices.md` | Optimizing, auditing, or reducing Worklets runtime, scheduling, serialization, timer, closure, or thread-blocking overhead |
 | `setup-and-advanced.md` | Installing worklets, Babel plugin config, Bundle Mode usage, import forwarding, testing with Jest, feature flags, troubleshooting |
+
+When several rows match, load `performance-practices.md` if the request explicitly asks to optimize, reduce overhead, or perform a performance review. Otherwise load the API or data-semantics reference.
 
 For enabling Bundle Mode in an app (babel option, metro config, mandatory metro/metro-runtime patches, "Failed to get the SHA-1" errors), use the dedicated sub-skill instead: `../enable-worklets-bundle-mode/SKILL.md`.

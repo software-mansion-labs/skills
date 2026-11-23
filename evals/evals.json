@@ -627,14 +627,26 @@
           "expected_output": "Create and retain the Worker Runtime outside the hot path, reuse a stable worklet function, and pass report.status as an argument instead of capturing the report object.",
           "assertions": [
             {
-              "type": "contains",
-              "value": "module scope",
+              "type": "contains_any",
+              "values": [
+                "app startup",
+                "module scope",
+                "outside the component",
+                "outside the hot path",
+                "long-lived"
+              ],
               "text": "Moves Worker Runtime creation outside the hot path"
             },
             {
-              "type": "contains",
-              "value": "argument",
-              "text": "Passes changing granular data as an argument"
+              "type": "contains_any",
+              "values": [
+                "stable worklet",
+                "module-level worklet",
+                "module scope worklet",
+                "reuse the worklet",
+                "same worklet"
+              ],
+              "text": "Reuses a stable worklet function"
             },
             {
               "type": "contains",
@@ -660,8 +672,13 @@
               "text": "Cleans up the repeating timer"
             },
             {
-              "type": "contains",
-              "value": "same runtime",
+              "type": "contains_any",
+              "values": [
+                "inside the scheduled worklet",
+                "inside the Worker Runtime",
+                "on the Worker Runtime",
+                "within the Worker Runtime"
+              ],
               "text": "Performs timer cleanup on its owning runtime"
             }
           ]
@@ -683,9 +700,47 @@
               "text": "Awaits the asynchronous result"
             },
             {
-              "type": "contains",
-              "value": "block",
+              "type": "contains_any",
+              "values": [
+                "avoid blocking",
+                "does not block",
+                "without blocking",
+                "asynchronously"
+              ],
               "text": "Explains the avoided thread blocking"
+            },
+            {
+              "type": "not_contains",
+              "value": "const layout = runOnUISync",
+              "text": "Does not retain the synchronous implementation"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "prompt": "Review this React Native Worklets helper without changing its synchronous contract. It calls runOnUISync(readLayout) and must return a boolean immediately; the caller uses that boolean before it can continue.",
+          "should_trigger": true,
+          "expected_output": "Keep runOnUISync because the caller requires strict synchronous ordering, keep the UI work bounded, and explain the blocking latency trade-off instead of unconditionally converting it to an async API.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "runOnUISync",
+              "text": "Keeps the required synchronous API"
+            },
+            {
+              "type": "contains_any",
+              "values": [
+                "synchronous ordering",
+                "return immediately",
+                "immediate boolean",
+                "before it can continue"
+              ],
+              "text": "Recognizes the synchronous ordering requirement"
+            },
+            {
+              "type": "not_contains",
+              "value": "await runOnUIAsync",
+              "text": "Does not break the synchronous return contract"
             }
           ]
         },

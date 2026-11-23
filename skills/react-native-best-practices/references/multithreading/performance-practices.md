@@ -29,6 +29,8 @@ Define repeatedly scheduled worklet functions once in module scope. If the funct
 
 Worklets caches serialization by function-object identity and retains the resulting function on the target runtime. An inline arrow or component-local function created on each call or render cannot reuse those cached forms, especially when its closure is large.
 
+The cached target-runtime function keeps the closure values from its first transfer. Reusing the function object does not re-read later mutations from its source runtime; pass values that can change as arguments.
+
 ```tsx
 function logValue(value: number) {
   'worklet';
@@ -107,7 +109,7 @@ Keep a repeating timer's identifier and call `clearInterval` on the same runtime
 
 ## Prefer Async Results
 
-Use `runOnUIAsync` or `runOnRuntimeAsync` when returning a value unless the caller genuinely must have the result synchronously. Synchronous variants block the calling thread until the target finishes and may preempt work on the target runtime.
+Use `runOnUIAsync` or `runOnRuntimeAsync` when returning a value unless the caller genuinely must have the result synchronously. Async variants avoid pre-emption costs, while synchronous variants block the calling thread until the target finishes.
 
 ```tsx
 async function onPress() {

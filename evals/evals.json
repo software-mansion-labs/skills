@@ -652,8 +652,7 @@
               "type": "contains_any",
               "values": [
                 "pass report.status",
-                "report.status as an argument",
-                ", report.status)"
+                "report.status as an argument"
               ],
               "text": "Passes only the required report field as an argument"
             }

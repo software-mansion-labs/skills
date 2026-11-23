@@ -1,12 +1,35 @@
 <img width="1100" height="382" alt="skills_header" src="https://github.com/user-attachments/assets/f49ab3d0-159d-4169-9419-7dc34c09baf0" />
 
-Production-ready patterns for React Native development, packaged as a [Claude Code plugin](https://code.claude.com/docs/en/plugins#create-plugins). Maintained by [Software Mansion](https://swmansion.com/).
+Production-ready patterns for React Native development, packaged as [Agent Skills](https://agentskills.io) and a [Claude Code plugin](https://code.claude.com/docs/en/plugins#create-plugins). Maintained by [Software Mansion](https://swmansion.com/).
 
-Optimized for Claude models and tested with [Claude Code](https://claude.ai/code). Install the plugin and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, real-time video, and other React Native features.
+Install the skills and your AI coding agent gets up-to-date guidance for animations, gestures, on-device AI, audio, real-time video, and other React Native features.
 
 ## Installation
 
-### As a plugin (recommended)
+### With the skills CLI
+
+Use the [`skills` CLI](https://www.npmjs.com/package/skills) with Codex, Cursor, GitHub Copilot, Gemini CLI, Windsurf, and other compatible agents:
+
+```bash
+npx skills add software-mansion-labs/skills
+```
+
+The CLI detects installed agents and lets you choose which skills to install. To install only the React Native best practices for a specific agent:
+
+```bash
+npx skills add software-mansion-labs/skills \
+  --skill react-native-best-practices \
+  --agent codex
+```
+
+Add `--global` to make the skill available across projects. Check for and install repository updates with:
+
+```bash
+npx skills check
+npx skills update react-native-best-practices
+```
+
+### As a Claude Code plugin
 
 Add the Software Mansion marketplace and install the plugin:
 
@@ -16,15 +39,7 @@ Add the Software Mansion marketplace and install the plugin:
 /reload-plugins
 ```
 
-The skills are available immediately. Run `/plugin marketplace update swmansion` to get the latest version.
-
-### Via `npx`
-
-You can also install the skills using the [`skills` CLI](https://www.npmjs.com/package/skills):
-
-```bash
-npx skills add software-mansion-labs/skills
-```
+The skills are available immediately. Run `/plugin marketplace update swmansion` to get repository updates, or enable auto-update for the marketplace in `/plugin`.
 
 ## Available Skills
 

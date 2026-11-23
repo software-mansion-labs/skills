@@ -1,6 +1,6 @@
 ---
 name: multithreading
-description: "Software Mansion's best practices for multithreading in React Native apps using react-native-worklets. Use when running JavaScript on multiple threads, offloading heavy computation from the JS thread, communicating between runtimes, or sharing data across threads. Trigger on: 'worklet', 'worklets', 'react-native-worklets', 'runOnUI', 'runOnJS', 'scheduleOnUI', 'scheduleOnRN', 'scheduleOnRuntime', 'createWorkletRuntime', 'background thread', 'UI thread', 'worker runtime', 'Serializable', 'Synchronizable', 'multithreading', 'parallel execution', 'offload computation', 'background processing', 'Bundle Mode', or any request to move work off the JS thread in a React Native app."
+description: "Software Mansion's best practices for multithreading in React Native apps using react-native-worklets. Use when running JavaScript on multiple threads, offloading heavy computation from the JS thread, communicating between runtimes, sharing data across threads, or reducing Worklets scheduling and serialization overhead. Trigger on: 'worklet', 'worklets', 'react-native-worklets', 'runOnUI', 'runOnJS', 'scheduleOnUI', 'scheduleOnRN', 'scheduleOnRuntime', 'createWorkletRuntime', 'background thread', 'UI thread', 'worker runtime', 'Serializable', 'Synchronizable', 'multithreading', 'parallel execution', 'offload computation', 'background processing', 'worklet performance', 'worklet closure', 'reuse runtime', 'Bundle Mode', or any request to move work off the JS thread in a React Native app."
 ---
 
 # React Native Multithreading with Worklets
@@ -74,6 +74,7 @@ Load at most one reference file per question.
 |------|------------------------------|
 | `threading-api.md` | Scheduling work across runtimes, creating Worker Runtimes, sync vs async execution, migrating from deprecated APIs |
 | `shared-memory.md` | Passing data between runtimes, closures in worklets, Serializable, Synchronizable, shared mutable state |
+| `performance-practices.md` | Reducing scheduling and serialization overhead, reusing runtimes and worklet functions, reviewing closures and wrapper worklets, recurring or delayed work, choosing async instead of sync invocations |
 | `setup-and-advanced.md` | Installing worklets, Babel plugin config, Bundle Mode usage, import forwarding, testing with Jest, feature flags, troubleshooting |
 
 For enabling Bundle Mode in an app (babel option, metro config, mandatory metro/metro-runtime patches, "Failed to get the SHA-1" errors), use the dedicated sub-skill instead: `../enable-worklets-bundle-mode/SKILL.md`.

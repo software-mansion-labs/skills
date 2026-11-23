@@ -621,6 +621,75 @@
           ]
         },
         {
+          "id": 8,
+          "prompt": "Optimize this React Native Worklets helper. Every button press creates a Worker Runtime and passes an inline worklet that captures the entire report object, although it only reads report.status.",
+          "should_trigger": true,
+          "expected_output": "Create and retain the Worker Runtime outside the hot path, reuse a stable worklet function, and pass report.status as an argument instead of capturing the report object.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "module scope",
+              "text": "Moves Worker Runtime creation outside the hot path"
+            },
+            {
+              "type": "contains",
+              "value": "argument",
+              "text": "Passes changing granular data as an argument"
+            },
+            {
+              "type": "contains",
+              "value": "report.status",
+              "text": "Transfers only the required report field"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "prompt": "A React Native setInterval calls scheduleOnRuntime(workerRuntime, tick) every 100 ms. The repeated worker task should stop when processing completes. Refactor it to reduce Worklets scheduling overhead.",
+          "should_trigger": true,
+          "expected_output": "Schedule setup once, create the interval on the Worker Runtime, retain its identifier, and clear it on that same runtime when processing completes.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "Worker Runtime",
+              "text": "Moves recurring scheduling to the target runtime"
+            },
+            {
+              "type": "contains",
+              "value": "clearInterval",
+              "text": "Cleans up the repeating timer"
+            },
+            {
+              "type": "contains",
+              "value": "same runtime",
+              "text": "Performs timer cleanup on its owning runtime"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "prompt": "This React Native button handler calls runOnUISync(measureLayout) and only logs the returned layout. Improve the Worklets usage; no later statement requires the result synchronously.",
+          "should_trigger": true,
+          "expected_output": "Use runOnUIAsync and await its result so the React Native thread is not blocked while the UI Runtime performs the measurement.",
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "runOnUIAsync",
+              "text": "Uses the asynchronous UI Runtime API"
+            },
+            {
+              "type": "contains",
+              "value": "await",
+              "text": "Awaits the asynchronous result"
+            },
+            {
+              "type": "contains",
+              "value": "block",
+              "text": "Explains the avoided thread blocking"
+            }
+          ]
+        },
+        {
           "id": 2,
           "prompt": "Write a Python script that reads a CSV file and outputs the top 10 rows sorted by the 'revenue' column.",
           "should_trigger": false,

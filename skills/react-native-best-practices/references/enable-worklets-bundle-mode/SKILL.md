@@ -10,7 +10,7 @@ description:
 compatibility: Requires network access to raw.githubusercontent.com and api.github.com to fetch metro patches
 metadata:
   author: Tomasz Żelawski
-  version: 1.0.1
+  version: 1.0.2
 ---
 
 # Enable Worklets Bundle Mode
@@ -73,7 +73,8 @@ Environment facts you need:
 ## 1. Babel plugin
 
 In `babel.config.js`, add the worklets plugin with `bundleMode: true`. `strictGlobal: true` is optional but recommended by the
-docs. On Expo, also pass `{ worklets: false }` to `babel-preset-expo`, which otherwise adds its own copy of the plugin.
+docs. On Expo, also pass `{ worklets: false, reanimated: false }` to `babel-preset-expo`, which otherwise adds its own copy of the
+plugin (through `react-native-reanimated/plugin` when Reanimated is installed).
 
 If the worklets plugin is already present, just add the options to it — do not add a second copy. The plugin should stay last in
 the `plugins` array, and the options go on the plugin entry, never on a preset.
@@ -105,8 +106,8 @@ Expo — if the app has no `babel.config.js`, generate the default one first
 npx expo customize babel.config.js
 ```
 
-The generated file is a function returning `{ presets: ['babel-preset-expo'] }`. Pass the preset `{ worklets: false }` and add a
-`plugins` array to the returned object:
+The generated file is a function returning `{ presets: ['babel-preset-expo'] }`. Pass the preset
+`{ worklets: false, reanimated: false }` and add a `plugins` array to the returned object:
 
 ```js
 /** @type {import('react-native-worklets/plugin').PluginOptions} */
@@ -118,7 +119,7 @@ const workletsPluginOptions = {
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: [['babel-preset-expo', { worklets: false }]],
+    presets: [['babel-preset-expo', { worklets: false, reanimated: false }]],
     plugins: [['react-native-worklets/plugin', workletsPluginOptions]],
   };
 };

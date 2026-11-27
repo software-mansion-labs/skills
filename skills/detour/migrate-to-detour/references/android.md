@@ -40,14 +40,14 @@
 ### After (Detour)
 Replace the host with your Detour organization subdomain. Detour auto-hosts `/.well-known/assetlinks.json` — no server setup needed.
 
-**Important:** The Detour Dashboard generates a unique `pathPrefix` for your app (e.g. `/ldukjiuliD`). After creating the app in the dashboard, copy the generated intent filter snippet from the **SDK Setup** tab and use it directly — don't write the intent filter by hand.
+**Important:** The Detour Dashboard generates a unique `pathPrefix` for your app (e.g. `/ldukjiuliD`). After creating the app in the dashboard, copy the generated intent filter snippet from the **App Configuration** tab and use it directly — don't write the intent filter by hand.
 
 The generated snippet will look like this:
 ```xml
 <!-- AndroidManifest.xml -->
 <activity android:name=".MainActivity" android:exported="true">
 
-    <!-- App Links (https) — copy exact snippet from Detour Dashboard → SDK Setup -->
+    <!-- App Links (https) — copy exact snippet from Detour Dashboard → App Configuration -->
     <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />

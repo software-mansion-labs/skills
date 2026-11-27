@@ -113,8 +113,8 @@ func application(_ app: UIApplication, open url: URL,
 import Detour
 
 let detourConfig = DetourConfig(
-  apiKey: "YOUR_API_KEY",    // Detour Dashboard → API Configuration
-  appID: "YOUR_APP_ID",      // Detour Dashboard → API Configuration
+  apiKey: "YOUR_API_KEY",    // Detour Dashboard → App Configuration → SDK credentials
+  appID: "YOUR_APP_ID",      // Detour Dashboard → App Configuration → SDK credentials
   shouldUseClipboard: true   // improves deferred link matching on iOS
 )
 ```

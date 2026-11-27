@@ -67,7 +67,7 @@ The dashboard auto-generates:
 - **Publishable API Key** — used to authenticate SDK calls
 - **App Hash** — part of the default deferred link URL (`https://YOURORG.godetour.link/APP_HASH/...`)
 
-### 4. Configure the app (three tabs)
+### 4. Configure the app (two tabs)
 
 **Link Settings tab:**
 - Set a **Web Fallback Redirect URL** — where desktop/unsupported browsers land
@@ -75,13 +75,12 @@ The dashboard auto-generates:
 - Short links here are **optional** — skip for now unless specifically needed
 
 **App Configuration tab:**
+- **SDK credentials** card (top of the tab): copy **App ID** and **Publishable API Key** — store in environment variables, never hardcode
+- **Generate new key** (owners/admins only) revokes the previous Publishable API Key immediately — apps built with the old key stop matching links until a build with the new key is released
 - **iOS:** Bundle ID, Apple Team ID, App Store ID
 - **Android:** Package name (must match exactly what's in your app), SHA-256 signing certificate fingerprint(s)
 - These enable Detour to auto-host the `apple-app-site-association` and `assetlinks.json` files
 - This tab also generates the **ready-to-use intent-filter snippet** for Android — always copy it from here, never write it by hand
-
-**API Configuration tab:**
-- Copy **Publishable API Key** and **App ID** — store in environment variables, never hardcode
 
 After Phase 1, the user should have their subdomain, App ID, Publishable API Key, and App Hash ready.
 

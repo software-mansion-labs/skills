@@ -47,7 +47,7 @@ Walk the user through these steps:
 - The dashboard auto-generates:
   - **App ID** — needed in the SDK
   - **Publishable API Key** — needed in the SDK
-- Both are found under the app's **API Configuration** tab
+- Both are found under the app's **App Configuration** tab, in the **SDK credentials** card
 
 ### 3. Configure Link Settings
 
@@ -109,7 +109,7 @@ For React Native, the link-handling code differs by navigation library, so deter
 - **Expo Router** → use the Expo Router section; also check whether they use short links (if yes, show the `+native-intent` pattern with `createDetourNativeIntentHandler`)
 - **React Navigation** → use the React Navigation section
 
-**When showing code with `YOUR_API_KEY` and `YOUR_APP_ID` placeholders**, always tell the user explicitly: *"You'll find both values in the Detour Dashboard → your app → API Configuration tab."*
+**When showing code with `YOUR_API_KEY` and `YOUR_APP_ID` placeholders**, always tell the user explicitly: *"You'll find both values in the Detour Dashboard → your app → App Configuration tab → SDK credentials."*
 
 **Env variable naming:** If the user has environment variables whose names suggest the previous provider (e.g. `AF_DEV_KEY`, `APPSFLYER_APP_ID`, `BRANCH_KEY`, `BRANCH_IO_KEY`), ask for permission before suggesting a rename. Don't rename them automatically.
 

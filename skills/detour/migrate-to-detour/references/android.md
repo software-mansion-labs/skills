@@ -185,8 +185,8 @@ class MainActivity : AppCompatActivity() {
     private val detourDelegate = DetourDelegate(
         lifecycleOwner = this,
         config = DetourConfig(
-            apiKey = "YOUR_API_KEY",   // Detour Dashboard → API Configuration
-            appId = "YOUR_APP_ID"      // Detour Dashboard → API Configuration
+            apiKey = "YOUR_API_KEY",   // Detour Dashboard → App Configuration → SDK credentials
+            appId = "YOUR_APP_ID"      // Detour Dashboard → App Configuration → SDK credentials
         ),
         onLinkResult = { result -> handleLink(result) }
     )

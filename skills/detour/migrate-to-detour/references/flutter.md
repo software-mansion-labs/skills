@@ -137,8 +137,8 @@ class _MyAppState extends State<MyApp> {
     Future<void> _startDetour() async {
         await _detour.start(
             const DetourConfig(
-                apiKey: 'YOUR_API_KEY',        // Detour Dashboard → API Configuration
-                appID: 'YOUR_APP_ID',          // Detour Dashboard → API Configuration
+                apiKey: 'YOUR_API_KEY',        // Detour Dashboard → App Configuration → SDK credentials
+                appID: 'YOUR_APP_ID',          // Detour Dashboard → App Configuration → SDK credentials
                 shouldUseClipboard: true,      // iOS only — improves deferred link matching
                 linkProcessingMode: LinkProcessingMode.all,
             ),

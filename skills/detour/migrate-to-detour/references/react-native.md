@@ -142,8 +142,8 @@ useEffect(() => {
 import { DetourProvider } from '@swmansion/react-native-detour';
 
 const config = {
-    apiKey: 'YOUR_API_KEY',        // Detour Dashboard → API Configuration
-    appID: 'YOUR_APP_ID',          // Detour Dashboard → API Configuration
+    apiKey: 'YOUR_API_KEY',        // Detour Dashboard → App Configuration → SDK credentials
+    appID: 'YOUR_APP_ID',          // Detour Dashboard → App Configuration → SDK credentials
     shouldUseClipboard: true,      // iOS only — improves deferred link matching
     linkProcessingMode: 'all' as const,
 };
